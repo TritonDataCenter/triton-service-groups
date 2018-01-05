@@ -13,6 +13,7 @@ type MachineTemplate struct {
 	Name    string
 	Package string
 	Image   string
+	Tags    map[string]interface{}
 }
 
 func Get(w http.ResponseWriter, r *http.Request) {

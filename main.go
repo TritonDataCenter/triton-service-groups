@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/joyent/triton-service-groups/groups"
 	"github.com/joyent/triton-service-groups/templates"
 )
 
@@ -16,6 +17,11 @@ func main() {
 	sub.Methods("GET").Path("/templates/{name}").HandlerFunc(templates_v1.Get)
 	sub.Methods("PUT").Path("/templates/{name}").HandlerFunc(templates_v1.Update)
 	sub.Methods("DELETE").Path("/templates/{name}").HandlerFunc(templates_v1.Delete)
+
+	sub.Methods("POST").Path("/").HandlerFunc(groups_v1.Create)
+	sub.Methods("GET").Path("/{name}").HandlerFunc(groups_v1.Get)
+	sub.Methods("PUT").Path("/{name}").HandlerFunc(groups_v1.Update)
+	sub.Methods("DELETE").Path("/{name}").HandlerFunc(groups_v1.Delete)
 
 	log.Fatal(http.ListenAndServe(":3000", router))
 }
