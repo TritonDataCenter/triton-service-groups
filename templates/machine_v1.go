@@ -10,10 +10,13 @@ import (
 )
 
 type MachineTemplate struct {
-	Name    string
-	Package string
-	Image   string
-	Tags    map[string]interface{}
+	Name            string
+	Package         string
+	ImageID         string
+	FirewallEnabled bool
+	Networks        []string
+	UserData        string
+	MetaData        map[string]interface{}
 }
 
 func Get(w http.ResponseWriter, r *http.Request) {
@@ -82,6 +85,10 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 
 	db.Remove(name)
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func List(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
 }
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
