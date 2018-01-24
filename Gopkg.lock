@@ -13,9 +13,21 @@
   revision = "7f08801859139f86dfafd1c296e2cba9a80d292e"
   version = "v1.6.0"
 
+[[projects]]
+  name = "github.com/jackc/pgx"
+  packages = [".","chunkreader","internal/sanitize","pgio","pgproto3","pgtype"]
+  revision = "da3231b0b66e2e74cdb779f1d46c5e958ba8be27"
+  version = "v3.1.0"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "22efb1c7d9d2403520db6d9a878b2f1e52741e51425cbda743cfd25f00c84a9b"
+  inputs-digest = "3e9966491aec922062649257357c6a7684c2ed36012161f6e5bdb124f3eb7f8f"
   solver-name = "gps-cdcl"
   solver-version = 1
