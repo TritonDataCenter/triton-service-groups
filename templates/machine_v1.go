@@ -18,6 +18,7 @@ type MachineTemplate struct {
 	Networks        []string
 	UserData        string
 	MetaData        map[string]interface{}
+	Tags            map[string]string
 }
 
 func Get(w http.ResponseWriter, r *http.Request) {

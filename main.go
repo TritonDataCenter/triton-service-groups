@@ -9,8 +9,23 @@ import (
 	"github.com/joyent/triton-service-groups/templates"
 )
 
+type authenticationHandler struct{}
+
+func (handler *authenticationHandler) AuthenticateRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO: authenticate
+		log.Printf("Authenticating against _something_\n")
+
+		// http.Error(w, "Forbidden", 403)
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
+	router := mux.NewRouter()
+	router.StrictSlash(true)
+
 	sub := router.PathPrefix("/v1/tsg").Subrouter()
 
 	sub.Methods("POST").Path("/templates").HandlerFunc(templates_v1.Create)
