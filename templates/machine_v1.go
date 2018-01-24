@@ -3,6 +3,7 @@ package templates_v1
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -93,5 +94,9 @@ func List(w http.ResponseWriter, r *http.Request) {
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(bytes)
+	if n, err := w.Write(bytes); err != nil {
+		log.Printf("%v", err)
+	} else if n != len(bytes) {
+		log.Printf("short write: %d/%d", n, len(bytes))
+	}
 }
