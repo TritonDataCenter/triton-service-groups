@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 echo Wait for servers to be up
 sleep 10
 

@@ -1,37 +1,19 @@
 package templates_v1
 
 import (
-	"fmt"
-
 	"context"
+	"fmt"
 
 	"github.com/jackc/pgx"
 )
 
-func dbConnection() (*pgx.Conn, error) {
-	config := pgx.ConnConfig{
-		Host:     "localhost",
-		Database: "tsg",
-		Port:     26257,
-		User:     "root",
-	}
-
-	return pgx.Connect(config)
-}
-
-func FindTemplateBy(key string) (*MachineTemplate, bool) {
+func FindTemplateBy(db *pgx.ConnPool, key string) (*MachineTemplate, bool) {
 	var template MachineTemplate
 
 	sqlStatement := `SELECT name, package, image_id FROM triton.tsg_templates WHERE name = $1;`
 
-	db, err := dbConnection()
-	if err != nil {
-		panic(err)
-	}
-
-	defer db.Close()
-
-	err = db.QueryRowEx(context.TODO(), sqlStatement, nil, key).Scan(&template.Name, &template.Package, &template.ImageID)
+	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key).
+		Scan(&template.Name, &template.Package, &template.ImageID)
 	switch err {
 	case nil:
 		return &template, true
@@ -43,17 +25,10 @@ func FindTemplateBy(key string) (*MachineTemplate, bool) {
 	}
 }
 
-func FindTemplates() ([]*MachineTemplate, error) {
+func FindTemplates(db *pgx.ConnPool) ([]*MachineTemplate, error) {
 	var templates []*MachineTemplate
 
 	sqlStatement := `SELECT name, package, image_id FROM triton.tsg_templates;`
-
-	db, err := dbConnection()
-	if err != nil {
-		return nil, err
-	}
-
-	defer db.Close()
 
 	rows, err := db.QueryEx(context.TODO(), sqlStatement, nil)
 	if err != nil {
@@ -72,56 +47,35 @@ func FindTemplates() ([]*MachineTemplate, error) {
 	return templates, nil
 }
 
-func SaveTemplate(template *MachineTemplate) {
+func SaveTemplate(db *pgx.ConnPool, template *MachineTemplate) {
 	sqlStatement := `
 INSERT INTO triton.tsg_templates (name, package, image_id) 
 VALUES ($1, $2, $3)
 `
 
-	db, err := dbConnection()
-	if err != nil {
-		panic(err)
-	}
-
-	defer db.Close()
-
-	_, err = db.ExecEx(context.TODO(), sqlStatement, nil, template.Name, template.Package, template.ImageID)
+	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, template.Name, template.Package, template.ImageID)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func UpdateTemplate(name string, template *MachineTemplate) {
+func UpdateTemplate(db *pgx.ConnPool, name string, template *MachineTemplate) {
 	sqlStatement := `
 Update triton.tsg_templates 
 SET package = $2, image_id = $3
 WHERE name = $1
 `
 
-	db, err := dbConnection()
-	if err != nil {
-		panic(err)
-	}
-
-	defer db.Close()
-
-	_, err = db.ExecEx(context.TODO(), sqlStatement, nil, name, template.Package, template.ImageID)
+	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, name, template.Package, template.ImageID)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func RemoveTemplate(name string) {
+func RemoveTemplate(db *pgx.ConnPool, name string) {
 	sqlStatement := `DELETE FROM triton.tsg_templates WHERE name = $1`
 
-	db, err := dbConnection()
-	if err != nil {
-		panic(err)
-	}
-
-	defer db.Close()
-
-	_, err = db.ExecEx(context.TODO(), sqlStatement, nil, name)
+	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, name)
 	if err != nil {
 		panic(err)
 	}

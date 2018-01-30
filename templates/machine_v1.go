@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx"
 )
 
 type MachineTemplate struct {
@@ -20,87 +21,97 @@ type MachineTemplate struct {
 	Tags            map[string]string
 }
 
-func Get(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	name := vars["name"]
+func Get(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		name := vars["name"]
 
-	com, ok := FindTemplateBy(name)
-	if !ok {
-		http.NotFound(w, r)
-		return
+		com, ok := FindTemplateBy(dbPool, name)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		bytes, err := json.Marshal(com)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		writeJsonResponse(w, bytes)
 	}
-
-	bytes, err := json.Marshal(com)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	writeJsonResponse(w, bytes)
 }
 
-func Create(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func Create(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		var template *MachineTemplate
+		err = json.Unmarshal(body, &template)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		SaveTemplate(dbPool, template)
+
+		w.Header().Set("Location", r.URL.Path+"/"+template.Name)
+		w.WriteHeader(http.StatusCreated)
 	}
-
-	var template *MachineTemplate
-	err = json.Unmarshal(body, &template)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	SaveTemplate(template)
-
-	w.Header().Set("Location", r.URL.Path+"/"+template.Name)
-	w.WriteHeader(http.StatusCreated)
 }
 
-func Update(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	name := vars["name"]
+func Update(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		name := vars["name"]
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		var template *MachineTemplate
+		err = json.Unmarshal(body, &template)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		UpdateTemplate(dbPool, name, template)
 	}
-
-	var template *MachineTemplate
-	err = json.Unmarshal(body, &template)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	UpdateTemplate(name, template)
 }
 
-func Delete(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	name := vars["name"]
+func Delete(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		name := vars["name"]
 
-	_, ok := FindTemplateBy(name)
-	if !ok {
-		http.NotFound(w, r)
-		return
+		_, ok := FindTemplateBy(dbPool, name)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		RemoveTemplate(dbPool, name)
+		w.WriteHeader(http.StatusNoContent)
 	}
-
-	RemoveTemplate(name)
-	w.WriteHeader(http.StatusNoContent)
 }
 
-func List(w http.ResponseWriter, r *http.Request) {
-	rows, err := FindTemplates()
-	if err != nil {
-		http.NotFound(w, r)
-		return
-	}
+func List(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rows, err := FindTemplates(dbPool)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
 
-	bytes, err := json.Marshal(rows)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+		bytes, err := json.Marshal(rows)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 
-	writeJsonResponse(w, bytes)
+		writeJsonResponse(w, bytes)
+	}
 }
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {

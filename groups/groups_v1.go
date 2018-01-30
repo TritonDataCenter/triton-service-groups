@@ -2,6 +2,8 @@ package groups_v1
 
 import (
 	"net/http"
+
+	"github.com/jackc/pgx"
 )
 
 type ServiceGroup struct {
@@ -13,22 +15,32 @@ type ServiceGroup struct {
 	InstanceTags        map[string]interface{}
 }
 
-func Get(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+func Get(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	}
 }
 
-func Create(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+func Create(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	}
 }
 
-func Update(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+func Update(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	}
 }
 
-func Delete(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+func Delete(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	}
 }
 
-func List(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+func List(dbPool *pgx.ConnPool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotImplemented)
+	}
 }
