@@ -1,7 +1,10 @@
 package router
 
 import (
+<<<<<<< HEAD
 	"io"
+=======
+>>>>>>> ba2ab54... Changes after PR Review
 	"net/http"
 
 	"github.com/jackc/pgx"
@@ -21,9 +24,12 @@ func AuthenticationHandler(dbPool *pgx.ConnPool, h http.Handler) http.Handler {
 		h.ServeHTTP(w, r)
 	})
 }
+<<<<<<< HEAD
 
 func LoggingHandler(out io.Writer, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h.ServeHTTP(w, r)
 	})
 }
+=======
+>>>>>>> ba2ab54... Changes after PR Review
