@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/joyent/triton-service-groups/db"
 )
 
 type MachineTemplate struct {
@@ -25,7 +24,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 
-	com, ok := db.FindBy(name)
+	com, ok := FindTemplateBy(name)
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -45,15 +44,15 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	com := new(MachineTemplate)
-	err = json.Unmarshal(body, com)
+	var template *MachineTemplate
+	err = json.Unmarshal(body, &template)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	db.Save(com.Name, com)
+	SaveTemplate(template)
 
-	w.Header().Set("Location", r.URL.Path+"/"+com.Name)
+	w.Header().Set("Location", r.URL.Path+"/"+template.Name)
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -66,31 +65,42 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	com := new(MachineTemplate)
-	err = json.Unmarshal(body, com)
+	var template *MachineTemplate
+	err = json.Unmarshal(body, &template)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	db.Save(name, com)
+	UpdateTemplate(name, template)
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 
-	_, ok := db.FindBy(name)
+	_, ok := FindTemplateBy(name)
 	if !ok {
 		http.NotFound(w, r)
 		return
 	}
 
-	db.Remove(name)
+	RemoveTemplate(name)
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func List(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
+	rows, err := FindTemplates()
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	bytes, err := json.Marshal(rows)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	writeJsonResponse(w, bytes)
 }
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
