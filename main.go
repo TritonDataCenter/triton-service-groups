@@ -44,7 +44,7 @@ func initDb() (*pgx.ConnPool, error) {
 		AcquireTimeout: 0,
 		ConnConfig: pgx.ConnConfig{
 			Host:     "localhost",
-			Database: "tsg",
+			Database: "triton",
 			Port:     26257,
 			User:     "root",
 		},
