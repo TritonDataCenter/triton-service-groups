@@ -13,8 +13,8 @@ import (
 type MachineTemplate struct {
 	Name            string
 	Package         string
-	ImageID         string
-	AccountName     string
+	ImageId         string
+	AccountId       string
 	FirewallEnabled bool
 	Networks        []string
 	UserData        string

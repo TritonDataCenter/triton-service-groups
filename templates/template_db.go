@@ -12,7 +12,7 @@ import (
 func FindTemplateBy(db *pgx.ConnPool, key string, accountId string) (*MachineTemplate, bool) {
 	var template MachineTemplate
 
-	sqlStatement := `SELECT name, package, image_id, firewall_enabled, metadata, userdata, tags  
+	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, metadata, userdata, tags  
 FROM triton.tsg_templates 
 WHERE name = $1 and account_id = $2;`
 
@@ -22,7 +22,8 @@ WHERE name = $1 and account_id = $2;`
 	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
 		Scan(&template.Name,
 			&template.Package,
-			&template.ImageID,
+			&template.ImageId,
+			&template.AccountId,
 			&template.FirewallEnabled,
 			&metaDataJson,
 			&template.UserData,
@@ -51,7 +52,7 @@ WHERE name = $1 and account_id = $2;`
 func FindTemplates(db *pgx.ConnPool, accountId string) ([]*MachineTemplate, error) {
 	var templates []*MachineTemplate
 
-	sqlStatement := `SELECT name, package, image_id, firewall_enabled, metadata, userdata, tags 
+	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, metadata, userdata, tags 
 FROM triton.tsg_templates
 WHERE account_id = $1;`
 
@@ -67,7 +68,8 @@ WHERE account_id = $1;`
 		var template MachineTemplate
 		err := rows.Scan(&template.Name,
 			&template.Package,
-			&template.ImageID,
+			&template.ImageId,
+			&template.AccountId,
 			&template.FirewallEnabled,
 			&metaDataJson,
 			&template.UserData,
@@ -102,7 +104,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	tagsJson, _ := json.Marshal(template.Tags)
 
 	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
-		template.Name, template.Package, template.ImageID,
+		template.Name, template.Package, template.ImageId,
 		accountId, template.FirewallEnabled, metaDataJson,
 		template.UserData, tagsJson)
 	if err != nil {
@@ -121,7 +123,7 @@ WHERE name = $1 and account_id = $2
 	tagsJson, _ := json.Marshal(template.Tags)
 
 	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
-		name, accountId, template.Package, template.ImageID, template.FirewallEnabled,
+		name, accountId, template.Package, template.ImageId, template.FirewallEnabled,
 		metaDataJson, template.UserData, tagsJson)
 	if err != nil {
 		panic(err)
