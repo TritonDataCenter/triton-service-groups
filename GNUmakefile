@@ -40,6 +40,15 @@ fmtcheck:: ## Check if code format is canonical Go
 errcheck:: ## Check for unhandled errors
 	@bash $(CURDIR)/scripts/errcheck.sh
 
+dev-db-start:: ## Start the development database
+	@echo "==> Running docker-compose up"
+	docker-compose up -d
+
+dev-db-stop:: ## Stop the development database
+	@echo "==> Running docker-compose kill"
+	docker-compose kill
+	rm -rf data/
+
 .PHONY: help
 help:: ## Display this help message
 	@echo "GNU make(1) targets:"
