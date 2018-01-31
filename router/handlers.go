@@ -1,10 +1,6 @@
 package router
 
 import (
-<<<<<<< HEAD
-	"io"
-=======
->>>>>>> ba2ab54... Changes after PR Review
 	"net/http"
 
 	"github.com/joyent/triton-service-groups/session"
@@ -25,12 +21,3 @@ func AuthenticationHandler(session *session.TsgSession, h http.Handler) http.Han
 		h.ServeHTTP(w, r)
 	})
 }
-<<<<<<< HEAD
-
-func LoggingHandler(out io.Writer, h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTP(w, r)
-	})
-}
-=======
->>>>>>> ba2ab54... Changes after PR Review
