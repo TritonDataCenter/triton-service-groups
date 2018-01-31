@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/jackc/pgx"
 	tsgRouter "github.com/joyent/triton-service-groups/router"
+	"github.com/joyent/triton-service-groups/session"
 )
 
 func main() {
@@ -17,9 +18,16 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	router := tsgRouter.MakeRouter(dbPool)
+	// Session is a global application struct
+	// This allows us to share information
+	// between handlers easily
+	session := &session.TsgSession{
+		DbPool: dbPool,
+	}
+
+	router := tsgRouter.MakeRouter(session)
 	loggedRouter := handlers.LoggingHandler(os.Stdout, router)
-	authenticatedRouter := tsgRouter.AuthenticationHandler(dbPool, loggedRouter)
+	authenticatedRouter := tsgRouter.AuthenticationHandler(session, loggedRouter)
 
 	log.Fatal(http.ListenAndServe(":3000", authenticatedRouter))
 }

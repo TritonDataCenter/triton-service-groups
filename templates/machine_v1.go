@@ -7,13 +7,14 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx"
+	"github.com/joyent/triton-service-groups/session"
 )
 
 type MachineTemplate struct {
 	Name            string
 	Package         string
 	ImageID         string
+	AccountName     string
 	FirewallEnabled bool
 	Networks        []string
 	UserData        string
@@ -21,12 +22,12 @@ type MachineTemplate struct {
 	Tags            map[string]string
 }
 
-func Get(dbPool *pgx.ConnPool) http.HandlerFunc {
+func Get(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		com, ok := FindTemplateBy(dbPool, name)
+		com, ok := FindTemplateBy(session.DbPool, name, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
@@ -41,7 +42,7 @@ func Get(dbPool *pgx.ConnPool) http.HandlerFunc {
 	}
 }
 
-func Create(dbPool *pgx.ConnPool) http.HandlerFunc {
+func Create(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -54,14 +55,14 @@ func Create(dbPool *pgx.ConnPool) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		SaveTemplate(dbPool, template)
+		SaveTemplate(session.DbPool, session.AccountId, template)
 
 		w.Header().Set("Location", r.URL.Path+"/"+template.Name)
 		w.WriteHeader(http.StatusCreated)
 	}
 }
 
-func Update(dbPool *pgx.ConnPool) http.HandlerFunc {
+func Update(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		name := vars["name"]
@@ -77,29 +78,32 @@ func Update(dbPool *pgx.ConnPool) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		UpdateTemplate(dbPool, name, template)
+		UpdateTemplate(session.DbPool, name, session.AccountId, template)
 	}
 }
 
-func Delete(dbPool *pgx.ConnPool) http.HandlerFunc {
+func Delete(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		_, ok := FindTemplateBy(dbPool, name)
+		_, ok := FindTemplateBy(session.DbPool, name, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
 		}
 
-		RemoveTemplate(dbPool, name)
+		RemoveTemplate(session.DbPool, name, session.AccountId)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
-func List(dbPool *pgx.ConnPool) http.HandlerFunc {
+func List(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := FindTemplates(dbPool)
+		log.Printf("Initializing route")
+		log.Printf("Account Id in HTTP Request %v", session.AccountId)
+
+		rows, err := FindTemplates(session.DbPool, session.AccountId)
 		if err != nil {
 			http.NotFound(w, r)
 			return
