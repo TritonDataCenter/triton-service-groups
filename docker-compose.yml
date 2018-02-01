@@ -25,6 +25,7 @@ services:
       - roachnet
      volumes:
        - ./dev/setup_db.sh:/setup_db.sh
+       - ./dev/backup.sql:/dev/backup.sql
      entrypoint: "/bin/bash"
      command: /setup_db.sh
 
