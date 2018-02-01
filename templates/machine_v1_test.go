@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx"
+	tsgRouter "github.com/joyent/triton-service-groups/router"
 	"github.com/joyent/triton-service-groups/session"
-	templates_v1 "github.com/joyent/triton-service-groups/templates"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,23 +34,29 @@ func initDB() (*pgx.ConnPool, error) {
 	return connPool, nil
 }
 
-func TestList(t *testing.T) {
+func TestGet(t *testing.T) {
 	dbpool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
 	session := &session.TsgSession{
-		DbPool: dbpool,
+		AccountId: "joyent",
+		DbPool:    dbpool,
 	}
 
-	req := httptest.NewRequest("GET", "http://example.com/tsg/v1/templates", nil)
+	router := tsgRouter.MakeRouter(session)
+
+	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/test-template-1", nil)
 	recorder := httptest.NewRecorder()
-	templates_v1.List(session)(recorder, req)
+	router.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
-	assert.Equal(t, "null", string(body))
+
+	testBody := "{\"Name\":\"test-template-1\",\"Package\":\"test-package\",\"ImageId\":\"test-image-updated\",\"AccountId\":\"joyent\",\"FirewallEnabled\":false,\"Networks\":[\"daeb93a2-532e-4bd4-8788-b6b30f10ac17\"],\"UserData\":\"bash script here\",\"MetaData\":null,\"Tags\":null}"
+	assert.Equal(t, testBody, string(body))
+
 }
