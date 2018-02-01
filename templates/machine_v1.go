@@ -23,7 +23,7 @@ type MachineTemplate struct {
 	FirewallEnabled bool
 	Networks        []string
 	UserData        string
-	MetaData        map[string]interface{}
+	MetaData        map[string]string
 	Tags            map[string]string
 }
 
@@ -105,11 +105,9 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 
 func List(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Initializing route")
-		log.Printf("Account Id in HTTP Request %v", session.AccountId)
-
 		rows, err := FindTemplates(session.DbPool, session.AccountId)
 		if err != nil {
+			log.Fatal(err)
 			http.NotFound(w, r)
 			return
 		}

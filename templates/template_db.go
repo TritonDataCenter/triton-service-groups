@@ -11,18 +11,24 @@ import (
 
 	"encoding/json"
 
+	"log"
+
+	"strings"
+
 	"github.com/jackc/pgx"
 )
 
 func FindTemplateBy(db *pgx.ConnPool, key string, accountId string) (*MachineTemplate, bool) {
 	var template MachineTemplate
 
-	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, metadata, userdata, tags  
+	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
 FROM triton.tsg_templates 
-WHERE name = $1 and account_id = $2;`
+WHERE name = $1 and account_id = $2
+AND archived = false;`
 
 	var metaDataJson string
 	var tagsJson string
+	var networksList string
 
 	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
 		Scan(&template.Name,
@@ -30,20 +36,25 @@ WHERE name = $1 and account_id = $2;`
 			&template.ImageId,
 			&template.AccountId,
 			&template.FirewallEnabled,
+			&networksList,
 			&metaDataJson,
 			&template.UserData,
 			&tagsJson)
 	switch err {
 	case nil:
-		err = json.Unmarshal([]byte(metaDataJson), &template.MetaData)
+		metaData, err := convertFromJson(metaDataJson)
 		if err != nil {
 			panic(err)
 		}
+		template.MetaData = metaData
 
-		err = json.Unmarshal([]byte(tagsJson), &template.Tags)
+		tags, err := convertFromJson(tagsJson)
 		if err != nil {
 			panic(err)
 		}
+		template.Tags = tags
+
+		template.Networks = strings.Split(networksList, ",")
 
 		return &template, true
 	case pgx.ErrNoRows:
@@ -57,12 +68,14 @@ WHERE name = $1 and account_id = $2;`
 func FindTemplates(db *pgx.ConnPool, accountId string) ([]*MachineTemplate, error) {
 	var templates []*MachineTemplate
 
-	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, metadata, userdata, tags 
+	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '') 
 FROM triton.tsg_templates
-WHERE account_id = $1;`
+WHERE account_id = $1 
+AND archived = false;`
 
 	var metaDataJson string
 	var tagsJson string
+	var networksList string
 
 	rows, err := db.QueryEx(context.TODO(), sqlStatement, nil, accountId)
 	if err != nil {
@@ -76,6 +89,7 @@ WHERE account_id = $1;`
 			&template.ImageId,
 			&template.AccountId,
 			&template.FirewallEnabled,
+			&networksList,
 			&metaDataJson,
 			&template.UserData,
 			&tagsJson)
@@ -83,15 +97,19 @@ WHERE account_id = $1;`
 			return nil, err
 		}
 
-		err = json.Unmarshal([]byte(metaDataJson), &template.MetaData)
+		metaData, err := convertFromJson(metaDataJson)
 		if err != nil {
 			panic(err)
 		}
+		template.MetaData = metaData
 
-		err = json.Unmarshal([]byte(tagsJson), &template.Tags)
+		tags, err := convertFromJson(tagsJson)
 		if err != nil {
 			panic(err)
 		}
+		template.Tags = tags
+
+		template.Networks = strings.Split(networksList, ",")
 
 		templates = append(templates, &template)
 	}
@@ -101,16 +119,25 @@ WHERE account_id = $1;`
 
 func SaveTemplate(db *pgx.ConnPool, accountId string, template *MachineTemplate) {
 	sqlStatement := `
-INSERT INTO triton.tsg_templates (name, package, image_id, account_id, firewall_enabled, metadata, userdata, tags) 
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+INSERT INTO triton.tsg_templates (name, package, image_id, account_id, firewall_enabled, networks, metadata, userdata, tags) 
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
-	metaDataJson, _ := json.Marshal(template.MetaData)
-	tagsJson, _ := json.Marshal(template.Tags)
+	metaDataJson, err := convertToJson(template.MetaData)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
+	tagsJson, err := convertToJson(template.Tags)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	networksList := strings.Join(template.Networks, ",")
+
+	_, err = db.ExecEx(context.TODO(), sqlStatement, nil,
 		template.Name, template.Package, template.ImageId,
-		accountId, template.FirewallEnabled, metaDataJson,
+		accountId, template.FirewallEnabled, networksList, metaDataJson,
 		template.UserData, tagsJson)
 	if err != nil {
 		panic(err)
@@ -120,26 +147,65 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 func UpdateTemplate(db *pgx.ConnPool, name string, accountId string, template *MachineTemplate) {
 	sqlStatement := `
 Update triton.tsg_templates 
-SET package = $3, image_id = $4, firewall_enabled = $5, metadata = $6, userdata = $7, tags = $8
+SET package = $3, image_id = $4, firewall_enabled = $5, networks = $6, metadata = $7, userdata = $8, tags = $9
 WHERE name = $1 and account_id = $2
 `
 
-	metaDataJson, _ := json.Marshal(template.MetaData)
-	tagsJson, _ := json.Marshal(template.Tags)
+	metaDataJson, err := convertToJson(template.MetaData)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
+	tagsJson, err := convertToJson(template.Tags)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	networksList := strings.Join(template.Networks, ",")
+
+	_, err = db.ExecEx(context.TODO(), sqlStatement, nil,
 		name, accountId, template.Package, template.ImageId, template.FirewallEnabled,
-		metaDataJson, template.UserData, tagsJson)
+		networksList, metaDataJson, template.UserData, tagsJson)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func RemoveTemplate(db *pgx.ConnPool, name string, accountId string) {
-	sqlStatement := `DELETE FROM triton.tsg_templates WHERE name = $1 and account_id = $2`
+	sqlStatement := `UPDATE triton.tsg_templates 
+SET archived = true 
+WHERE name = $1 and account_id = $2`
 
 	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, name, accountId)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func convertToJson(data map[string]string) ([]byte, error) {
+	if data == nil {
+		return nil, nil
+	}
+
+	log.Printf("Found data")
+	json, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	return json, nil
+}
+
+func convertFromJson(data string) (map[string]string, error) {
+	if data == "" {
+		return nil, nil
+	}
+
+	var result map[string]string
+	err := json.Unmarshal([]byte(data), &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
