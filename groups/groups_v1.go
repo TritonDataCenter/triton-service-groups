@@ -13,7 +13,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/session"
-	"github.com/y0ssar1an/q"
 )
 
 type ServiceGroup struct {
@@ -56,11 +55,8 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 		var group *ServiceGroup
 		err = json.Unmarshal(body, &group)
 		if err != nil {
-			q.Q(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-
-		q.Q(group)
 
 		SaveGroup(session.DbPool, session.AccountId, group)
 
