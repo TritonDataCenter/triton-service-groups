@@ -7,21 +7,18 @@ package templates_v1
 
 import (
 	"context"
-	"fmt"
-
 	"encoding/json"
-
+	"fmt"
 	"log"
-
 	"strings"
 
 	"github.com/jackc/pgx"
 )
 
-func FindTemplateBy(db *pgx.ConnPool, key string, accountId string) (*MachineTemplate, bool) {
+func FindTemplateByName(db *pgx.ConnPool, key string, accountId string) (*MachineTemplate, bool) {
 	var template MachineTemplate
 
-	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
+	sqlStatement := `SELECT id, name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
 FROM triton.tsg_templates 
 WHERE name = $1 and account_id = $2
 AND archived = false;`
@@ -31,7 +28,8 @@ AND archived = false;`
 	var networksList string
 
 	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
-		Scan(&template.Name,
+		Scan(&template.ID,
+			&template.Name,
 			&template.Package,
 			&template.ImageId,
 			&template.AccountId,
@@ -68,7 +66,7 @@ AND archived = false;`
 func FindTemplates(db *pgx.ConnPool, accountId string) ([]*MachineTemplate, error) {
 	var templates []*MachineTemplate
 
-	sqlStatement := `SELECT name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '') 
+	sqlStatement := `SELECT id, name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '') 
 FROM triton.tsg_templates
 WHERE account_id = $1 
 AND archived = false;`
@@ -84,7 +82,8 @@ AND archived = false;`
 	defer rows.Close()
 	for rows.Next() {
 		var template MachineTemplate
-		err := rows.Scan(&template.Name,
+		err := rows.Scan(&template.ID,
+			&template.Name,
 			&template.Package,
 			&template.ImageId,
 			&template.AccountId,

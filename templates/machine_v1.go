@@ -16,6 +16,7 @@ import (
 )
 
 type MachineTemplate struct {
+	ID              int64
 	Name            string
 	Package         string
 	ImageId         string
@@ -32,7 +33,7 @@ func Get(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		com, ok := FindTemplateBy(session.DbPool, name, session.AccountId)
+		com, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
@@ -92,7 +93,7 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		_, ok := FindTemplateBy(session.DbPool, name, session.AccountId)
+		_, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
