@@ -6,47 +6,128 @@
 package groups_v1
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/session"
+	"github.com/y0ssar1an/q"
 )
 
 type ServiceGroup struct {
 	GroupName           string
-	TemplateId          string
-	AccountName         string
+	TemplateId          int64
+	AccountId           string
 	Capacity            int
 	DataCenter          []string
-	HealthCheckInterval int //default will be 300
-	InstanceTags        map[string]interface{}
+	HealthCheckInterval int
+	InstanceTags        map[string]string
 }
 
 func Get(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotImplemented)
+		vars := mux.Vars(r)
+		name := vars["name"]
+
+		com, ok := FindGroupBy(session.DbPool, name, session.AccountId)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		bytes, err := json.Marshal(com)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		writeJsonResponse(w, bytes)
 	}
 }
 
 func Create(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotImplemented)
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		var group *ServiceGroup
+		err = json.Unmarshal(body, &group)
+		if err != nil {
+			q.Q(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		q.Q(group)
+
+		SaveGroup(session.DbPool, session.AccountId, group)
+
+		w.Header().Set("Location", r.URL.Path+"/"+group.GroupName)
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 
 func Update(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotImplemented)
+		vars := mux.Vars(r)
+		name := vars["name"]
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		var group *ServiceGroup
+		err = json.Unmarshal(body, &group)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		UpdateGroup(session.DbPool, name, session.AccountId, group)
 	}
 }
 
 func Delete(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotImplemented)
+		vars := mux.Vars(r)
+		name := vars["name"]
+
+		_, ok := FindGroupBy(session.DbPool, name, session.AccountId)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		RemoveGroup(session.DbPool, name, session.AccountId)
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
 func List(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotImplemented)
+		rows, err := FindGroups(session.DbPool, session.AccountId)
+		if err != nil {
+			log.Fatal(err)
+			http.NotFound(w, r)
+			return
+		}
+
+		bytes, err := json.Marshal(rows)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		writeJsonResponse(w, bytes)
+	}
+}
+
+func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if n, err := w.Write(bytes); err != nil {
+		log.Printf("%v", err)
+	} else if n != len(bytes) {
+		log.Printf("short write: %d/%d", n, len(bytes))
 	}
 }
