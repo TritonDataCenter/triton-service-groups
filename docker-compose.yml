@@ -1,33 +1,25 @@
-version: '2'
+version: '2.1'
 
 services:
-  roach-ui:
-    image: cockroachdb/cockroach
+
+  db:
+    image: cockroachdb/cockroach:v1.1.4
     command: start --insecure
     ports:
       - 8080:8080
-    networks:
-        - roachnet
+      - 26257:26257
     volumes:
-      - ./data/roach-ui:/cockroach/cockroach-data
-  roach-one:
-    image: cockroachdb/cockroach
-    command: start --insecure --join=roach-ui
-    ports:
-        - 26257:26257
-    networks:
-        - roachnet
-    volumes:
-      - ./data/roach-one:/cockroach/cockroach-data
-  roach-init:
-     image: cockroachdb/cockroach
-     networks:
-      - roachnet
+      - ./data/cockroach-data:/cockroach/cockroach-data
+    restart: always
+    network_mode: bridge
+
+  init:
+     image: cockroachdb/cockroach:v1.1.4
      volumes:
        - ./dev/setup_db.sh:/setup_db.sh
        - ./dev/backup.sql:/dev/backup.sql
      entrypoint: "/bin/bash"
      command: /setup_db.sh
-
-networks:
-  roachnet:
+     links:
+       - db
+     network_mode: bridge
