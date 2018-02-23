@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/jackc/pgx"
@@ -34,7 +35,12 @@ func initDB() (*pgx.ConnPool, error) {
 	return connPool, nil
 }
 
-func TestGet(t *testing.T) {
+func TestAcc_Get(t *testing.T) {
+	if os.Getenv("TRITON_TEST") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		return
+	}
+
 	dbpool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
