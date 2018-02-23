@@ -9,9 +9,11 @@ import (
 	"net/http"
 
 	"github.com/joyent/triton-service-groups/session"
+	"github.com/y0ssar1an/q"
 )
 
-func isAuthenticated(session *session.TsgSession, r *http.Request) bool {
+func isAuthenticated(session *session.TsgSession, req *http.Request) bool {
+	q.Q(req)
 	session.AccountId = "joyent"
 	return true
 }
