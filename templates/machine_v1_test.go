@@ -56,7 +56,7 @@ func TestGet(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
 
-	testBody := "{\"Name\":\"test-template-1\",\"Package\":\"test-package\",\"ImageId\":\"test-image-updated\",\"AccountId\":\"joyent\",\"FirewallEnabled\":false,\"Networks\":[\"daeb93a2-532e-4bd4-8788-b6b30f10ac17\"],\"UserData\":\"bash script here\",\"MetaData\":null,\"Tags\":null}"
+	testBody := "{\"ID\":319209784155176962,\"Name\":\"test-template-1\",\"Package\":\"test-package\",\"ImageId\":\"test-image-updated\",\"AccountId\":\"joyent\",\"FirewallEnabled\":false,\"Networks\":[\"daeb93a2-532e-4bd4-8788-b6b30f10ac17\"],\"UserData\":\"bash script here\",\"MetaData\":null,\"Tags\":null}"
 	assert.Equal(t, testBody, string(body))
 
 }
