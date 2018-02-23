@@ -49,6 +49,10 @@ dev-db-stop:: ## Stop the development database
 	docker-compose kill
 	rm -rf data/
 
+run:: ## Perform go run on the main.go file
+	@echo "==> Running triton-service-groups"
+	go run main.go
+
 .PHONY: help
 help:: ## Display this help message
 	@echo "GNU make(1) targets:"
