@@ -6,14 +6,84 @@
 package router
 
 import (
+	"context"
+	"fmt"
+	"log"
 	"net/http"
+	"regexp"
+	"strings"
 
+	"github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/account"
+	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-service-groups/session"
-	"github.com/y0ssar1an/q"
 )
 
 func isAuthenticated(session *session.TsgSession, req *http.Request) bool {
-	q.Q(req)
+	// 1. Validate the incoming request
+
+	// 2. Parse out attributes within the header
+
+	// 3. Backend authentication/authorization via CloudAPI
+
+	dateHeader := req.Header.Get("Date")
+	authHeader := req.Header.Get("Authorization")
+
+	if dateHeader == "" || authHeader == "" {
+		session.AccountId = ""
+		return false
+	}
+
+	re, err := regexp.Compile("keyId=\"(.*?)\"")
+	if err != nil {
+		return false
+	}
+
+	matches := re.FindStringSubmatch(fmt.Sprintf("%s", authHeader))
+	if len(matches) != 2 {
+		// fmt.Error("couldn't find keyId within authorization header")
+		return false
+	}
+
+	authParts := strings.Split(matches[1], "/")
+	parts := []string{}
+	for _, part := range authParts {
+		if part != "" && part != "keys" {
+			parts = append(parts, part)
+		}
+	}
+
+	accountName := parts[0]
+	fingerprint := parts[1]
+	signer := &authentication.TestSigner{}
+
+	config := &triton.ClientConfig{
+		TritonURL:   "https://us-east-1.api.joyent.com/",
+		AccountName: accountName,
+		Signers:     []authentication.Signer{signer},
+	}
+
+	a, err := account.NewClient(config)
+	if err != nil {
+		log.Println("failed to create account client: %v", err)
+	}
+
+	header := &http.Header{}
+	header.Set("date", dateHeader)
+	header.Set("Authorization", authHeader)
+	a.SetHeader(header)
+
+	input := &account.ListKeysInput{}
+	keys, err := a.Keys().List(context.Background(), input)
+	if err != nil {
+		log.Println("failed to list account keys: %v", err)
+	}
+	for _, key := range keys {
+		fmt.Println("Key Name", key.Name)
+	}
+
+	fmt.Println(fingerprint)
+
 	session.AccountId = "joyent"
 	return true
 }
