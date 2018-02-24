@@ -67,8 +67,22 @@ func isAuthenticated(session *session.TsgSession, req *http.Request) bool {
 	header.Set("Authorization", authHeader)
 	a.SetHeader(header)
 
-	input := &account.ListKeysInput{}
-	keys, err := a.Keys().List(context.Background(), input)
+	getInput := &account.GetInput{}
+	acct, err := a.Get(context.Background(), getInput)
+	if err != nil {
+		log.Println("failed to get account: %v", err)
+		return false
+	}
+	accountID := acct.ID
+
+	log.Println("AccountID:", accountID)
+
+	// we need to set this again, for any request until we have our own key
+	// injected
+	a.SetHeader(header)
+
+	listInput := &account.ListKeysInput{}
+	keys, err := a.Keys().List(context.Background(), listInput)
 	if err != nil {
 		log.Println("failed to list account keys: %v", err)
 		return false
@@ -79,7 +93,7 @@ func isAuthenticated(session *session.TsgSession, req *http.Request) bool {
 
 	fmt.Println(fingerprint)
 
-	session.AccountId = "joyent"
+	session.AccountId = accountID
 	return true
 }
 
