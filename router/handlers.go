@@ -20,12 +20,6 @@ import (
 )
 
 func isAuthenticated(session *session.TsgSession, req *http.Request) bool {
-	// 1. Validate the incoming request
-
-	// 2. Parse out attributes within the header
-
-	// 3. Backend authentication/authorization via CloudAPI
-
 	dateHeader := req.Header.Get("Date")
 	authHeader := req.Header.Get("Authorization")
 
@@ -77,6 +71,7 @@ func isAuthenticated(session *session.TsgSession, req *http.Request) bool {
 	keys, err := a.Keys().List(context.Background(), input)
 	if err != nil {
 		log.Println("failed to list account keys: %v", err)
+		return false
 	}
 	for _, key := range keys {
 		fmt.Println("Key Name", key.Name)
