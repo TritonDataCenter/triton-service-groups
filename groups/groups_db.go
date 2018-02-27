@@ -7,10 +7,7 @@ package groups_v1
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
-	"strings"
 
 	"github.com/jackc/pgx"
 )
@@ -18,13 +15,10 @@ import (
 func FindGroups(db *pgx.ConnPool, accountId string) ([]*ServiceGroup, error) {
 	var groups []*ServiceGroup
 
-	sqlStatement := `SELECT name, template_id, capacity, datacenter, health_check_interval, COALESCE(instance_tags, '') 
+	sqlStatement := `SELECT name, template_id, capacity, health_check_interval 
 FROM triton.tsg_groups
 WHERE account_id = $1 
 AND archived = false;`
-
-	var instanceTagsJson string
-	var datacenterList string
 
 	rows, err := db.QueryEx(context.TODO(), sqlStatement, nil, accountId)
 	if err != nil {
@@ -36,20 +30,10 @@ AND archived = false;`
 		err := rows.Scan(&group.GroupName,
 			&group.TemplateId,
 			&group.Capacity,
-			&datacenterList,
-			&group.HealthCheckInterval,
-			&instanceTagsJson)
+			&group.HealthCheckInterval)
 		if err != nil {
 			return nil, err
 		}
-
-		tags, err := convertFromJson(instanceTagsJson)
-		if err != nil {
-			panic(err)
-		}
-		group.InstanceTags = tags
-
-		group.DataCenter = strings.Split(datacenterList, ",")
 
 		groups = append(groups, &group)
 	}
@@ -60,31 +44,18 @@ AND archived = false;`
 func FindGroupBy(db *pgx.ConnPool, key string, accountId string) (*ServiceGroup, bool) {
 	var group ServiceGroup
 
-	sqlStatement := `SELECT name, template_id, capacity, datacenter, health_check_interval, COALESCE(instance_tags, '') 
+	sqlStatement := `SELECT name, template_id, capacity, health_check_interval 
 FROM triton.tsg_groups
 WHERE account_id = $1 and name = $2
 AND archived = false;`
-
-	var instanceTagsJson string
-	var datacenterList string
 
 	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
 		Scan(&group.GroupName,
 			&group.TemplateId,
 			&group.Capacity,
-			&datacenterList,
-			&group.HealthCheckInterval,
-			&instanceTagsJson)
+			&group.HealthCheckInterval)
 	switch err {
 	case nil:
-		instanceTags, err := convertFromJson(instanceTagsJson)
-		if err != nil {
-			panic(err)
-		}
-		group.InstanceTags = instanceTags
-
-		group.DataCenter = strings.Split(datacenterList, ",")
-
 		return &group, true
 	case pgx.ErrNoRows:
 		fmt.Println("No rows were returned!")
@@ -96,21 +67,12 @@ AND archived = false;`
 
 func SaveGroup(db *pgx.ConnPool, accountId string, group *ServiceGroup) {
 	sqlStatement := `
-INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id, datacenter, health_check_interval, instance_tags) 
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id, health_check_interval) 
+VALUES ($1, $2, $3, $4, $5)
 `
-
-	tagsJson, err := convertToJson(group.InstanceTags)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	datacenterList := strings.Join(group.DataCenter, ",")
-
-	_, err = db.ExecEx(context.TODO(), sqlStatement, nil,
+	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
 		group.GroupName, group.TemplateId, group.Capacity,
-		accountId, datacenterList, group.HealthCheckInterval,
-		tagsJson)
+		accountId, group.HealthCheckInterval)
 	if err != nil {
 		panic(err)
 	}
@@ -119,20 +81,12 @@ VALUES ($1, $2, $3, $4, $5, $6, $7)
 func UpdateGroup(db *pgx.ConnPool, name string, accountId string, group *ServiceGroup) {
 	sqlStatement := `
 Update triton.tsg_groups 
-SET template_id = $3, capacity = $4, datacenter = $5, health_check_interval = $6, instance_tags = $7
+SET template_id = $3, capacity = $4, health_check_interval = $5
 WHERE name = $1 and account_id = $2
 `
 
-	tagsJson, err := convertToJson(group.InstanceTags)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	datacenterList := strings.Join(group.DataCenter, ",")
-
-	_, err = db.ExecEx(context.TODO(), sqlStatement, nil,
-		name, accountId, group.TemplateId, group.Capacity, datacenterList,
-		group.HealthCheckInterval, tagsJson)
+	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
+		name, accountId, group.TemplateId, group.Capacity, group.HealthCheckInterval)
 	if err != nil {
 		panic(err)
 	}
@@ -147,32 +101,4 @@ WHERE name = $1 and account_id = $2`
 	if err != nil {
 		panic(err)
 	}
-}
-
-func convertToJson(data map[string]string) ([]byte, error) {
-	if data == nil {
-		return nil, nil
-	}
-
-	log.Printf("Found data")
-	json, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	return json, nil
-}
-
-func convertFromJson(data string) (map[string]string, error) {
-	if data == "" {
-		return nil, nil
-	}
-
-	var result map[string]string
-	err := json.Unmarshal([]byte(data), &result)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }

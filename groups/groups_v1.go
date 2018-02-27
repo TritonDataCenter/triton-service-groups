@@ -22,7 +22,6 @@ type ServiceGroup struct {
 	Capacity            int
 	DataCenter          []string
 	HealthCheckInterval int
-	InstanceTags        map[string]string
 }
 
 func Get(session *session.TsgSession) http.HandlerFunc {
