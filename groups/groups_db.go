@@ -15,7 +15,7 @@ import (
 func FindGroups(db *pgx.ConnPool, accountId string) ([]*ServiceGroup, error) {
 	var groups []*ServiceGroup
 
-	sqlStatement := `SELECT name, template_id, capacity, health_check_interval 
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval 
 FROM triton.tsg_groups
 WHERE account_id = $1 
 AND archived = false;`
@@ -27,7 +27,9 @@ AND archived = false;`
 	defer rows.Close()
 	for rows.Next() {
 		var group ServiceGroup
-		err := rows.Scan(&group.GroupName,
+		err := rows.Scan(&group.ID,
+			&group.GroupName,
+			&group.AccountId,
 			&group.TemplateId,
 			&group.Capacity,
 			&group.HealthCheckInterval)
@@ -44,13 +46,15 @@ AND archived = false;`
 func FindGroupBy(db *pgx.ConnPool, key string, accountId string) (*ServiceGroup, bool) {
 	var group ServiceGroup
 
-	sqlStatement := `SELECT name, template_id, capacity, health_check_interval 
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval 
 FROM triton.tsg_groups
-WHERE account_id = $1 and name = $2
+WHERE account_id = $2 and name = $1
 AND archived = false;`
 
 	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
-		Scan(&group.GroupName,
+		Scan(&group.ID,
+			&group.GroupName,
+			&group.AccountId,
 			&group.TemplateId,
 			&group.Capacity,
 			&group.HealthCheckInterval)

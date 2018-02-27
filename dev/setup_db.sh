@@ -24,7 +24,14 @@ metadata TEXT,
 tags TEXT,
 archived BOOL DEFAULT false);"
 
-    #$SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_groups (id SERIAL PRIMARY KEY, name TEXT NOT NULL, template_id INT NOT NULL REFERENCES tsg_templates (id), account_id TEXT NOT NULL, capacity INT NOT NULL, datacenter TEXT NOT NULL, health_check_interval INT DEFAULT 300, instance_tags TEXT, archived BOOL DEFAULT false);"
+    $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_groups (
+id SERIAL PRIMARY KEY,
+name TEXT NOT NULL,
+template_id INT NOT NULL REFERENCES tsg_templates (id),
+account_id TEXT NOT NULL,
+capacity INT NOT NULL,
+health_check_interval INT DEFAULT 300,
+archived BOOL DEFAULT false);"
     /cockroach/cockroach.sh sql $HOSTPARAMS --database=$env < /dev/backup.sql
 done
 

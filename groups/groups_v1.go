@@ -16,11 +16,11 @@ import (
 )
 
 type ServiceGroup struct {
+	ID                  int64
 	GroupName           string
 	TemplateId          int64
 	AccountId           string
 	Capacity            int
-	DataCenter          []string
 	HealthCheckInterval int
 }
 
