@@ -149,7 +149,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 func RemoveTemplate(db *pgx.ConnPool, name string, accountId string) {
 	sqlStatement := `UPDATE triton.tsg_templates 
 SET archived = true 
-WHERE name = $1 and account_id = $2`
+WHERE template_name = $1 and account_id = $2`
 
 	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, name, accountId)
 	if err != nil {
