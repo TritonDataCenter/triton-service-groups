@@ -1,5 +1,5 @@
 
-INSERT INTO tsg_templates (id, "template_name", package, image_id, account_id, machine_name_prefix, firewall_enabled, networks, metadata, userdata, tags, archived) VALUES
+INSERT INTO tsg_templates (id, "template_name", package, image_id, account_id, instance_name_prefix, firewall_enabled, networks, metadata, userdata, tags, archived) VALUES
 	(319209784155176962, 'test-template-1', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 'joyent', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
 	(319209801539354626, 'test-template-2', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 'joyent', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
 	(319209812150321154, 'test-template-3', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 'joyent', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),

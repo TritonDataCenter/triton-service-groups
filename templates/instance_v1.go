@@ -15,18 +15,18 @@ import (
 	"github.com/joyent/triton-service-groups/session"
 )
 
-type MachineTemplate struct {
-	ID                int64
-	TemplateName      string
-	AccountId         string
-	Package           string
-	ImageId           string
-	MachineNamePrefix string
-	FirewallEnabled   bool
-	Networks          []string
-	UserData          string
-	MetaData          map[string]string
-	Tags              map[string]string
+type InstanceTemplate struct {
+	ID                 int64
+	TemplateName       string
+	AccountId          string
+	Package            string
+	ImageId            string
+	InstanceNamePrefix string
+	FirewallEnabled    bool
+	Networks           []string
+	UserData           string
+	MetaData           map[string]string
+	Tags               map[string]string
 }
 
 func Get(session *session.TsgSession) http.HandlerFunc {
@@ -56,7 +56,7 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		var template *MachineTemplate
+		var template *InstanceTemplate
 		err = json.Unmarshal(body, &template)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

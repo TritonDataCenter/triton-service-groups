@@ -64,7 +64,7 @@ func TestAcc_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
 
-	testBody := "{\"ID\":319209784155176962,\"TemplateName\":\"test-template-1\",\"AccountId\":\"joyent\",\"Package\":\"test-package\",\"ImageId\":\"49b22aec-0c8a-11e6-8807-a3eb4db576ba\",\"MachineNamePrefix\":\"sample-\",\"FirewallEnabled\":false,\"Networks\":[\"f7ed95d3-faaf-43ef-9346-15644403b963\"],\"UserData\":\"bash script here\",\"MetaData\":null,\"Tags\":null}"
+	testBody := "{\"ID\":319209784155176962,\"TemplateName\":\"test-template-1\",\"AccountId\":\"joyent\",\"Package\":\"test-package\",\"ImageId\":\"49b22aec-0c8a-11e6-8807-a3eb4db576ba\",\"InstanceNamePrefix\":\"sample-\",\"FirewallEnabled\":false,\"Networks\":[\"f7ed95d3-faaf-43ef-9346-15644403b963\"],\"UserData\":\"bash script here\",\"MetaData\":null,\"Tags\":null}"
 	assert.Equal(t, testBody, string(body))
 }
 
@@ -205,7 +205,7 @@ func TestAcc_CreateTemplate(t *testing.T) {
 		"AccountId": "joyent",
 		"Package": "test-package",
 		"ImageId": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
-		"MachineNamePrefix": "sample-",
+		"InstanceNamePrefix": "sample-",
 		"FirewallEnabled": false,
 		"Networks": [
 	"f7ed95d3-faaf-43ef-9346-15644403b963"

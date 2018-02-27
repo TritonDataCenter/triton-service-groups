@@ -16,10 +16,10 @@ import (
 	"github.com/y0ssar1an/q"
 )
 
-func FindTemplateByName(db *pgx.ConnPool, key string, accountId string) (*MachineTemplate, bool) {
-	var template MachineTemplate
+func FindTemplateByName(db *pgx.ConnPool, key string, accountId string) (*InstanceTemplate, bool) {
+	var template InstanceTemplate
 
-	sqlStatement := `SELECT id, template_name, package, image_id, machine_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
+	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
 FROM triton.tsg_templates 
 WHERE template_name = $1 and account_id = $2
 AND archived = false;`
@@ -33,7 +33,7 @@ AND archived = false;`
 			&template.TemplateName,
 			&template.Package,
 			&template.ImageId,
-			&template.MachineNamePrefix,
+			&template.InstanceNamePrefix,
 			&template.AccountId,
 			&template.FirewallEnabled,
 			&networksList,
@@ -65,10 +65,10 @@ AND archived = false;`
 	}
 }
 
-func FindTemplates(db *pgx.ConnPool, accountId string) ([]*MachineTemplate, error) {
-	var templates []*MachineTemplate
+func FindTemplates(db *pgx.ConnPool, accountId string) ([]*InstanceTemplate, error) {
+	var templates []*InstanceTemplate
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, machine_name_prefix, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '') 
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '') 
 FROM triton.tsg_templates
 WHERE account_id = $1 
 AND archived = false;`
@@ -83,14 +83,14 @@ AND archived = false;`
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var template MachineTemplate
+		var template InstanceTemplate
 		err := rows.Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
 			&template.ImageId,
 			&template.AccountId,
 			&template.FirewallEnabled,
-			&template.MachineNamePrefix,
+			&template.InstanceNamePrefix,
 			&networksList,
 			&metaDataJson,
 			&template.UserData,
@@ -119,9 +119,9 @@ AND archived = false;`
 	return templates, nil
 }
 
-func SaveTemplate(db *pgx.ConnPool, accountId string, template *MachineTemplate) {
+func SaveTemplate(db *pgx.ConnPool, accountId string, template *InstanceTemplate) {
 	sqlStatement := `
-INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, machine_name_prefix, networks, metadata, userdata, tags) 
+INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, metadata, userdata, tags) 
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
@@ -139,7 +139,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 
 	_, err = db.ExecEx(context.TODO(), sqlStatement, nil,
 		template.TemplateName, template.Package, template.ImageId,
-		accountId, template.FirewallEnabled, template.MachineNamePrefix, networksList, metaDataJson,
+		accountId, template.FirewallEnabled, template.InstanceNamePrefix, networksList, metaDataJson,
 		template.UserData, tagsJson)
 	if err != nil {
 		panic(err)
