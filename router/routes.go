@@ -14,6 +14,12 @@ import (
 
 var templateRoutes = Routes{
 	Route{
+		"ListTemplates",
+		http.MethodGet,
+		"/v1/tsg/templates",
+		templates_v1.List,
+	},
+	Route{
 		"GetTemplate",
 		http.MethodGet,
 		"/v1/tsg/templates/{name}",
@@ -26,22 +32,10 @@ var templateRoutes = Routes{
 		templates_v1.Create,
 	},
 	Route{
-		"UpdateTemplate",
-		http.MethodPut,
-		"/v1/tsg/templates/{name}",
-		templates_v1.Update,
-	},
-	Route{
 		"DeleteTemplate",
 		http.MethodDelete,
 		"/v1/tsg/templates/{name}",
 		templates_v1.Delete,
-	},
-	Route{
-		"ListTemplates",
-		http.MethodGet,
-		"/v1/tsg/templates",
-		templates_v1.List,
 	},
 }
 

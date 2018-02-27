@@ -16,16 +16,17 @@ import (
 )
 
 type MachineTemplate struct {
-	ID              int64
-	Name            string
-	Package         string
-	ImageId         string
-	AccountId       string
-	FirewallEnabled bool
-	Networks        []string
-	UserData        string
-	MetaData        map[string]string
-	Tags            map[string]string
+	ID                int64
+	TemplateName      string
+	AccountId         string
+	Package           string
+	ImageId           string
+	MachineNamePrefix string
+	FirewallEnabled   bool
+	Networks          []string
+	UserData          string
+	MetaData          map[string]string
+	Tags              map[string]string
 }
 
 func Get(session *session.TsgSession) http.HandlerFunc {
@@ -59,32 +60,13 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 		err = json.Unmarshal(body, &template)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+
 		}
 
 		SaveTemplate(session.DbPool, session.AccountId, template)
 
-		w.Header().Set("Location", r.URL.Path+"/"+template.Name)
+		w.Header().Set("Location", r.URL.Path+"/"+template.TemplateName)
 		w.WriteHeader(http.StatusCreated)
-	}
-}
-
-func Update(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		name := vars["name"]
-
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		var template *MachineTemplate
-		err = json.Unmarshal(body, &template)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		UpdateTemplate(session.DbPool, name, session.AccountId, template)
 	}
 }
 
