@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/jackc/pgx"
-	"github.com/y0ssar1an/q"
 )
 
 func FindTemplateByName(db *pgx.ConnPool, key string, accountId string) (*InstanceTemplate, bool) {
@@ -172,8 +171,6 @@ func convertToJson(data map[string]string) (string, error) {
 }
 
 func convertFromJson(data string) (map[string]string, error) {
-	q.Q(data)
-
 	if data == "" {
 		return nil, nil
 	}
