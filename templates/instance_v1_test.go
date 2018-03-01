@@ -151,11 +151,8 @@ func TestAcc_Delete(t *testing.T) {
 	resp := recorder.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-
-	if string(body) != "" {
-		t.Fatal()
-	}
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	assert.Equal(t, string(body), "404 page not found\n")
 }
 
 func TestAcc_DeleteNonExistantTemplate(t *testing.T) {
