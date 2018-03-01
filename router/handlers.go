@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 
@@ -20,6 +21,12 @@ import (
 )
 
 func isAuthenticated(session *session.TsgSession, req *http.Request) bool {
+	// NOTE: simple flag to turn auth off
+	if _, devMode := os.LookupEnv("DEV_MODE"); devMode {
+		session.AccountId = "joyent"
+		return true
+	}
+
 	dateHeader := req.Header.Get("Date")
 	authHeader := req.Header.Get("Authorization")
 
