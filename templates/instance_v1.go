@@ -16,17 +16,17 @@ import (
 )
 
 type InstanceTemplate struct {
-	ID                 int64
-	TemplateName       string
-	AccountId          string
-	Package            string
-	ImageId            string
-	InstanceNamePrefix string
-	FirewallEnabled    bool
-	Networks           []string
-	UserData           string
-	MetaData           map[string]string
-	Tags               map[string]string
+	ID                 int64             `json:"id"`
+	TemplateName       string            `json:"template_name"`
+	AccountId          string            `json:"account_id"`
+	Package            string            `json:"package"`
+	ImageId            string            `json:"image_id"`
+	InstanceNamePrefix string            `json:"instance_name_prefix"`
+	FirewallEnabled    bool              `json:"firewall_enabled"`
+	Networks           []string          `json:"networks"`
+	UserData           string            `json:"userdata"`
+	MetaData           map[string]string `json:"metadata"`
+	Tags               map[string]string `json:"tags"`
 }
 
 func Get(session *session.TsgSession) http.HandlerFunc {
