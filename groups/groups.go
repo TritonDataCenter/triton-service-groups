@@ -59,6 +59,12 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 
 		SaveGroup(session.DbPool, session.AccountId, group)
 
+		err = SubmitOrchestratorJob(session.DbPool, group)
+		if err != nil {
+			panic(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
 		w.Header().Set("Location", r.URL.Path+"/"+group.GroupName)
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -81,6 +87,13 @@ func Update(session *session.TsgSession) http.HandlerFunc {
 		}
 
 		UpdateGroup(session.DbPool, name, session.AccountId, group)
+
+		err = SubmitOrchestratorJob(session.DbPool, group)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 
