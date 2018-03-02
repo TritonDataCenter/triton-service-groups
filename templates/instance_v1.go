@@ -82,7 +82,7 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 		}
 
 		RemoveTemplate(session.DbPool, name, session.AccountId)
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusGone)
 	}
 }
 

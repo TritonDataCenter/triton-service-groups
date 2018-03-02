@@ -151,7 +151,7 @@ func TestAcc_Delete(t *testing.T) {
 	resp := recorder.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+	assert.Equal(t, http.StatusGone, resp.StatusCode)
 
 	if string(body) != "" {
 		t.Fatal()
