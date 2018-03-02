@@ -49,7 +49,7 @@ var groupRoutes = Routes{
 	Route{
 		"CreateGroup",
 		http.MethodPost,
-		"/v1/tsg/",
+		"/v1/tsg",
 		groups_v1.Create,
 	},
 	Route{
@@ -67,7 +67,7 @@ var groupRoutes = Routes{
 	Route{
 		"ListGroups",
 		http.MethodGet,
-		"/v1/tsg/",
+		"/v1/tsg",
 		groups_v1.List,
 	},
 }
