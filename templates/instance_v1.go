@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/session"
@@ -34,18 +35,18 @@ func Get(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		com, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
+		t, ok := FindByName(name, session.DbPool, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
 		}
 
-		bytes, err := json.Marshal(com)
+		jsonBytes, err := json.Marshal(t)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		writeJsonResponse(w, bytes)
+		writeJsonResponse(w, jsonBytes)
 	}
 }
 
@@ -56,16 +57,15 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		var template *InstanceTemplate
-		err = json.Unmarshal(body, &template)
+		var t *InstanceTemplate
+		err = json.Unmarshal(body, &t)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-
 		}
 
-		SaveTemplate(session.DbPool, session.AccountId, template)
+		t.Save(session.DbPool, session.AccountId)
 
-		w.Header().Set("Location", r.URL.Path+"/"+template.TemplateName)
+		w.Header().Set("Location", path.Join(r.URL.Path, t.TemplateName))
 		w.WriteHeader(http.StatusCreated)
 	}
 }
@@ -75,27 +75,27 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		_, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
+		t, ok := FindByName(name, session.DbPool, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
 		}
 
-		RemoveTemplate(session.DbPool, name, session.AccountId)
+		t.Archive(session.DbPool, session.AccountId)
 		w.WriteHeader(http.StatusGone)
 	}
 }
 
 func List(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := FindTemplates(session.DbPool, session.AccountId)
+		templates, err := FindAll(session.DbPool, session.AccountId)
 		if err != nil {
 			log.Fatal(err)
 			http.NotFound(w, r)
 			return
 		}
 
-		bytes, err := json.Marshal(rows)
+		bytes, err := json.Marshal(templates)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
