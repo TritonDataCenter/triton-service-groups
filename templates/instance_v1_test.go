@@ -1,10 +1,10 @@
 package templates_v1_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -23,12 +23,10 @@ func TestAcc_Get(t *testing.T) {
 		return
 	}
 
-	dbpool, err := testutils.InitDB()
+	db, err := testutils.NewTestDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
 	}
-
-	db := testutils.NewTestDB(dbpool)
 	db.Clear(t)
 
 	tmplName := "test-template-1"
@@ -43,16 +41,16 @@ func TestAcc_Get(t *testing.T) {
 		MetaData:           nil,
 		Tags:               nil,
 	}
-	testTmpl.Save(dbpool, "joyent")
+	testTmpl.Save(db.Conn, "joyent")
 
-	tmpl, ok := templates_v1.FindByName(tmplName, dbpool, "joyent")
+	tmpl, ok := templates_v1.FindByName(tmplName, db.Conn, "joyent")
 	if !ok {
 		t.Error("failed to find test template")
 	}
 
 	session := &session.TsgSession{
 		AccountId: "joyent",
-		DbPool:    dbpool,
+		DbPool:    db.Conn,
 	}
 
 	router := tsgRouter.MakeRouter(session)
@@ -90,12 +88,10 @@ func TestAcc_GetIncorrectTemplateName(t *testing.T) {
 		return
 	}
 
-	dbpool, err := testutils.InitDB()
+	db, err := testutils.NewTestDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
 	}
-
-	db := testutils.NewTestDB(dbpool)
 	db.Clear(t)
 
 	tmplName := "test-template-1"
@@ -110,11 +106,11 @@ func TestAcc_GetIncorrectTemplateName(t *testing.T) {
 		MetaData:           nil,
 		Tags:               nil,
 	}
-	testTmpl.Save(dbpool, "joyent")
+	testTmpl.Save(db.Conn, "joyent")
 
 	session := &session.TsgSession{
 		AccountId: "joyent",
-		DbPool:    dbpool,
+		DbPool:    db.Conn,
 	}
 
 	router := tsgRouter.MakeRouter(session)
@@ -135,12 +131,10 @@ func TestAcc_List(t *testing.T) {
 		return
 	}
 
-	dbpool, err := testutils.InitDB()
+	db, err := testutils.NewTestDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
 	}
-
-	db := testutils.NewTestDB(dbpool)
 	db.Clear(t)
 
 	names := []string{"test-template-1", "another-template-2"}
@@ -157,13 +151,13 @@ func TestAcc_List(t *testing.T) {
 			MetaData:           nil,
 			Tags:               nil,
 		}
-		testTmpl.Save(dbpool, "joyent")
-		tmpls = append(tmpls, testTmpl)
+		testTmpl.Save(db.Conn, "joyent")
+		tmpls[n] = testTmpl
 	}
 
 	session := &session.TsgSession{
 		AccountId: "joyent",
-		DbPool:    dbpool,
+		DbPool:    db.Conn,
 	}
 
 	router := tsgRouter.MakeRouter(session)
@@ -185,18 +179,18 @@ func TestAcc_List(t *testing.T) {
 
 	assert.Equal(t, 2, len(respTmpls))
 
-	// for n, respTmpl := range respTmpls {
-	// 	tmpl = tmpls[n]
-	// 	assert.Equal(t, tmpl.TemplateName, respTmpl.TemplateName)
-	// 	assert.Equal(t, tmpl.Package, respTmpl.Package)
-	// 	assert.Equal(t, tmpl.ImageId, respTmpl.ImageId)
-	// 	assert.Equal(t, tmpl.InstanceNamePrefix, respTmpl.InstanceNamePrefix)
-	// 	assert.Equal(t, tmpl.FirewallEnabled, respTmpl.FirewallEnabled)
-	// 	assert.Equal(t, tmpl.Networks, respTmpl.Networks)
-	// 	assert.Equal(t, tmpl.UserData, respTmpl.UserData)
-	// 	assert.Equal(t, tmpl.MetaData, respTmpl.MetaData)
-	// 	assert.Equal(t, tmpl.Tags, respTmpl.Tags)
-	// }
+	for n, respTmpl := range respTmpls {
+		tmpl := tmpls[n]
+		assert.Equal(t, tmpl.TemplateName, respTmpl.TemplateName)
+		assert.Equal(t, tmpl.Package, respTmpl.Package)
+		assert.Equal(t, tmpl.ImageId, respTmpl.ImageId)
+		assert.Equal(t, tmpl.InstanceNamePrefix, respTmpl.InstanceNamePrefix)
+		assert.Equal(t, tmpl.FirewallEnabled, respTmpl.FirewallEnabled)
+		assert.Equal(t, tmpl.Networks, respTmpl.Networks)
+		assert.Equal(t, tmpl.UserData, respTmpl.UserData)
+		assert.Equal(t, tmpl.MetaData, respTmpl.MetaData)
+		assert.Equal(t, tmpl.Tags, respTmpl.Tags)
+	}
 }
 
 func TestAcc_Delete(t *testing.T) {
@@ -205,12 +199,10 @@ func TestAcc_Delete(t *testing.T) {
 		return
 	}
 
-	dbpool, err := testutils.InitDB()
+	db, err := testutils.NewTestDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
 	}
-
-	db := testutils.NewTestDB(dbpool)
 	db.Clear(t)
 
 	tmplName := "test-template-1"
@@ -218,11 +210,11 @@ func TestAcc_Delete(t *testing.T) {
 	testTmpl := &templates_v1.InstanceTemplate{
 		TemplateName: tmplName,
 	}
-	testTmpl.Save(dbpool, "joyent")
+	testTmpl.Save(db.Conn, "joyent")
 
 	session := &session.TsgSession{
 		AccountId: "joyent",
-		DbPool:    dbpool,
+		DbPool:    db.Conn,
 	}
 
 	router := tsgRouter.MakeRouter(session)
@@ -241,74 +233,99 @@ func TestAcc_Delete(t *testing.T) {
 	}
 }
 
-// func TestAcc_DeleteNonExistantTemplate(t *testing.T) {
-// 	if os.Getenv("TRITON_TEST") == "" {
-// 		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
-// 		return
-// 	}
+func TestAcc_DeleteNonExistantTemplate(t *testing.T) {
+	if os.Getenv("TRITON_TEST") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		return
+	}
 
-// 	dbpool, err := initDB()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	session := &session.TsgSession{
-// 		AccountId: "joyent",
-// 		DbPool:    dbpool,
-// 	}
+	db, err := testutils.NewTestDB()
+	if err != nil {
+		t.Error(err)
+	}
+	db.Clear(t)
 
-// 	router := tsgRouter.MakeRouter(session)
+	tmplName := "test-template-1"
 
-// 	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/test-template-200", nil)
-// 	recorder := httptest.NewRecorder()
-// 	router.ServeHTTP(recorder, req)
+	testTmpl := &templates_v1.InstanceTemplate{
+		TemplateName: tmplName,
+	}
+	testTmpl.Save(db.Conn, "joyent")
 
-// 	resp := recorder.Result()
-// 	_, _ = ioutil.ReadAll(resp.Body)
+	session := &session.TsgSession{
+		AccountId: "joyent",
+		DbPool:    db.Conn,
+	}
 
-// 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-// }
+	router := tsgRouter.MakeRouter(session)
 
-// func TestAcc_CreateTemplate(t *testing.T) {
-// 	if os.Getenv("TRITON_TEST") == "" {
-// 		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
-// 		return
-// 	}
+	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/test-template-200", nil)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
 
-// 	dbpool, err := initDB()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	session := &session.TsgSession{
-// 		AccountId: "joyent",
-// 		DbPool:    dbpool,
-// 	}
+	resp := recorder.Result()
+	_, _ = ioutil.ReadAll(resp.Body)
 
-// 	testBody := `{
-// 	"TemplateName": "test-template-7",
-// 		"AccountId": "joyent",
-// 		"Package": "test-package",
-// 		"ImageId": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
-// 		"InstanceNamePrefix": "sample-",
-// 		"FirewallEnabled": false,
-// 		"Networks": [
-// 	"f7ed95d3-faaf-43ef-9346-15644403b963"
-// 	],
-// 	"UserData": "bash script here",
-// 		"Tags": {
-// 	"foo": "bar",
-// 	"owner": "stack72"
-// 	},
-// 	"MetaData": null
-// }`
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+}
 
-// 	r := bytes.NewReader([]byte(testBody))
-// 	router := tsgRouter.MakeRouter(session)
-// 	req := httptest.NewRequest("POST", "http://example.com/v1/tsg/templates", r)
-// 	recorder := httptest.NewRecorder()
-// 	router.ServeHTTP(recorder, req)
+func TestAcc_CreateTemplate(t *testing.T) {
+	if os.Getenv("TRITON_TEST") == "" {
+		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		return
+	}
 
-// 	resp := recorder.Result()
-// 	_, _ = ioutil.ReadAll(resp.Body)
+	db, err := testutils.NewTestDB()
+	if err != nil {
+		t.Error(err)
+	}
+	db.Clear(t)
 
-// 	assert.Equal(t, http.StatusCreated, resp.StatusCode)
-// }
+	session := &session.TsgSession{
+		AccountId: "joyent",
+		DbPool:    db.Conn,
+	}
+
+	tmplName := "test-template-7"
+	tmpl := &templates_v1.InstanceTemplate{
+		TemplateName:       tmplName,
+		Package:            "test-package",
+		ImageId:            "123456",
+		InstanceNamePrefix: "sample-",
+		FirewallEnabled:    false,
+		Networks:           []string{"123456"},
+		UserData:           "bash script here",
+		MetaData:           nil,
+		Tags:               nil,
+	}
+	jsonTmpl, err := json.Marshal(tmpl)
+	if err != nil {
+		t.Error(err)
+	}
+
+	r := bytes.NewReader(jsonTmpl)
+	router := tsgRouter.MakeRouter(session)
+	req := httptest.NewRequest("POST", "http://example.com/v1/tsg/templates", r)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+
+	resp := recorder.Result()
+	_, _ = ioutil.ReadAll(resp.Body)
+
+	assert.Equal(t, http.StatusCreated, resp.StatusCode)
+
+	respTmpl, ok := templates_v1.FindByName("test-template-7", db.Conn, "joyent")
+	if !ok {
+		t.Error("failed to find created template by name test-template-7")
+	}
+
+	assert.Equal(t, tmpl.TemplateName, respTmpl.TemplateName)
+	assert.Equal(t, tmpl.Package, respTmpl.Package)
+	assert.Equal(t, tmpl.ImageId, respTmpl.ImageId)
+	assert.Equal(t, tmpl.InstanceNamePrefix, respTmpl.InstanceNamePrefix)
+	assert.Equal(t, tmpl.FirewallEnabled, respTmpl.FirewallEnabled)
+	assert.Equal(t, tmpl.Networks, respTmpl.Networks)
+	assert.Equal(t, tmpl.UserData, respTmpl.UserData)
+	assert.Equal(t, tmpl.MetaData, respTmpl.MetaData)
+	assert.Equal(t, tmpl.Tags, respTmpl.Tags)
+}
