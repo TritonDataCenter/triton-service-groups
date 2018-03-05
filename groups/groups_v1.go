@@ -16,12 +16,12 @@ import (
 )
 
 type ServiceGroup struct {
-	ID                  int64
-	GroupName           string
-	TemplateId          int64
-	AccountId           string
-	Capacity            int
-	HealthCheckInterval int
+	ID                  int64  `json:"id"`
+	GroupName           string `json:"group_name"`
+	TemplateId          int64  `json:"template_id"`
+	AccountId           string `json:"account_id"`
+	Capacity            int    `json:"capacity"`
+	HealthCheckInterval int    `json:"health_check_interval"`
 }
 
 func Get(session *session.TsgSession) http.HandlerFunc {
