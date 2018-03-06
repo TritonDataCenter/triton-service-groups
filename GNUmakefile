@@ -17,7 +17,7 @@ test:: ## Run unit tests
 
 testacc:: ## Run acceptance tests
 	@echo "==> Running acceptance tests"
-	TRITON_TEST=1 go test $(TEST) -v $(TESTARGS) -run -timeout 120m
+	TRITON_TEST=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 vet:: ## Check for unwanted code constructs
 	@echo "go vet ."

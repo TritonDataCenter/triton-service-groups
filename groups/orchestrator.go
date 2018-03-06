@@ -10,7 +10,7 @@ import (
 
 	nomad "github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/jobspec"
-	"github.com/jackc/pgx"
+	"github.com/joyent/triton-service-groups/session"
 	"github.com/joyent/triton-service-groups/templates"
 	"github.com/y0ssar1an/q"
 )
@@ -31,11 +31,11 @@ type OrchestratorJob struct {
 	MetaData            map[string]string
 }
 
-func SubmitOrchestratorJob(db *pgx.ConnPool, group *ServiceGroup) error {
+func SubmitOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
 
-	t, found := templates_v1.FindTemplateById(db, group.TemplateId, group.AccountId)
+	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateId, session.AccountId)
 	if !found {
-		return errors.New("")
+		return errors.New("Error finding template by ID")
 	}
 
 	job, err := prepareJob(t, group)
@@ -55,9 +55,83 @@ func SubmitOrchestratorJob(db *pgx.ConnPool, group *ServiceGroup) error {
 	return nil
 }
 
+func UpdateOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
+	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateId, session.AccountId)
+	if !found {
+		return errors.New("Error finding template by ID")
+	}
+
+	job, err := prepareJob(t, group)
+	if err != nil {
+		return err
+	}
+
+	//we always delete the olb job
+	_, err = deleteJob(*job.ID)
+	if err != nil {
+		return err
+	}
+
+	_, err = deployJob(job)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
+	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateId, session.AccountId)
+	if !found {
+		return errors.New("Error finding template by ID")
+	}
+
+	g := group
+	g.Capacity = 0
+	job, err := prepareJob(t, g)
+	if err != nil {
+		return err
+	}
+
+	// Delete current version of the job
+	_, err = deleteJob(*job.ID)
+	if err != nil {
+		return err
+	}
+
+	// Submit a new version of the job with a count of 0
+	_, err = deployJob(job)
+	if err != nil {
+		return err
+	}
+
+	// Delete current version of the job
+	_, err = deleteJob(*job.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func deleteJob(jobID string) (bool, error) {
+
+	client, err := newNomadClient("http://localhost:4646")
+	if err != nil {
+		return false, err
+	}
+
+	_, _, err = client.Jobs().Deregister(jobID, true, nil)
+	if err != nil {
+		return false, fmt.Errorf("Unable to deregister job with Nomad: %v", err)
+	}
+
+	return true, nil
+}
+
 func deployJob(job *nomad.Job) (bool, error) {
 
-	client, err := newNomadClient("")
+	client, err := newNomadClient("http://localhost:4646")
 	if err != nil {
 		return false, err
 	}

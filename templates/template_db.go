@@ -62,7 +62,7 @@ AND archived = false;`
 	}
 }
 
-func FindTemplateById(db *pgx.ConnPool, key int64, accountId string) (*InstanceTemplate, bool) {
+func FindTemplateByID(db *pgx.ConnPool, key int64, accountId string) (*InstanceTemplate, bool) {
 	var template InstanceTemplate
 
 	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  

@@ -64,7 +64,7 @@ func TestAcc_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
 
-	testBody := "{\"ID\":319209784155176962,\"TemplateName\":\"test-template-1\",\"AccountId\":\"joyent\",\"Package\":\"test-package\",\"ImageId\":\"49b22aec-0c8a-11e6-8807-a3eb4db576ba\",\"InstanceNamePrefix\":\"sample-\",\"FirewallEnabled\":false,\"Networks\":[\"f7ed95d3-faaf-43ef-9346-15644403b963\"],\"UserData\":\"bash script here\",\"MetaData\":null,\"Tags\":null}"
+	testBody := "{\"id\":319209784155176962,\"template_name\":\"test-template-1\",\"account_id\":\"joyent\",\"package\":\"test-package\",\"image_id\":\"49b22aec-0c8a-11e6-8807-a3eb4db576ba\",\"instance_name_prefix\":\"sample-\",\"firewall_enabled\":false,\"networks\":[\"f7ed95d3-faaf-43ef-9346-15644403b963\"],\"userdata\":\"bash script here\",\"metadata\":null,\"tags\":null}"
 	assert.Equal(t, testBody, string(body))
 }
 
@@ -151,11 +151,8 @@ func TestAcc_Delete(t *testing.T) {
 	resp := recorder.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
-
-	if string(body) != "" {
-		t.Fatal()
-	}
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	assert.Equal(t, string(body), "404 page not found\n")
 }
 
 func TestAcc_DeleteNonExistantTemplate(t *testing.T) {
@@ -201,21 +198,21 @@ func TestAcc_CreateTemplate(t *testing.T) {
 	}
 
 	testBody := `{
-	"TemplateName": "test-template-7",
-		"AccountId": "joyent",
-		"Package": "test-package",
-		"ImageId": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
-		"InstanceNamePrefix": "sample-",
-		"FirewallEnabled": false,
-		"Networks": [
+	"template_name": "test-template-7",
+		"account_id": "joyent",
+		"package": "test-package",
+		"image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+		"instance_name_prefix": "sample-",
+		"firewall_enabled": false,
+		"networks": [
 	"f7ed95d3-faaf-43ef-9346-15644403b963"
 	],
-	"UserData": "bash script here",
-		"Tags": {
+	"userdata": "bash script here",
+		"tags": {
 	"foo": "bar",
 	"owner": "stack72"
 	},
-	"MetaData": null
+	"metadata": null
 }`
 
 	r := bytes.NewReader([]byte(testBody))

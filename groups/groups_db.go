@@ -69,6 +69,32 @@ AND archived = false;`
 	}
 }
 
+func FindGroupByID(db *pgx.ConnPool, key int64, accountId string) (*ServiceGroup, bool) {
+	var group ServiceGroup
+
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval 
+FROM triton.tsg_groups
+WHERE account_id = $2 and id = $1
+AND archived = false;`
+
+	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
+		Scan(&group.ID,
+			&group.GroupName,
+			&group.AccountId,
+			&group.TemplateId,
+			&group.Capacity,
+			&group.HealthCheckInterval)
+	switch err {
+	case nil:
+		return &group, true
+	case pgx.ErrNoRows:
+		fmt.Println("No rows were returned!")
+		return nil, false
+	default:
+		panic(err)
+	}
+}
+
 func SaveGroup(db *pgx.ConnPool, accountId string, group *ServiceGroup) {
 	sqlStatement := `
 INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id, health_check_interval) 
