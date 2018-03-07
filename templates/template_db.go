@@ -17,8 +17,8 @@ import (
 func FindTemplateByName(db *pgx.ConnPool, key string, accountId string) (*InstanceTemplate, bool) {
 	var template InstanceTemplate
 
-	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
-FROM triton.tsg_templates 
+	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
+FROM triton.tsg_templates
 WHERE template_name = $1 and account_id = $2
 AND archived = false;`
 
@@ -113,9 +113,9 @@ AND archived = false;`
 func FindTemplates(db *pgx.ConnPool, accountId string) ([]*InstanceTemplate, error) {
 	var templates []*InstanceTemplate
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '') 
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '')
 FROM triton.tsg_templates
-WHERE account_id = $1 
+WHERE account_id = $1
 AND archived = false;`
 
 	var metaDataJson string
@@ -166,7 +166,7 @@ AND archived = false;`
 
 func SaveTemplate(db *pgx.ConnPool, accountId string, template *InstanceTemplate) {
 	sqlStatement := `
-INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, metadata, userdata, tags) 
+INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, metadata, userdata, tags)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
@@ -192,8 +192,8 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 }
 
 func RemoveTemplate(db *pgx.ConnPool, name string, accountId string) {
-	sqlStatement := `UPDATE triton.tsg_templates 
-SET archived = true 
+	sqlStatement := `UPDATE triton.tsg_templates
+SET archived = true
 WHERE template_name = $1 and account_id = $2`
 
 	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, name, accountId)
