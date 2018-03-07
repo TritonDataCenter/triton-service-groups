@@ -30,9 +30,9 @@ AND archived = false;`
 		Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
-			&template.ImageId,
+			&template.ImageID,
 			&template.InstanceNamePrefix,
-			&template.AccountId,
+			&template.AccountID,
 			&template.FirewallEnabled,
 			&networksList,
 			&metaDataJson,
@@ -78,9 +78,9 @@ AND archived = false;`
 		Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
-			&template.ImageId,
+			&template.ImageID,
 			&template.InstanceNamePrefix,
-			&template.AccountId,
+			&template.AccountID,
 			&template.FirewallEnabled,
 			&networksList,
 			&metaDataJson,
@@ -132,8 +132,8 @@ AND archived = false;`
 		err := rows.Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
-			&template.ImageId,
-			&template.AccountId,
+			&template.ImageID,
+			&template.AccountID,
 			&template.FirewallEnabled,
 			&template.InstanceNamePrefix,
 			&networksList,
@@ -183,7 +183,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	networksList := strings.Join(template.Networks, ",")
 
 	_, err = db.ExecEx(context.TODO(), sqlStatement, nil,
-		template.TemplateName, template.Package, template.ImageId,
+		template.TemplateName, template.Package, template.ImageID,
 		accountId, template.FirewallEnabled, template.InstanceNamePrefix, networksList, metaDataJson,
 		template.UserData, tagsJson)
 	if err != nil {

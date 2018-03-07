@@ -19,8 +19,8 @@ import (
 type ServiceGroup struct {
 	ID                  int64  `json:"id"`
 	GroupName           string `json:"group_name"`
-	TemplateId          int64  `json:"template_id"`
-	AccountId           string `json:"account_id"`
+	TemplateID          int64  `json:"template_id"`
+	AccountID           string `json:"account_id"`
 	Capacity            int    `json:"capacity"`
 	HealthCheckInterval int    `json:"health_check_interval"`
 }

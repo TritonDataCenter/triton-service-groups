@@ -20,9 +20,9 @@ import (
 type InstanceTemplate struct {
 	ID                 int64             `json:"id"`
 	TemplateName       string            `json:"template_name"`
-	AccountId          string            `json:"account_id"`
+	AccountID          string            `json:"account_id"`
 	Package            string            `json:"package"`
-	ImageId            string            `json:"image_id"`
+	ImageID            string            `json:"image_id"`
 	InstanceNamePrefix string            `json:"instance_name_prefix"`
 	FirewallEnabled    bool              `json:"firewall_enabled"`
 	Networks           []string          `json:"networks"`
