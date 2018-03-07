@@ -28,28 +28,20 @@ type ServiceGroup struct {
 func Get(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		name := vars["name"]
+		identifier := vars["identifier"]
 
 		var group *ServiceGroup
 
-		id, err := strconv.Atoi(name)
+		id, err := strconv.Atoi(identifier)
 		if err != nil {
-			//At this point we have an actual name so we need to find by name
-			g, ok := FindGroupBy(session.DbPool, name, session.AccountId)
-			if !ok {
-				http.NotFound(w, r)
-				return
-			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-			group = g
-		} else {
-			g, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
-			if !ok {
-				http.NotFound(w, r)
-				return
-			}
-
-			group = g
+		group, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
+		if !ok {
+			http.NotFound(w, r)
+			return
 		}
 
 		bytes, err := json.Marshal(group)
@@ -84,7 +76,7 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 
 		w.Header().Set("Location", r.URL.Path+"/"+group.GroupName)
 
-		com, ok := FindGroupBy(session.DbPool, group.GroupName, session.AccountId)
+		com, ok := FindGroupByID(session.DbPool, group.ID, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
@@ -102,7 +94,7 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 func Update(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		name := vars["name"]
+		identifier := vars["identifier"]
 
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -115,14 +107,14 @@ func Update(session *session.TsgSession) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		UpdateGroup(session.DbPool, name, session.AccountId, group)
+		UpdateGroup(session.DbPool, identifier, session.AccountId, group)
 
 		err = UpdateOrchestratorJob(session, group)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		com, ok := FindGroupBy(session.DbPool, group.GroupName, session.AccountId)
+		com, ok := FindGroupByID(session.DbPool, group.ID, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
@@ -140,31 +132,23 @@ func Update(session *session.TsgSession) http.HandlerFunc {
 func Delete(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		name := vars["name"]
+		identifier := vars["identifier"]
 
 		var group *ServiceGroup
 
-		id, err := strconv.Atoi(name)
+		id, err := strconv.Atoi(identifier)
 		if err != nil {
-			//At this point we have an actual name so we need to find by name
-			g, ok := FindGroupBy(session.DbPool, name, session.AccountId)
-			if !ok {
-				http.NotFound(w, r)
-				return
-			}
-
-			group = g
-		} else {
-			g, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
-			if !ok {
-				http.NotFound(w, r)
-				return
-			}
-
-			group = g
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
-		RemoveGroup(session.DbPool, group.GroupName, session.AccountId)
+		group, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		RemoveGroup(session.DbPool, group.ID, session.AccountId)
 
 		err = DeleteOrchestratorJob(session, group)
 		if err != nil {

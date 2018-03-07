@@ -14,54 +14,6 @@ import (
 	"github.com/jackc/pgx"
 )
 
-func FindTemplateByName(db *pgx.ConnPool, key string, accountId string) (*InstanceTemplate, bool) {
-	var template InstanceTemplate
-
-	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
-FROM triton.tsg_templates 
-WHERE template_name = $1 and account_id = $2
-AND archived = false;`
-
-	var metaDataJson string
-	var tagsJson string
-	var networksList string
-
-	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
-		Scan(&template.ID,
-			&template.TemplateName,
-			&template.Package,
-			&template.ImageId,
-			&template.InstanceNamePrefix,
-			&template.AccountId,
-			&template.FirewallEnabled,
-			&networksList,
-			&metaDataJson,
-			&template.UserData,
-			&tagsJson)
-	switch err {
-	case nil:
-		metaData, err := convertFromJson(metaDataJson)
-		if err != nil {
-			panic(err)
-		}
-		template.MetaData = metaData
-
-		tags, err := convertFromJson(tagsJson)
-		if err != nil {
-			panic(err)
-		}
-		template.Tags = tags
-
-		template.Networks = strings.Split(networksList, ",")
-
-		return &template, true
-	case pgx.ErrNoRows:
-		return nil, false
-	default:
-		panic(err)
-	}
-}
-
 func FindTemplateByID(db *pgx.ConnPool, key int64, accountId string) (*InstanceTemplate, bool) {
 	var template InstanceTemplate
 
@@ -191,12 +143,12 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	}
 }
 
-func RemoveTemplate(db *pgx.ConnPool, name string, accountId string) {
+func RemoveTemplate(db *pgx.ConnPool, identifier int64, accountId string) {
 	sqlStatement := `UPDATE triton.tsg_templates 
 SET archived = true 
-WHERE template_name = $1 and account_id = $2`
+WHERE id = $1 and account_id = $2`
 
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, name, accountId)
+	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, identifier, accountId)
 	if err != nil {
 		panic(err)
 	}

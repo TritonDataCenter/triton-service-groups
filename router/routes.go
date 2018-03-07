@@ -22,7 +22,7 @@ var templateRoutes = Routes{
 	Route{
 		"GetTemplate",
 		http.MethodGet,
-		"/v1/tsg/templates/{name}",
+		"/v1/tsg/templates/{identifier}",
 		templates_v1.Get,
 	},
 	Route{
@@ -34,7 +34,7 @@ var templateRoutes = Routes{
 	Route{
 		"DeleteTemplate",
 		http.MethodDelete,
-		"/v1/tsg/templates/{name}",
+		"/v1/tsg/templates/{identifier}",
 		templates_v1.Delete,
 	},
 }
@@ -43,7 +43,7 @@ var groupRoutes = Routes{
 	Route{
 		"GetGroup",
 		http.MethodGet,
-		"/v1/tsg/{name}",
+		"/v1/tsg/{identifier}",
 		groups_v1.Get,
 	},
 	Route{
@@ -55,13 +55,13 @@ var groupRoutes = Routes{
 	Route{
 		"UpdateGroup",
 		http.MethodPut,
-		"/v1/tsg/{name}",
+		"/v1/tsg/{identifier}",
 		groups_v1.Update,
 	},
 	Route{
 		"DeleteGroup",
 		http.MethodDelete,
-		"/v1/tsg/{name}",
+		"/v1/tsg/{identifier}",
 		groups_v1.Delete,
 	},
 	Route{
