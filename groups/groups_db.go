@@ -43,32 +43,6 @@ AND archived = false;`
 	return groups, nil
 }
 
-func FindGroupBy(db *pgx.ConnPool, key string, accountId string) (*ServiceGroup, bool) {
-	var group ServiceGroup
-
-	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval 
-FROM triton.tsg_groups
-WHERE account_id = $2 and name = $1
-AND archived = false;`
-
-	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
-		Scan(&group.ID,
-			&group.GroupName,
-			&group.AccountId,
-			&group.TemplateId,
-			&group.Capacity,
-			&group.HealthCheckInterval)
-	switch err {
-	case nil:
-		return &group, true
-	case pgx.ErrNoRows:
-		fmt.Println("No rows were returned!")
-		return nil, false
-	default:
-		panic(err)
-	}
-}
-
 func FindGroupByID(db *pgx.ConnPool, key int64, accountId string) (*ServiceGroup, bool) {
 	var group ServiceGroup
 
@@ -122,12 +96,12 @@ WHERE name = $1 and account_id = $2
 	}
 }
 
-func RemoveGroup(db *pgx.ConnPool, name string, accountId string) {
+func RemoveGroup(db *pgx.ConnPool, identifier int64, accountId string) {
 	sqlStatement := `UPDATE triton.tsg_groups 
 SET archived = true 
-WHERE name = $1 and account_id = $2`
+WHERE id = $1 and account_id = $2`
 
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, name, accountId)
+	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, identifier, accountId)
 	if err != nil {
 		panic(err)
 	}
