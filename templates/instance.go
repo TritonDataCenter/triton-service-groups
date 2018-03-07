@@ -105,13 +105,29 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		_, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
+		var template *InstanceTemplate
+
+		id, err := strconv.Atoi(name)
+		if err != nil {
+			//At this point we have an actual name so we need to find by name
+			t, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			template = t
+		} else {
+			t, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			template = t
 		}
 
-		RemoveTemplate(session.DbPool, name, session.AccountId)
+		RemoveTemplate(session.DbPool, template.TemplateName, session.AccountId)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

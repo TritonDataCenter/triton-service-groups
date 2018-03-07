@@ -10,12 +10,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/session"
-	"github.com/y0ssar1an/q"
 )
 
 type ServiceGroup struct {
@@ -70,7 +68,6 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		q.Q(session.AccountId)
 		var group *ServiceGroup
 		err = json.Unmarshal(body, &group)
 		if err != nil {
@@ -106,7 +103,6 @@ func Update(session *session.TsgSession) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		name := vars["name"]
-		q.Q("1")
 
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -119,16 +115,13 @@ func Update(session *session.TsgSession) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		q.Q("2", group)
 		UpdateGroup(session.DbPool, name, session.AccountId, group)
 
-		q.Q("3")
 		err = UpdateOrchestratorJob(session, group)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		q.Q("4")
 		com, ok := FindGroupBy(session.DbPool, group.GroupName, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
@@ -171,7 +164,7 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 			group = g
 		}
 
-		RemoveGroup(session.DbPool, name, session.AccountId)
+		RemoveGroup(session.DbPool, group.GroupName, session.AccountId)
 
 		err = DeleteOrchestratorJob(session, group)
 		if err != nil {
