@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/session"
@@ -29,13 +30,29 @@ func Get(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		com, ok := FindGroupBy(session.DbPool, name, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
+		var group *ServiceGroup
+
+		id, err := strconv.Atoi(name)
+		if err != nil {
+			//At this point we have an actual name so we need to find by name
+			g, ok := FindGroupBy(session.DbPool, name, session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			group = g
+		} else {
+			g, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			group = g
 		}
 
-		bytes, err := json.Marshal(com)
+		bytes, err := json.Marshal(group)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -59,8 +76,26 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 
 		SaveGroup(session.DbPool, session.AccountId, group)
 
+		err = SubmitOrchestratorJob(session, group)
+		if err != nil {
+			panic(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
 		w.Header().Set("Location", r.URL.Path+"/"+group.GroupName)
-		w.WriteHeader(http.StatusCreated)
+
+		com, ok := FindGroupBy(session.DbPool, group.GroupName, session.AccountId)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		bytes, err := json.Marshal(com)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		writeJsonResponse(w, bytes)
 	}
 }
 
@@ -81,6 +116,24 @@ func Update(session *session.TsgSession) http.HandlerFunc {
 		}
 
 		UpdateGroup(session.DbPool, name, session.AccountId, group)
+
+		err = UpdateOrchestratorJob(session, group)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		com, ok := FindGroupBy(session.DbPool, group.GroupName, session.AccountId)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		bytes, err := json.Marshal(com)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		writeJsonResponse(w, bytes)
 	}
 }
 
@@ -89,13 +142,35 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		_, ok := FindGroupBy(session.DbPool, name, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
+		var group *ServiceGroup
+
+		id, err := strconv.Atoi(name)
+		if err != nil {
+			//At this point we have an actual name so we need to find by name
+			g, ok := FindGroupBy(session.DbPool, name, session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			group = g
+		} else {
+			g, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			group = g
 		}
 
-		RemoveGroup(session.DbPool, name, session.AccountId)
+		RemoveGroup(session.DbPool, group.GroupName, session.AccountId)
+
+		err = DeleteOrchestratorJob(session, group)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
 		w.WriteHeader(http.StatusNoContent)
 	}
 }

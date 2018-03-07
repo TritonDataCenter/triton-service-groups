@@ -8,7 +8,6 @@ package templates_v1
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"strings"
 
@@ -57,7 +56,54 @@ AND archived = false;`
 
 		return &template, true
 	case pgx.ErrNoRows:
-		fmt.Println("No rows were returned!")
+		return nil, false
+	default:
+		panic(err)
+	}
+}
+
+func FindTemplateByID(db *pgx.ConnPool, key int64, accountId string) (*InstanceTemplate, bool) {
+	var template InstanceTemplate
+
+	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
+FROM triton.tsg_templates 
+WHERE id = $1 and account_id = $2
+AND archived = false;`
+
+	var metaDataJson string
+	var tagsJson string
+	var networksList string
+
+	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
+		Scan(&template.ID,
+			&template.TemplateName,
+			&template.Package,
+			&template.ImageId,
+			&template.InstanceNamePrefix,
+			&template.AccountId,
+			&template.FirewallEnabled,
+			&networksList,
+			&metaDataJson,
+			&template.UserData,
+			&tagsJson)
+	switch err {
+	case nil:
+		metaData, err := convertFromJson(metaDataJson)
+		if err != nil {
+			panic(err)
+		}
+		template.MetaData = metaData
+
+		tags, err := convertFromJson(tagsJson)
+		if err != nil {
+			panic(err)
+		}
+		template.Tags = tags
+
+		template.Networks = strings.Split(networksList, ",")
+
+		return &template, true
+	case pgx.ErrNoRows:
 		return nil, false
 	default:
 		panic(err)

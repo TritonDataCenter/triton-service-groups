@@ -11,6 +11,8 @@ import (
 	"log"
 	"net/http"
 
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/session"
 )
@@ -34,13 +36,29 @@ func Get(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		com, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
+		var template *InstanceTemplate
+
+		id, err := strconv.Atoi(name)
+		if err != nil {
+			//At this point we have an actual name so we need to find by name
+			t, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			template = t
+		} else {
+			t, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			template = t
 		}
 
-		bytes, err := json.Marshal(com)
+		bytes, err := json.Marshal(template)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -66,7 +84,19 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 		SaveTemplate(session.DbPool, session.AccountId, template)
 
 		w.Header().Set("Location", r.URL.Path+"/"+template.TemplateName)
-		w.WriteHeader(http.StatusCreated)
+
+		com, ok := FindTemplateByName(session.DbPool, template.TemplateName, session.AccountId)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+
+		bytes, err := json.Marshal(com)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		writeJsonResponse(w, bytes)
 	}
 }
 
@@ -75,13 +105,29 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 		vars := mux.Vars(r)
 		name := vars["name"]
 
-		_, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
+		var template *InstanceTemplate
+
+		id, err := strconv.Atoi(name)
+		if err != nil {
+			//At this point we have an actual name so we need to find by name
+			t, ok := FindTemplateByName(session.DbPool, name, session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			template = t
+		} else {
+			t, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
+			if !ok {
+				http.NotFound(w, r)
+				return
+			}
+
+			template = t
 		}
 
-		RemoveTemplate(session.DbPool, name, session.AccountId)
+		RemoveTemplate(session.DbPool, template.TemplateName, session.AccountId)
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
