@@ -75,7 +75,7 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 
 		w.Header().Set("Location", r.URL.Path+"/"+template.TemplateName)
 
-		com, ok := FindTemplateByID(session.DbPool, template.ID, session.AccountId)
+		com, ok := FindTemplateByName(session.DbPool, template.TemplateName, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return

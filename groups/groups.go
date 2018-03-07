@@ -76,7 +76,7 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 
 		w.Header().Set("Location", r.URL.Path+"/"+group.GroupName)
 
-		com, ok := FindGroupByID(session.DbPool, group.ID, session.AccountId)
+		com, ok := FindGroupByName(session.DbPool, group.GroupName, session.AccountId)
 		if !ok {
 			http.NotFound(w, r)
 			return
@@ -112,6 +112,7 @@ func Update(session *session.TsgSession) http.HandlerFunc {
 		err = UpdateOrchestratorJob(session, group)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		com, ok := FindGroupByID(session.DbPool, group.ID, session.AccountId)
@@ -153,6 +154,7 @@ func Delete(session *session.TsgSession) http.HandlerFunc {
 		err = DeleteOrchestratorJob(session, group)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		w.WriteHeader(http.StatusNoContent)
