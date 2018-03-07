@@ -170,7 +170,6 @@ func prepareJob(t *templates_v1.InstanceTemplate, group *ServiceGroup) (*nomad.J
 	jobT := template.Must(template.New("job").Funcs(fmap).Parse(jobTemplate))
 	err := jobT.Execute(tpl, details)
 	if err != nil {
-		panic(err)
 		return nil, err
 	}
 

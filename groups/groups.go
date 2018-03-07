@@ -78,8 +78,8 @@ func Create(session *session.TsgSession) http.HandlerFunc {
 
 		err = SubmitOrchestratorJob(session, group)
 		if err != nil {
-			panic(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Location", r.URL.Path+"/"+group.GroupName)
