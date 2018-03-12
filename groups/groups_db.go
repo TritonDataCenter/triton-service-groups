@@ -29,8 +29,8 @@ AND archived = false;`
 		var group ServiceGroup
 		err := rows.Scan(&group.ID,
 			&group.GroupName,
-			&group.AccountId,
-			&group.TemplateId,
+			&group.AccountID,
+			&group.TemplateID,
 			&group.Capacity,
 			&group.HealthCheckInterval)
 		if err != nil {
@@ -54,8 +54,8 @@ AND archived = false;`
 	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
 		Scan(&group.ID,
 			&group.GroupName,
-			&group.AccountId,
-			&group.TemplateId,
+			&group.AccountID,
+			&group.TemplateID,
 			&group.Capacity,
 			&group.HealthCheckInterval)
 	switch err {
@@ -80,8 +80,8 @@ AND archived = false;`
 	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, name, accountId).
 		Scan(&group.ID,
 			&group.GroupName,
-			&group.AccountId,
-			&group.TemplateId,
+			&group.AccountID,
+			&group.TemplateID,
 			&group.Capacity,
 			&group.HealthCheckInterval)
 	switch err {
@@ -101,7 +101,7 @@ INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id, health_c
 VALUES ($1, $2, $3, $4, $5)
 `
 	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
-		group.GroupName, group.TemplateId, group.Capacity,
+		group.GroupName, group.TemplateID, group.Capacity,
 		accountId, group.HealthCheckInterval)
 	if err != nil {
 		panic(err)
@@ -116,7 +116,7 @@ WHERE name = $1 and account_id = $2
 `
 
 	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
-		name, accountId, group.TemplateId, group.Capacity, group.HealthCheckInterval)
+		name, accountId, group.TemplateID, group.Capacity, group.HealthCheckInterval)
 	if err != nil {
 		panic(err)
 	}

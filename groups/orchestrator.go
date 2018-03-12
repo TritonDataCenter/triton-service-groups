@@ -38,7 +38,7 @@ type OrchestratorJob struct {
 
 func SubmitOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
 
-	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateId, session.AccountId)
+	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateID, session.AccountId)
 	if !found {
 		return errors.New("Error finding template by ID")
 	}
@@ -59,7 +59,7 @@ func SubmitOrchestratorJob(session *session.TsgSession, group *ServiceGroup) err
 }
 
 func UpdateOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
-	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateId, session.AccountId)
+	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateID, session.AccountId)
 	if !found {
 		return errors.New("Error finding template by ID")
 	}
@@ -84,7 +84,7 @@ func UpdateOrchestratorJob(session *session.TsgSession, group *ServiceGroup) err
 }
 
 func DeleteOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
-	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateId, session.AccountId)
+	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateID, session.AccountId)
 	if !found {
 		return errors.New("Error finding template by ID")
 	}
@@ -183,12 +183,12 @@ func prepareJob(t *templates_v1.InstanceTemplate, group *ServiceGroup) (*nomad.J
 
 func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGroup) OrchestratorJob {
 	job := OrchestratorJob{
-		AccountID:           group.AccountId,
+		AccountID:           group.AccountID,
 		JobName:             fmt.Sprintf("%s_%d", group.GroupName, template.ID),
 		HealthCheckInterval: group.HealthCheckInterval,
 		DesiredCount:        group.Capacity,
 		PackageID:           template.Package,
-		ImageID:             template.ImageId,
+		ImageID:             template.ImageID,
 		ServiceGroupName:    group.GroupName,
 		FirewallEnabled:     template.FirewallEnabled,
 	}
