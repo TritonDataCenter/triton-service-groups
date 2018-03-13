@@ -2,6 +2,7 @@ package groups_v1
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -12,7 +13,7 @@ import (
 
 	nomad "github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/jobspec"
-	"github.com/joyent/triton-service-groups/session"
+	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/joyent/triton-service-groups/templates"
 )
 
@@ -36,9 +37,10 @@ type OrchestratorJob struct {
 	TritonKeyMaterial   string
 }
 
-func SubmitOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
+func SubmitOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
+	session := handlers.GetAuthSession(ctx)
 
-	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateID, session.AccountId)
+	t, found := templates_v1.FindTemplateByID(ctx, group.TemplateID, session.AccountID)
 	if !found {
 		return errors.New("Error finding template by ID")
 	}
@@ -58,8 +60,10 @@ func SubmitOrchestratorJob(session *session.TsgSession, group *ServiceGroup) err
 	return nil
 }
 
-func UpdateOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
-	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateID, session.AccountId)
+func UpdateOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
+	session := handlers.GetAuthSession(ctx)
+
+	t, found := templates_v1.FindTemplateByID(ctx, group.TemplateID, session.AccountID)
 	if !found {
 		return errors.New("Error finding template by ID")
 	}
@@ -83,8 +87,10 @@ func UpdateOrchestratorJob(session *session.TsgSession, group *ServiceGroup) err
 	return nil
 }
 
-func DeleteOrchestratorJob(session *session.TsgSession, group *ServiceGroup) error {
-	t, found := templates_v1.FindTemplateByID(session.DbPool, group.TemplateID, session.AccountId)
+func DeleteOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
+	session := handlers.GetAuthSession(ctx)
+
+	t, found := templates_v1.FindTemplateByID(ctx, group.TemplateID, session.AccountID)
 	if !found {
 		return errors.New("Error finding template by ID")
 	}
@@ -118,8 +124,8 @@ func DeleteOrchestratorJob(session *session.TsgSession, group *ServiceGroup) err
 }
 
 func deregisterJob(jobID string) (bool, error) {
-
 	orchestratorUrl := os.Getenv("NOMAD_URL")
+
 	client, err := newNomadClient(orchestratorUrl)
 	if err != nil {
 		return false, err
@@ -134,8 +140,8 @@ func deregisterJob(jobID string) (bool, error) {
 }
 
 func registerJob(job *nomad.Job) (bool, error) {
-
 	orchestratorUrl := os.Getenv("NOMAD_URL")
+
 	client, err := newNomadClient(orchestratorUrl)
 	if err != nil {
 		return false, err
@@ -229,26 +235,26 @@ const jobTemplate = `
 job "{{.JobName}}" {
   type = "batch"
   periodic {
-    cron = "*/{{.HealthCheckInterval | formatAsMinutes}} * * * * "
+	cron = "*/{{.HealthCheckInterval | formatAsMinutes}} * * * * "
 	prohibit_overlap = true
   }
   datacenters = ["dc1"]
   group "scale" {
-    task "healthy" {
-      driver = "exec"
+	task "healthy" {
+	  driver = "exec"
 	  artifact {
- 	    source = "http://us-east.manta.joyent.com/productci/public/tsg"
+		source = "http://us-east.manta.joyent.com/productci/public/tsg"
 	  }
-      config {
-        command = "tsg"
-        args = [
-          "scale",
-          "--count", "{{ .DesiredCount }}",
+	  config {
+		command = "tsg"
+		args = [
+		  "scale",
+		  "--count", "{{ .DesiredCount }}",
 		  "--pkg-id", "{{ .PackageID }}",
-          "--img-id", "{{ .ImageID }}",
-          "--tsg-name", "{{ .ServiceGroupName }}",
+		  "--img-id", "{{ .ImageID }}",
+		  "--tsg-name", "{{ .ServiceGroupName }}",
 		  {{if .InstanceNamePrefix -}}
-          "--name-prefix", "{{ .InstanceNamePrefix }}",
+		  "--name-prefix", "{{ .InstanceNamePrefix }}",
 		  {{- end }}
 		  {{if .UserData -}}
 		  "--userdata", "{{ .UserData }}",
@@ -262,15 +268,15 @@ job "{{.JobName}}" {
 		  {{range $key, $value := .MetaData}}
 		  "--metadata", "{{$key}}={{$value}}",
 		  {{- end }}
-          "-A", "{{ .TritonAccount }}",
-          "-K", "{{ .TritonKeyID }}",
-          "-U", "{{ .TritonURL }}",
+		  "-A", "{{ .TritonAccount }}",
+		  "-K", "{{ .TritonKeyID }}",
+		  "-U", "{{ .TritonURL }}",
 		  {{if .TritonKeyMaterial -}}
 		  "--key-material", "{{ .TritonKeyMaterial }}",
 		  {{- end}}
-        ]
-      }
-    }
+		]
+	  }
+	}
   }
 }
 `

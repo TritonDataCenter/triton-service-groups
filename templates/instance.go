@@ -7,7 +7,9 @@ package templates_v1
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
+	"path"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -31,12 +33,7 @@ type InstanceTemplate struct {
 
 func Get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	session, got := handlers.GetAuthSession(ctx)
-	if !got {
-		log.Fatal().Err(handlers.ErrNoSession)
-		http.Error(w, handlers.ErrNoSession.Error(), http.StatusUnauthorized)
-	}
+	session := handlers.GetAuthSession(ctx)
 
 	vars := mux.Vars(r)
 	identifier := vars["identifier"]
@@ -45,6 +42,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(identifier)
 	if err != nil {
+		log.Fatal().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -56,76 +54,77 @@ func Get(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(template)
 	if err != nil {
+		log.Fatal().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	writeJsonResponse(w, bytes)
 }
 
-// func Create(session *session.TsgSession) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		body, err := ioutil.ReadAll(r.Body)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		}
+func Create(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
 
-// 		var template *InstanceTemplate
-// 		err = json.Unmarshal(body, &template)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal().Err(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
-// 		}
+	var template *InstanceTemplate
+	err = json.Unmarshal(body, &template)
+	if err != nil {
+		log.Fatal().Err(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
-// 		SaveTemplate(session.DbPool, session.AccountId, template)
+	SaveTemplate(ctx, session.AccountID, template)
 
-// 		w.Header().Set("Location", r.URL.Path+"/"+template.TemplateName)
+	w.Header().Set("Location", path.Join(r.URL.Path, template.TemplateName))
 
-// 		com, ok := FindTemplateByName(session.DbPool, template.TemplateName, session.AccountId)
-// 		if !ok {
-// 			http.NotFound(w, r)
-// 			return
-// 		}
+	com, ok := FindTemplateByName(ctx, template.TemplateName, session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
 
-// 		bytes, err := json.Marshal(com)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		}
+	bytes, err := json.Marshal(com)
+	if err != nil {
+		log.Fatal().Err(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 
-// 		writeJsonResponse(w, bytes)
-// 	}
-// }
+	writeJsonResponse(w, bytes)
+}
 
-// func Delete(session *session.TsgSession) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		vars := mux.Vars(r)
-// 		identifier := vars["identifier"]
+func Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
 
-// 		var template *InstanceTemplate
+	vars := mux.Vars(r)
+	identifier := vars["identifier"]
 
-// 		id, err := strconv.Atoi(identifier)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			return
-// 		}
-// 		template, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
-// 		if !ok {
-// 			http.NotFound(w, r)
-// 			return
-// 		}
+	var template *InstanceTemplate
 
-// 		RemoveTemplate(session.DbPool, template.ID, session.AccountId)
-// 		w.WriteHeader(http.StatusNoContent)
-// 	}
-// }
+	id, err := strconv.Atoi(identifier)
+	if err != nil {
+		log.Fatal().Err(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	template, ok := FindTemplateByID(ctx, int64(id), session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	RemoveTemplate(ctx, template.ID, session.AccountID)
+	w.WriteHeader(http.StatusNoContent)
+}
 
 func List(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	session, ok := handlers.GetAuthSession(ctx)
-	if !ok {
-		log.Fatal().Err(handlers.ErrNoSession)
-		http.Error(w, handlers.ErrNoSession.Error(), http.StatusUnauthorized)
-	}
+	session := handlers.GetAuthSession(ctx)
 
 	rows, err := FindTemplates(ctx, session.AccountID)
 	if err != nil {

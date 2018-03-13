@@ -8,12 +8,13 @@ package groups_v1
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"path"
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/joyent/triton-service-groups/session"
+	"github.com/joyent/triton-service-groups/server/handlers"
+	"github.com/rs/zerolog/log"
 )
 
 type ServiceGroup struct {
@@ -25,158 +26,163 @@ type ServiceGroup struct {
 	HealthCheckInterval int    `json:"health_check_interval"`
 }
 
-func Get(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		identifier := vars["identifier"]
+func Get(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
 
-		var group *ServiceGroup
+	vars := mux.Vars(r)
+	identifier := vars["identifier"]
 
-		id, err := strconv.Atoi(identifier)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	var group *ServiceGroup
 
-		group, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
-
-		bytes, err := json.Marshal(group)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		writeJsonResponse(w, bytes)
+	id, err := strconv.Atoi(identifier)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	group, ok := FindGroupByID(ctx, int64(id), session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	bytes, err := json.Marshal(group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	writeJsonResponse(w, bytes)
 }
 
-func Create(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+func Create(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
 
-		var group *ServiceGroup
-		err = json.Unmarshal(body, &group)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		SaveGroup(session.DbPool, session.AccountId, group)
-
-		err = SubmitOrchestratorJob(session, group)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Location", r.URL.Path+"/"+group.GroupName)
-
-		com, ok := FindGroupByName(session.DbPool, group.GroupName, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
-
-		bytes, err := json.Marshal(com)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		writeJsonResponse(w, bytes)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	var group *ServiceGroup
+	err = json.Unmarshal(body, &group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	SaveGroup(ctx, session.AccountID, group)
+
+	err = SubmitOrchestratorJob(ctx, group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Location", path.Join(r.URL.Path, group.GroupName))
+
+	com, ok := FindGroupByName(ctx, group.GroupName, session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	bytes, err := json.Marshal(com)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	writeJsonResponse(w, bytes)
 }
 
-func Update(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		identifier := vars["identifier"]
+func Update(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
 
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	vars := mux.Vars(r)
+	identifier := vars["identifier"]
 
-		var group *ServiceGroup
-		err = json.Unmarshal(body, &group)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		UpdateGroup(session.DbPool, identifier, session.AccountId, group)
-
-		err = UpdateOrchestratorJob(session, group)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		com, ok := FindGroupByID(session.DbPool, group.ID, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
-
-		bytes, err := json.Marshal(com)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		writeJsonResponse(w, bytes)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	var group *ServiceGroup
+	err = json.Unmarshal(body, &group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	UpdateGroup(ctx, identifier, session.AccountID, group)
+
+	err = UpdateOrchestratorJob(ctx, group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	com, ok := FindGroupByID(ctx, group.ID, session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	bytes, err := json.Marshal(com)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	writeJsonResponse(w, bytes)
 }
 
-func Delete(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		identifier := vars["identifier"]
+func Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
 
-		var group *ServiceGroup
+	vars := mux.Vars(r)
+	identifier := vars["identifier"]
 
-		id, err := strconv.Atoi(identifier)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	var group *ServiceGroup
 
-		group, ok := FindGroupByID(session.DbPool, int64(id), session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
-
-		RemoveGroup(session.DbPool, group.ID, session.AccountId)
-
-		err = DeleteOrchestratorJob(session, group)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.WriteHeader(http.StatusNoContent)
+	id, err := strconv.Atoi(identifier)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	group, ok := FindGroupByID(ctx, int64(id), session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	RemoveGroup(ctx, group.ID, session.AccountID)
+
+	err = DeleteOrchestratorJob(ctx, group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func List(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := FindGroups(session.DbPool, session.AccountId)
-		if err != nil {
-			log.Fatal(err)
-			http.NotFound(w, r)
-			return
-		}
+func List(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
 
-		bytes, err := json.Marshal(rows)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		writeJsonResponse(w, bytes)
+	rows, err := FindGroups(ctx, session.AccountID)
+	if err != nil {
+		log.Fatal().Err(err)
+		http.NotFound(w, r)
+		return
 	}
+
+	bytes, err := json.Marshal(rows)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	writeJsonResponse(w, bytes)
 }
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
