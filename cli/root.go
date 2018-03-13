@@ -71,7 +71,7 @@ Provides an experimental application structure for testing a Nomad based service
 				}
 				zlog = zerolog.New(w).With().Timestamp().Logger()
 			default:
-				return fmt.Errorf("unsupported log format: %q")
+				return fmt.Errorf("unsupported log format: %q", logFmt)
 			}
 
 			log.Logger = zlog
