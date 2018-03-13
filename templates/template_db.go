@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func FindTemplateByName(ctx context.Context, key string, accountId string) (*InstanceTemplate, bool) {
+func FindTemplateByName(ctx context.Context, key string, accountID string) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -33,7 +33,7 @@ AND archived = false;`
 	var tagsJson string
 	var networksList string
 
-	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountId).
+	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).
 		Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
@@ -69,7 +69,7 @@ AND archived = false;`
 	}
 }
 
-func FindTemplateByID(ctx context.Context, key int64, accountId string) (*InstanceTemplate, bool) {
+func FindTemplateByID(ctx context.Context, key int64, accountID string) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -87,7 +87,7 @@ AND archived = false;`
 	var tagsJson string
 	var networksList string
 
-	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountId).
+	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).
 		Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
@@ -123,7 +123,7 @@ AND archived = false;`
 	}
 }
 
-func FindTemplates(ctx context.Context, accountId string) ([]*InstanceTemplate, error) {
+func FindTemplates(ctx context.Context, accountID string) ([]*InstanceTemplate, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -141,7 +141,7 @@ AND archived = false;`
 	var tagsJson string
 	var networksList string
 
-	rows, err := db.QueryEx(ctx, sqlStatement, nil, accountId)
+	rows, err := db.QueryEx(ctx, sqlStatement, nil, accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ AND archived = false;`
 	return templates, nil
 }
 
-func SaveTemplate(ctx context.Context, accountId string, template *InstanceTemplate) {
+func SaveTemplate(ctx context.Context, accountID string, template *InstanceTemplate) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -209,14 +209,14 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 
 	_, err = db.ExecEx(ctx, sqlStatement, nil,
 		template.TemplateName, template.Package, template.ImageID,
-		accountId, template.FirewallEnabled, template.InstanceNamePrefix, networksList, metaDataJson,
+		accountID, template.FirewallEnabled, template.InstanceNamePrefix, networksList, metaDataJson,
 		template.UserData, tagsJson)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func RemoveTemplate(ctx context.Context, identifier int64, accountId string) {
+func RemoveTemplate(ctx context.Context, identifier int64, accountID string) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -227,7 +227,7 @@ func RemoveTemplate(ctx context.Context, identifier int64, accountId string) {
 SET archived = true
 WHERE id = $1 and account_id = $2`
 
-	_, err := db.ExecEx(ctx, sqlStatement, nil, identifier, accountId)
+	_, err := db.ExecEx(ctx, sqlStatement, nil, identifier, accountID)
 	if err != nil {
 		panic(err)
 	}

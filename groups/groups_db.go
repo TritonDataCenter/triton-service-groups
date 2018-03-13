@@ -10,17 +10,25 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx"
+	"github.com/joyent/triton-service-groups/server/handlers"
+	"github.com/rs/zerolog/log"
 )
 
-func FindGroups(db *pgx.ConnPool, accountId string) ([]*ServiceGroup, error) {
+func FindGroups(ctx context.Context, accountID string) ([]*ServiceGroup, error) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return nil, handlers.ErrNoConnPool
+	}
+
 	var groups []*ServiceGroup
 
-	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval 
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval
 FROM triton.tsg_groups
-WHERE account_id = $1 
+WHERE account_id = $1
 AND archived = false;`
 
-	rows, err := db.QueryEx(context.TODO(), sqlStatement, nil, accountId)
+	rows, err := db.QueryEx(ctx, sqlStatement, nil, accountID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,15 +51,21 @@ AND archived = false;`
 	return groups, nil
 }
 
-func FindGroupByID(db *pgx.ConnPool, key int64, accountId string) (*ServiceGroup, bool) {
+func FindGroupByID(ctx context.Context, key int64, accountID string) (*ServiceGroup, bool) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return nil, false
+	}
+
 	var group ServiceGroup
 
-	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval 
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval
 FROM triton.tsg_groups
 WHERE account_id = $2 and id = $1
 AND archived = false;`
 
-	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
+	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).
 		Scan(&group.ID,
 			&group.GroupName,
 			&group.AccountID,
@@ -69,15 +83,21 @@ AND archived = false;`
 	}
 }
 
-func FindGroupByName(db *pgx.ConnPool, name string, accountId string) (*ServiceGroup, bool) {
+func FindGroupByName(ctx context.Context, name string, accountID string) (*ServiceGroup, bool) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return nil, false
+	}
+
 	var group ServiceGroup
 
-	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval 
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval
 FROM triton.tsg_groups
 WHERE account_id = $2 and name = $1
 AND archived = false;`
 
-	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, name, accountId).
+	err := db.QueryRowEx(ctx, sqlStatement, nil, name, accountID).
 		Scan(&group.ID,
 			&group.GroupName,
 			&group.AccountID,
@@ -95,39 +115,57 @@ AND archived = false;`
 	}
 }
 
-func SaveGroup(db *pgx.ConnPool, accountId string, group *ServiceGroup) {
+func SaveGroup(ctx context.Context, accountID string, group *ServiceGroup) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return
+	}
+
 	sqlStatement := `
-INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id, health_check_interval) 
+INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id, health_check_interval)
 VALUES ($1, $2, $3, $4, $5)
 `
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
+	_, err := db.ExecEx(ctx, sqlStatement, nil,
 		group.GroupName, group.TemplateID, group.Capacity,
-		accountId, group.HealthCheckInterval)
+		accountID, group.HealthCheckInterval)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func UpdateGroup(db *pgx.ConnPool, name string, accountId string, group *ServiceGroup) {
+func UpdateGroup(ctx context.Context, name string, accountID string, group *ServiceGroup) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return
+	}
+
 	sqlStatement := `
-Update triton.tsg_groups 
+Update triton.tsg_groups
 SET template_id = $3, capacity = $4, health_check_interval = $5
 WHERE name = $1 and account_id = $2
 `
 
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil,
-		name, accountId, group.TemplateID, group.Capacity, group.HealthCheckInterval)
+	_, err := db.ExecEx(ctx, sqlStatement, nil,
+		name, accountID, group.TemplateID, group.Capacity, group.HealthCheckInterval)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func RemoveGroup(db *pgx.ConnPool, identifier int64, accountId string) {
-	sqlStatement := `UPDATE triton.tsg_groups 
-SET archived = true 
+func RemoveGroup(ctx context.Context, identifier int64, accountID string) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return
+	}
+
+	sqlStatement := `UPDATE triton.tsg_groups
+SET archived = true
 WHERE id = $1 and account_id = $2`
 
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, identifier, accountId)
+	_, err := db.ExecEx(ctx, sqlStatement, nil, identifier, accountID)
 	if err != nil {
 		panic(err)
 	}

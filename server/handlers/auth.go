@@ -23,11 +23,11 @@ func (a authSession) IsAuthenticated() bool {
 	return a.AccountID != ""
 }
 
-func GetAuthSession(ctx context.Context) (authSession, bool) {
+func GetAuthSession(ctx context.Context) authSession {
 	if session, ok := ctx.Value(authKey).(authSession); ok {
-		return session, true
+		return session
 	}
-	return authSession{}, false
+	return authSession{}
 }
 
 func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
