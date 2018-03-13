@@ -11,14 +11,18 @@ import (
 	"bytes"
 
 	"github.com/jackc/pgx"
-	tsgRouter "github.com/joyent/triton-service-groups/router"
-	"github.com/joyent/triton-service-groups/session"
+	"github.com/joyent/triton-service-groups/server"
+	"github.com/joyent/triton-service-groups/server/handlers"
+	"github.com/joyent/triton-service-groups/server/router"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
 
 // TODO: We should refactor how/where our database initializes so we can half
 // bootstrap the application from our tests with a simple one-liner.
 func initDB() (*pgx.ConnPool, error) {
+	zerolog.SetGlobalLevel(zerolog.Disabled)
+
 	connPool, err := pgx.NewConnPool(pgx.ConnPoolConfig{
 		MaxConnections: 5,
 		AfterConnect:   nil,
@@ -43,20 +47,18 @@ func TestAcc_Get(t *testing.T) {
 		return
 	}
 
-	dbpool, err := initDB()
+	pool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	session := &session.TsgSession{
-		AccountId: "joyent",
-		DbPool:    dbpool,
-	}
 
-	router := tsgRouter.MakeRouter(session)
+	router := router.WithRoutes(server.RoutingTable)
+	authHandler := handlers.AuthHandler(router)
+	contextHandler := handlers.ContextHandler(pool, authHandler)
 
-	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/test-template-1", nil)
+	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/319209784155176962", nil)
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	contextHandler.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -74,20 +76,18 @@ func TestAcc_GetIncorrectTemplateName(t *testing.T) {
 		return
 	}
 
-	dbpool, err := initDB()
+	pool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	session := &session.TsgSession{
-		AccountId: "joyent",
-		DbPool:    dbpool,
-	}
 
-	router := tsgRouter.MakeRouter(session)
+	router := router.WithRoutes(server.RoutingTable)
+	authHandler := handlers.AuthHandler(router)
+	contextHandler := handlers.ContextHandler(pool, authHandler)
 
-	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/test-template-200", nil)
+	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/12345", nil)
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	contextHandler.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
 	_, _ = ioutil.ReadAll(resp.Body)
@@ -101,20 +101,18 @@ func TestAcc_List(t *testing.T) {
 		return
 	}
 
-	dbpool, err := initDB()
+	pool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	session := &session.TsgSession{
-		AccountId: "joyent",
-		DbPool:    dbpool,
-	}
 
-	router := tsgRouter.MakeRouter(session)
+	router := router.WithRoutes(server.RoutingTable)
+	authHandler := handlers.AuthHandler(router)
+	contextHandler := handlers.ContextHandler(pool, authHandler)
 
 	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates", nil)
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	contextHandler.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
@@ -133,25 +131,23 @@ func TestAcc_Delete(t *testing.T) {
 		return
 	}
 
-	dbpool, err := initDB()
+	pool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	session := &session.TsgSession{
-		AccountId: "joyent",
-		DbPool:    dbpool,
-	}
 
-	router := tsgRouter.MakeRouter(session)
+	router := router.WithRoutes(server.RoutingTable)
+	authHandler := handlers.AuthHandler(router)
+	contextHandler := handlers.ContextHandler(pool, authHandler)
 
-	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/test-template-6", nil)
+	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/328937419456806913", nil)
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	contextHandler.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
 	body, _ := ioutil.ReadAll(resp.Body)
 
-	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+	assert.Equal(t, http.StatusNoContent, resp.StatusCode)
 	assert.Equal(t, string(body), "404 page not found\n")
 }
 
@@ -161,20 +157,18 @@ func TestAcc_DeleteNonExistantTemplate(t *testing.T) {
 		return
 	}
 
-	dbpool, err := initDB()
+	pool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	session := &session.TsgSession{
-		AccountId: "joyent",
-		DbPool:    dbpool,
-	}
 
-	router := tsgRouter.MakeRouter(session)
+	router := router.WithRoutes(server.RoutingTable)
+	authHandler := handlers.AuthHandler(router)
+	contextHandler := handlers.ContextHandler(pool, authHandler)
 
-	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/test-template-200", nil)
+	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/1234", nil)
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	contextHandler.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
 	_, _ = ioutil.ReadAll(resp.Body)
@@ -188,14 +182,14 @@ func TestAcc_CreateTemplate(t *testing.T) {
 		return
 	}
 
-	dbpool, err := initDB()
+	pool, err := initDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	session := &session.TsgSession{
-		AccountId: "joyent",
-		DbPool:    dbpool,
-	}
+
+	router := router.WithRoutes(server.RoutingTable)
+	authHandler := handlers.AuthHandler(router)
+	contextHandler := handlers.ContextHandler(pool, authHandler)
 
 	testBody := `{
 	"template_name": "test-template-7",
@@ -214,12 +208,11 @@ func TestAcc_CreateTemplate(t *testing.T) {
 	},
 	"metadata": null
 }`
-
 	r := bytes.NewReader([]byte(testBody))
-	router := tsgRouter.MakeRouter(session)
+
 	req := httptest.NewRequest("POST", "http://example.com/v1/tsg/templates", r)
 	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	contextHandler.ServeHTTP(recorder, req)
 
 	resp := recorder.Result()
 	_, _ = ioutil.ReadAll(resp.Body)

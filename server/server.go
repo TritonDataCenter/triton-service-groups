@@ -55,7 +55,7 @@ func (srv *HTTPServer) Start() {
 func (srv *HTTPServer) setup() {
 	log.Debug().Msg("http: mounting routes as endpoints")
 
-	router := router.WithRoutes(routingTable)
+	router := router.WithRoutes(RoutingTable)
 	authHandler := handlers.AuthHandler(router)
 	contextHandler := handlers.ContextHandler(srv.pool, authHandler)
 	srv.Handler = ghandlers.LoggingHandler(srv.logger, contextHandler)

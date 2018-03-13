@@ -30,7 +30,7 @@ var templateRoutes = router.Routes{
 	router.Route{
 		"DeleteTemplate",
 		http.MethodDelete,
-		"/templates/{identifier}",
+		"/v1/tsg/templates/{identifier}",
 		templates_v1.Delete,
 	},
 }
@@ -68,7 +68,7 @@ var groupRoutes = router.Routes{
 	},
 }
 
-var routingTable = []router.Routes{
+var RoutingTable = router.RouteTable{
 	templateRoutes,
 	groupRoutes,
 }
