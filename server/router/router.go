@@ -17,7 +17,7 @@ type Route struct {
 	Handler http.HandlerFunc
 }
 
-func Make(routes RouteTable) *mux.Router {
+func WithRoutes(routes RouteTable) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
 	for _, rs := range routes {
@@ -25,7 +25,7 @@ func Make(routes RouteTable) *mux.Router {
 			router.Path(r.Pattern).
 				Methods(r.Method).
 				Name(r.Name).
-				Handler(r.Handler)
+				HandlerFunc(r.Handler)
 		}
 	}
 
