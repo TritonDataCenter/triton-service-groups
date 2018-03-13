@@ -11,15 +11,15 @@ var templateRoutes = router.Routes{
 	router.Route{
 		"ListTemplates",
 		http.MethodGet,
-		"/templates",
+		"/v1/tsg/templates",
 		templates_v1.List,
 	},
-	// router.Route{
-	// 	"GetTemplate",
-	// 	http.MethodGet,
-	// 	"/templates/{identifier}",
-	// 	templates_v1.GetHandler,
-	// },
+	router.Route{
+		"GetTemplate",
+		http.MethodGet,
+		"/v1/tsg/templates/{identifier}",
+		templates_v1.Get,
+	},
 	// router.Route{
 	// 	"CreateTemplate",
 	// 	http.MethodPost,

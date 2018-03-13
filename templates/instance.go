@@ -8,7 +8,9 @@ package templates_v1
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/rs/zerolog/log"
 )
@@ -27,32 +29,38 @@ type InstanceTemplate struct {
 	Tags               map[string]string `json:"tags"`
 }
 
-// func Get(session *session.TsgSession) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		vars := mux.Vars(r)
-// 		identifier := vars["identifier"]
+func Get(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-// 		var template *InstanceTemplate
+	session, got := handlers.GetAuthSession(ctx)
+	if !got {
+		log.Fatal().Err(handlers.ErrNoSession)
+		http.Error(w, handlers.ErrNoSession.Error(), http.StatusUnauthorized)
+	}
 
-// 		id, err := strconv.Atoi(identifier)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 			return
-// 		}
-// 		template, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
-// 		if !ok {
-// 			http.NotFound(w, r)
-// 			return
-// 		}
+	vars := mux.Vars(r)
+	identifier := vars["identifier"]
 
-// 		bytes, err := json.Marshal(template)
-// 		if err != nil {
-// 			http.Error(w, err.Error(), http.StatusInternalServerError)
-// 		}
+	var template *InstanceTemplate
 
-// 		writeJsonResponse(w, bytes)
-// 	}
-// }
+	id, err := strconv.Atoi(identifier)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	template, ok := FindTemplateByID(ctx, int64(id), session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	bytes, err := json.Marshal(template)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	writeJsonResponse(w, bytes)
+}
 
 // func Create(session *session.TsgSession) http.HandlerFunc {
 // 	return func(w http.ResponseWriter, r *http.Request) {

@@ -18,8 +18,8 @@ import (
 func FindTemplateByName(ctx context.Context, key string, accountId string) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, false
-		// return nil, handlers.ErrNoConnPool
 	}
 
 	var template InstanceTemplate
@@ -72,8 +72,8 @@ AND archived = false;`
 func FindTemplateByID(ctx context.Context, key int64, accountId string) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, false
-		// return nil, handlers.ErrNoConnPool
 	}
 
 	var template InstanceTemplate
@@ -126,6 +126,7 @@ AND archived = false;`
 func FindTemplates(ctx context.Context, accountId string) ([]*InstanceTemplate, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, handlers.ErrNoConnPool
 	}
 
