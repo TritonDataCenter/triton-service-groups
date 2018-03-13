@@ -7,13 +7,10 @@ package templates_v1
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"log"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
-	"github.com/joyent/triton-service-groups/session"
+	"github.com/joyent/triton-service-groups/server/handlers"
+	"github.com/rs/zerolog/log"
 )
 
 type InstanceTemplate struct {
@@ -30,105 +27,112 @@ type InstanceTemplate struct {
 	Tags               map[string]string `json:"tags"`
 }
 
-func Get(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		identifier := vars["identifier"]
+// func Get(session *session.TsgSession) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		vars := mux.Vars(r)
+// 		identifier := vars["identifier"]
 
-		var template *InstanceTemplate
+// 		var template *InstanceTemplate
 
-		id, err := strconv.Atoi(identifier)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		template, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
+// 		id, err := strconv.Atoi(identifier)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			return
+// 		}
+// 		template, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
+// 		if !ok {
+// 			http.NotFound(w, r)
+// 			return
+// 		}
 
-		bytes, err := json.Marshal(template)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+// 		bytes, err := json.Marshal(template)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		}
 
-		writeJsonResponse(w, bytes)
+// 		writeJsonResponse(w, bytes)
+// 	}
+// }
+
+// func Create(session *session.TsgSession) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		body, err := ioutil.ReadAll(r.Body)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		}
+
+// 		var template *InstanceTemplate
+// 		err = json.Unmarshal(body, &template)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+
+// 		}
+
+// 		SaveTemplate(session.DbPool, session.AccountId, template)
+
+// 		w.Header().Set("Location", r.URL.Path+"/"+template.TemplateName)
+
+// 		com, ok := FindTemplateByName(session.DbPool, template.TemplateName, session.AccountId)
+// 		if !ok {
+// 			http.NotFound(w, r)
+// 			return
+// 		}
+
+// 		bytes, err := json.Marshal(com)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		}
+
+// 		writeJsonResponse(w, bytes)
+// 	}
+// }
+
+// func Delete(session *session.TsgSession) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		vars := mux.Vars(r)
+// 		identifier := vars["identifier"]
+
+// 		var template *InstanceTemplate
+
+// 		id, err := strconv.Atoi(identifier)
+// 		if err != nil {
+// 			http.Error(w, err.Error(), http.StatusInternalServerError)
+// 			return
+// 		}
+// 		template, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
+// 		if !ok {
+// 			http.NotFound(w, r)
+// 			return
+// 		}
+
+// 		RemoveTemplate(session.DbPool, template.ID, session.AccountId)
+// 		w.WriteHeader(http.StatusNoContent)
+// 	}
+// }
+
+func List(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	session, ok := handlers.GetAuthSession(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoSession)
+		http.Error(w, handlers.ErrNoSession.Error(), http.StatusUnauthorized)
 	}
-}
 
-func Create(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		var template *InstanceTemplate
-		err = json.Unmarshal(body, &template)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-
-		}
-
-		SaveTemplate(session.DbPool, session.AccountId, template)
-
-		w.Header().Set("Location", r.URL.Path+"/"+template.TemplateName)
-
-		com, ok := FindTemplateByName(session.DbPool, template.TemplateName, session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
-
-		bytes, err := json.Marshal(com)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		writeJsonResponse(w, bytes)
+	rows, err := FindTemplates(ctx, session.AccountID)
+	if err != nil {
+		log.Fatal().Err(err)
+		http.NotFound(w, r)
+		return
 	}
-}
 
-func Delete(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		identifier := vars["identifier"]
-
-		var template *InstanceTemplate
-
-		id, err := strconv.Atoi(identifier)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		template, ok := FindTemplateByID(session.DbPool, int64(id), session.AccountId)
-		if !ok {
-			http.NotFound(w, r)
-			return
-		}
-
-		RemoveTemplate(session.DbPool, template.ID, session.AccountId)
-		w.WriteHeader(http.StatusNoContent)
+	bytes, err := json.Marshal(rows)
+	if err != nil {
+		log.Fatal().Err(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-}
 
-func List(session *session.TsgSession) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := FindTemplates(session.DbPool, session.AccountId)
-		if err != nil {
-			log.Fatal(err)
-			http.NotFound(w, r)
-			return
-		}
-
-		bytes, err := json.Marshal(rows)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		writeJsonResponse(w, bytes)
-	}
+	writeJsonResponse(w, bytes)
 }
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
