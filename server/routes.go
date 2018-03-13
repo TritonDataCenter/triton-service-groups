@@ -34,4 +34,4 @@ var templateRoutes = router.Routes{
 	// },
 }
 
-var RoutingTable = []router.Routes{templateRoutes}
+var routingTable = []router.Routes{templateRoutes}

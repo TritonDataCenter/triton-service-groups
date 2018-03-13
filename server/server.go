@@ -10,11 +10,10 @@ import (
 	"time"
 
 	ghandlers "github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"github.com/jackc/pgx"
 	"github.com/joyent/triton-service-groups/config"
 	"github.com/joyent/triton-service-groups/server/handlers"
-	"github.com/joyent/triton-service-groups/templates"
+	"github.com/joyent/triton-service-groups/server/router"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -56,13 +55,7 @@ func (srv *HTTPServer) Start() {
 func (srv *HTTPServer) setup() {
 	log.Debug().Msg("http: mounting routes as endpoints")
 
-	router := mux.NewRouter().StrictSlash(true)
-	{
-		router.Path("/templates").
-			Methods(http.MethodGet).
-			Name("list").
-			HandlerFunc(templates_v1.List)
-	}
+	router := router.WithRoutes(routingTable)
 	authHandler := handlers.AuthHandler(router)
 	contextHandler := handlers.ContextHandler(srv.pool, authHandler)
 	srv.Handler = ghandlers.LoggingHandler(srv.logger, contextHandler)
