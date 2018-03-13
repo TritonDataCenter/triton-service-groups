@@ -8,17 +8,24 @@ package templates_v1
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"strings"
 
 	"github.com/jackc/pgx"
+	"github.com/joyent/triton-service-groups/server/handlers"
+	"github.com/rs/zerolog/log"
 )
 
-func FindTemplateByName(db *pgx.ConnPool, key string, accountId string) (*InstanceTemplate, bool) {
+func FindTemplateByName(ctx context.Context, key string, accountId string) (*InstanceTemplate, bool) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		return nil, false
+		// return nil, handlers.ErrNoConnPool
+	}
+
 	var template InstanceTemplate
 
-	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
-FROM triton.tsg_templates 
+	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
+FROM triton.tsg_templates
 WHERE template_name = $1 and account_id = $2
 AND archived = false;`
 
@@ -26,7 +33,7 @@ AND archived = false;`
 	var tagsJson string
 	var networksList string
 
-	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
+	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountId).
 		Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
@@ -62,11 +69,17 @@ AND archived = false;`
 	}
 }
 
-func FindTemplateByID(db *pgx.ConnPool, key int64, accountId string) (*InstanceTemplate, bool) {
+func FindTemplateByID(ctx context.Context, key int64, accountId string) (*InstanceTemplate, bool) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		return nil, false
+		// return nil, handlers.ErrNoConnPool
+	}
+
 	var template InstanceTemplate
 
-	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')  
-FROM triton.tsg_templates 
+	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
+FROM triton.tsg_templates
 WHERE id = $1 and account_id = $2
 AND archived = false;`
 
@@ -74,7 +87,7 @@ AND archived = false;`
 	var tagsJson string
 	var networksList string
 
-	err := db.QueryRowEx(context.TODO(), sqlStatement, nil, key, accountId).
+	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountId).
 		Scan(&template.ID,
 			&template.TemplateName,
 			&template.Package,
@@ -110,19 +123,24 @@ AND archived = false;`
 	}
 }
 
-func FindTemplates(db *pgx.ConnPool, accountId string) ([]*InstanceTemplate, error) {
+func FindTemplates(ctx context.Context, accountId string) ([]*InstanceTemplate, error) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		return nil, handlers.ErrNoConnPool
+	}
+
 	var templates []*InstanceTemplate
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '') 
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '')
 FROM triton.tsg_templates
-WHERE account_id = $1 
+WHERE account_id = $1
 AND archived = false;`
 
 	var metaDataJson string
 	var tagsJson string
 	var networksList string
 
-	rows, err := db.QueryEx(context.TODO(), sqlStatement, nil, accountId)
+	rows, err := db.QueryEx(ctx, sqlStatement, nil, accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -164,25 +182,31 @@ AND archived = false;`
 	return templates, nil
 }
 
-func SaveTemplate(db *pgx.ConnPool, accountId string, template *InstanceTemplate) {
+func SaveTemplate(ctx context.Context, accountId string, template *InstanceTemplate) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return
+	}
+
 	sqlStatement := `
-INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, metadata, userdata, tags) 
+INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, metadata, userdata, tags)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 `
 
 	metaDataJson, err := convertToJson(template.MetaData)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 
 	tagsJson, err := convertToJson(template.Tags)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 
 	networksList := strings.Join(template.Networks, ",")
 
-	_, err = db.ExecEx(context.TODO(), sqlStatement, nil,
+	_, err = db.ExecEx(ctx, sqlStatement, nil,
 		template.TemplateName, template.Package, template.ImageID,
 		accountId, template.FirewallEnabled, template.InstanceNamePrefix, networksList, metaDataJson,
 		template.UserData, tagsJson)
@@ -191,12 +215,18 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	}
 }
 
-func RemoveTemplate(db *pgx.ConnPool, identifier int64, accountId string) {
-	sqlStatement := `UPDATE triton.tsg_templates 
-SET archived = true 
+func RemoveTemplate(ctx context.Context, identifier int64, accountId string) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return
+	}
+
+	sqlStatement := `UPDATE triton.tsg_templates
+SET archived = true
 WHERE id = $1 and account_id = $2`
 
-	_, err := db.ExecEx(context.TODO(), sqlStatement, nil, identifier, accountId)
+	_, err := db.ExecEx(ctx, sqlStatement, nil, identifier, accountId)
 	if err != nil {
 		panic(err)
 	}
@@ -207,7 +237,7 @@ func convertToJson(data map[string]string) (string, error) {
 		return "", nil
 	}
 
-	log.Printf("Found data")
+	log.Debug().Msg("Found data")
 	json, err := json.Marshal(data)
 	if err != nil {
 		return "", err
