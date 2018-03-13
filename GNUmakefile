@@ -3,8 +3,13 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 
 default: vet errcheck test
 
+build:: ## Build the API server
+	mkdir -p ./bin
+	govvv build -o bin/triton-sg ./cmd/triton-sg
+
 tools:: ## Download and install all dev/code tools
-	@echo "==> Installing dev tools"
+	@echo "==> Installing dev/build tools"
+	go get -u github.com/ahmetb/govvv
 	go get -u github.com/golang/dep/cmd/dep
 	go get -u github.com/golang/lint/golint
 	go get -u github.com/kisielk/errcheck
