@@ -20,6 +20,7 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
+required = ["golang.org/x/crypto/blake2b", "golang.org/x/sys/unix", "golang.org/x/text/transform", "golang.org/x/text/unicode/norm"]
 
 [[constraint]]
   name = "github.com/gorilla/mux"

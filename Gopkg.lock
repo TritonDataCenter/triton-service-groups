@@ -21,7 +21,11 @@
 
 [[projects]]
   name = "github.com/google/gops"
-  packages = ["agent","internal","signal"]
+  packages = [
+    "agent",
+    "internal",
+    "signal"
+  ]
   revision = "0e2aa5d22efec1603f7ded7097c500e9a36a13b3"
   version = "v0.3.3"
 
@@ -100,19 +104,42 @@
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/golang-lru"
-  packages = [".","simplelru"]
+  packages = [
+    ".",
+    "simplelru"
+  ]
   revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
 
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/hcl"
-  packages = [".","hcl/ast","hcl/parser","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
+  packages = [
+    ".",
+    "hcl/ast",
+    "hcl/parser",
+    "hcl/scanner",
+    "hcl/strconv",
+    "hcl/token",
+    "json/parser",
+    "json/scanner",
+    "json/token"
+  ]
   revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
 
 [[projects]]
   branch = "master"
   name = "github.com/hashicorp/nomad"
-  packages = ["acl","api","api/contexts","helper","helper/args","helper/flatmap","helper/uuid","jobspec","nomad/structs"]
+  packages = [
+    "acl",
+    "api",
+    "api/contexts",
+    "helper",
+    "helper/args",
+    "helper/flatmap",
+    "helper/uuid",
+    "jobspec",
+    "nomad/structs"
+  ]
   revision = "e83debc3272e7f5eb1cdc4dbc1eddc6ce093fd73"
 
 [[projects]]
@@ -135,7 +162,14 @@
 
 [[projects]]
   name = "github.com/jackc/pgx"
-  packages = [".","chunkreader","internal/sanitize","pgio","pgproto3","pgtype"]
+  packages = [
+    ".",
+    "chunkreader",
+    "internal/sanitize",
+    "pgio",
+    "pgproto3",
+    "pgtype"
+  ]
   revision = "da3231b0b66e2e74cdb779f1d46c5e958ba8be27"
   version = "v3.1.0"
 
@@ -207,7 +241,11 @@
 
 [[projects]]
   name = "github.com/rs/zerolog"
-  packages = [".","internal/json","log"]
+  packages = [
+    ".",
+    "internal/json",
+    "log"
+  ]
   revision = "56a970de510213e50dbaa39ad73ac07c9ec75606"
   version = "v1.5.0"
 
@@ -225,7 +263,10 @@
 
 [[projects]]
   name = "github.com/spf13/afero"
-  packages = [".","mem"]
+  packages = [
+    ".",
+    "mem"
+  ]
   revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
   version = "v1.0.2"
 
@@ -285,7 +326,14 @@
 
 [[projects]]
   name = "golang.org/x/text"
-  packages = ["internal/gen","internal/triegen","internal/ucd","transform","unicode/cldr","unicode/norm"]
+  packages = [
+    "internal/gen",
+    "internal/triegen",
+    "internal/ucd",
+    "transform",
+    "unicode/cldr",
+    "unicode/norm"
+  ]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
@@ -298,6 +346,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "93c7246ce41cf347348ed57bbdf072f7271c1ccc1172bc95339feba6f9297464"
+  inputs-digest = "b563dbc65b08eab8a8b99bc7d3261c64966dc4140624e888afdec71e9d961167"
   solver-name = "gps-cdcl"
   solver-version = 1
