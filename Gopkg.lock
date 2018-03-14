@@ -2,10 +2,22 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/armon/go-metrics"
+  packages = ["."]
+  revision = "783273d703149aaeb9897cf58613d5af48861c25"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/gorhill/cronexpr"
+  packages = ["."]
+  revision = "a557574d6c024ed6e36acc8b610f5f211c91568a"
+  version = "1.0.0"
 
 [[projects]]
   name = "github.com/gorilla/context"
@@ -26,6 +38,107 @@
   version = "v1.6.1"
 
 [[projects]]
+  name = "github.com/hashicorp/consul"
+  packages = ["api"]
+  revision = "9a494b5fb9c86180a5702e29c485df1507a47198"
+  version = "v1.0.6"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-cleanhttp"
+  packages = ["."]
+  revision = "d5fe4b57a186c716b0e00b8c301cbd9b4182694d"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-immutable-radix"
+  packages = ["."]
+  revision = "7f3cd4390caab3250a57f30efdb2a65dd7649ecf"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-msgpack"
+  packages = ["codec"]
+  revision = "fa3f63826f7c23912c15263591e65d54d080b458"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  revision = "b7773ae218740a7be65057fc60b366a49b538a44"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-rootcerts"
+  packages = ["."]
+  revision = "6bb64b370b90e7ef1fa532be9e591a81c3493e00"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/go-version"
+  packages = ["."]
+  revision = "4fe82ae3040f80a03d04d2cccb5606a626b8e1ee"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/golang-lru"
+  packages = [
+    ".",
+    "simplelru"
+  ]
+  revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/hcl"
+  packages = [
+    ".",
+    "hcl/ast",
+    "hcl/parser",
+    "hcl/scanner",
+    "hcl/strconv",
+    "hcl/token",
+    "json/parser",
+    "json/scanner",
+    "json/token"
+  ]
+  revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
+
+[[projects]]
+  name = "github.com/hashicorp/nomad"
+  packages = [
+    "acl",
+    "api",
+    "api/contexts",
+    "helper",
+    "helper/args",
+    "helper/flatmap",
+    "helper/uuid",
+    "jobspec",
+    "nomad/structs"
+  ]
+  revision = "2f245ac7fc9b916eb4af8a62a471dcd0b468a8c8"
+  version = "v0.7.1"
+
+[[projects]]
+  name = "github.com/hashicorp/raft"
+  packages = ["."]
+  revision = "6d14f0c70869faabd9e60ba7ed88a6cbbd6a661f"
+  version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/hashicorp/serf"
+  packages = ["coordinate"]
+  revision = "d6574a5bb1226678d7010325fb6c985db20ee458"
+  version = "v0.8.1"
+
+[[projects]]
   name = "github.com/jackc/pgx"
   packages = [
     ".",
@@ -37,6 +150,36 @@
   ]
   revision = "da3231b0b66e2e74cdb779f1d46c5e958ba8be27"
   version = "v3.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/copystructure"
+  packages = ["."]
+  revision = "d23ffcb85de31694d6ccaa23ccb4a03e55c1303f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/hashstructure"
+  packages = ["."]
+  revision = "2bca23e0e452137f789efbc8610126fd8b94f73b"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/reflectwalk"
+  packages = ["."]
+  revision = "63d60e9d0dbc60cf9164e6510889b0db6683d98c"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -56,9 +199,21 @@
   packages = ["assert"]
   revision = "be8372ae8ec5c6daaed3cc28ebf73c54b737c240"
 
+[[projects]]
+  name = "github.com/ugorji/go"
+  packages = ["codec"]
+  revision = "9831f2c3ac1068a78f50999a30db84270f647af6"
+  version = "v1.1"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["blake2b"]
+  revision = "c4a91bd4f524f10d064139674cf55852e055ad01"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "96d9cedff5be54e9f5ea15d6f6d191b91a5c2c02f3fd01897e4f54e460a066c4"
+  inputs-digest = "5cf2ece80b9df6e9ae863482452046816a5c2ec332e5c216bb299ca2cd8919e9"
   solver-name = "gps-cdcl"
   solver-version = 1
