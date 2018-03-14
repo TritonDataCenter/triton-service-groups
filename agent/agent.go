@@ -43,7 +43,10 @@ func (a *Agent) Run(ctx context.Context) (err error) {
 
 	for {
 		<-a.shutdownCtx.Done()
-		srv.Stop(a.shutdownCtx)
+		err := srv.Stop(a.shutdownCtx)
+		if err != nil {
+			log.Warn().Err(err)
+		}
 		return nil
 	}
 }

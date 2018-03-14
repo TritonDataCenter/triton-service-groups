@@ -64,7 +64,10 @@ func (srv *HTTPServer) setup() {
 
 	go func() {
 		log.Info().Msgf("http: started serving at %q", srv.Addr)
-		srv.Serve(ln)
+		err := srv.Serve(ln)
+		if err != nil {
+			log.Warn().Err(err)
+		}
 	}()
 }
 

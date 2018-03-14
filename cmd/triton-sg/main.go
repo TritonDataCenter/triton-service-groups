@@ -29,7 +29,10 @@ func main() {
 
 	defer func() {
 		p := conswriter.GetTerminal()
-		p.Wait()
+		err := p.Wait()
+		if err != nil {
+			log.Warn().Err(err)
+		}
 	}()
 
 	if err := cli.Execute(); err != nil {

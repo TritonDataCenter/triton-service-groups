@@ -196,7 +196,10 @@ func init() {
 			defaultValue,
 			description,
 		)
-		viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		err := viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		if err != nil {
+			log.Warn().Err(err)
+		}
 		viper.SetDefault(key, defaultValue)
 	}
 
@@ -215,7 +218,10 @@ func init() {
 			defaultValue,
 			description,
 		)
-		viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		err := viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		if err != nil {
+			log.Warn().Err(err)
+		}
 		viper.SetDefault(key, defaultValue)
 	}
 
@@ -234,7 +240,10 @@ func init() {
 			defaultValue,
 			description,
 		)
-		viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		err := viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		if err != nil {
+			log.Warn().Err(err)
+		}
 		viper.SetDefault(key, defaultValue)
 	}
 
@@ -253,7 +262,10 @@ func init() {
 			defaultValue,
 			description,
 		)
-		viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		err := viper.BindPFlag(key, RootCmd.PersistentFlags().Lookup(longName))
+		if err != nil {
+			log.Warn().Err(err)
+		}
 		viper.SetDefault(key, defaultValue)
 	}
 }
