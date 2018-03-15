@@ -1,7 +1,7 @@
 TEST?=$$(go list ./... |grep -Ev 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 
-default: vet errcheck test
+default: check test
 
 build:: ## Build the API server
 	mkdir -p ./bin
@@ -11,10 +11,8 @@ tools:: ## Download and install all dev/code tools
 	@echo "==> Installing dev/build tools"
 	go get -u github.com/ahmetb/govvv
 	go get -u github.com/golang/dep/cmd/dep
-	go get -u github.com/golang/lint/golint
-	go get -u github.com/kisielk/errcheck
-	@echo "==> Installing test package dependencies"
-	go test -i $(TEST) || exit 1
+	go get -u github.com/alecthomas/gometalinter
+	gometalinter --install
 
 test:: ## Run unit tests
 	@echo "==> Running unit test with coverage"
@@ -24,26 +22,23 @@ testacc:: ## Run acceptance tests
 	@echo "==> Running acceptance tests"
 	TRITON_TEST=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
-vet:: ## Check for unwanted code constructs
-	@echo "go vet ."
-	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
-		echo ""; \
-		echo "Vet found suspicious constructs. Please check the reported constructs"; \
-		echo "and fix them if necessary before submitting the code for review."; \
-		exit 1; \
-	fi
-
-lint:: ## Lint and vet code by common Go standards
-	@bash $(CURDIR)/scripts/lint.sh
-
-fmt:: ## Format as canonical Go code
-	gofmt -w $(GOFMT_FILES)
-
-fmtcheck:: ## Check if code format is canonical Go
-	@bash $(CURDIR)/scripts/gofmtcheck.sh
-
-errcheck:: ## Check for unhandled errors
-	@bash $(CURDIR)/scripts/errcheck.sh
+check::
+	gometalinter \
+    		--deadline 10m \
+    		--vendor \
+    		--sort="path" \
+    		--aggregate \
+    		--enable-gc \
+    		--disable-all \
+    		--enable goimports \
+    		--enable misspell \
+    		--enable vet \
+    		--enable deadcode \
+    		--enable varcheck \
+    		--enable ineffassign \
+    		--enable errcheck \
+    		--enable gofmt \
+    		./...
 
 dev-db-start:: ## Start the development database
 	@echo "==> Running docker-compose up"

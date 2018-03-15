@@ -20,10 +20,6 @@ var (
 	GitSummary string
 )
 
-const (
-	PROGNAME = "nomad-svc"
-)
-
 func main() {
 	exportBuildtimeConsts()
 
