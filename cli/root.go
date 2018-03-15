@@ -28,10 +28,16 @@ var (
 
 var RootCmd = &cobra.Command{
 	Use:   buildtime.PROGNAME,
-	Short: buildtime.PROGNAME + `provides a Nomad based service API`,
-	Long: `
-Provides an experimental application structure for testing a Nomad based service API.
-`,
+	Short: buildtime.PROGNAME + `is the Triton Service Groups API`,
+	Long: fmt.Sprintf(`
+%s - Triton Service Groups API
+
+Everything used to configure and run the central API server of the Triton
+Service Groups service. Includes configuring default values, database and client
+connections settings, environment variable overrides, binding and serving HTTP
+access, and optionally enabling introspective utilities like gops(1) and pprof.
+
+`, buildtime.PROGNAME),
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Re-initialize logging with user-supplied configuration parameters
 		{

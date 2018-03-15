@@ -10,16 +10,21 @@ import (
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: buildtime.PROGNAME + ` version information`,
-	Long:  fmt.Sprintf(`Display %s version information`, buildtime.PROGNAME),
+	Long: fmt.Sprintf(`
+%s - Triton Service Groups API
+
+Displays version, SCM, and build information.
+
+`, buildtime.PROGNAME),
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("%s:\n", buildtime.PROGNAME)
-		fmt.Printf("\tversion: %s\n", buildtime.Version)
-		fmt.Printf("\tdate: %s\n", buildtime.BuildDate)
-		fmt.Printf("\tcommit: %s\n", buildtime.GitCommit)
-		fmt.Printf("\tbranch: %s\n", buildtime.GitBranch)
-		fmt.Printf("\tstate: %s\n", buildtime.GitState)
-		fmt.Printf("\tsummary: %s\n", buildtime.GitSummary)
+		fmt.Printf("%s\n\n", buildtime.PROGNAME)
+		fmt.Printf("Version: %s\n", buildtime.Version)
+		fmt.Printf("Date: %s\n", buildtime.BuildDate)
+		fmt.Printf("Commit: %s\n", buildtime.GitCommit)
+		fmt.Printf("Branch: %s\n", buildtime.GitBranch)
+		fmt.Printf("State: %s\n", buildtime.GitState)
+		fmt.Printf("Summary: %s\n", buildtime.GitSummary)
 
 		return nil
 	},
