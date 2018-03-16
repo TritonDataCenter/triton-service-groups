@@ -92,7 +92,7 @@ func (k *Keychain) AddKey(ctx context.Context, keypair *KeyPair) error {
 	}
 	key, err := a.Keys().Create(ctx, createInput)
 	if err != nil {
-		return errors.Wrap(err, "failed to add new account key")
+		return errors.Wrap(err, "failed to create new account key")
 	}
 
 	k.AccountKey = key
