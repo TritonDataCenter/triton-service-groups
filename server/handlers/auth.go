@@ -37,9 +37,16 @@ func GetAuthSession(ctx context.Context) auth.Session {
 // authHandler was constructed for, passing along the active request down it's
 // chain of middleware.
 func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
+
 	session, err := auth.NewSession(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := session.EnsureKey(ctx); err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -48,6 +55,6 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ctx := context.WithValue(req.Context(), authKey, session)
+	ctx = context.WithValue(ctx, authKey, session)
 	a.handler.ServeHTTP(w, req.WithContext(ctx))
 }
