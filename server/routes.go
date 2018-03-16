@@ -66,6 +66,18 @@ var groupRoutes = router.Routes{
 		Pattern: "/v1/tsg",
 		Handler: groups_v1.List,
 	},
+	router.Route{
+		Name:    "IncrementGroupCapacity",
+		Method:  http.MethodPut,
+		Pattern: "/v1/tsg/{identifier}/increment",
+		Handler: groups_v1.Increment,
+	},
+	router.Route{
+		Name:    "DecrementGroupCapacity",
+		Method:  http.MethodPut,
+		Pattern: "/v1/tsg/{identifier}/decrement",
+		Handler: groups_v1.Decrement,
+	},
 }
 
 var RoutingTable = router.RouteTable{
