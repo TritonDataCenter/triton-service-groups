@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -20,15 +21,24 @@ func (a Session) IsAuthenticated() bool {
 }
 
 func NewSession(req *http.Request) (Session, error) {
-	parsed, err := parseRequest(req)
+	emptySession := Session{}
+
+	parsedReq, err := parseRequest(req)
 	if err != nil {
-		return Session{}, err
+		return emptySession, errors.Wrap(err, "could not parse auth request")
 	}
 
-	log.Debug().Msgf("demo authentication found %q", parsed.accountName)
+	tritonKeys := NewTritonKeys(parsedReq)
+	if err := tritonKeys.Check(); err != nil {
+		return emptySession, errors.Wrap(err, "could not check triton account keys")
+	}
+
+	if !tritonKeys.HasTSG() {
+		log.Debug().Msg("--- couldn't find any TSG keys for Triton account")
+	}
 
 	return Session{
-		AccountID: parsed.accountName,
+		AccountID: parsedReq.accountName,
 		// KeyFingerprint: parsed.fingerprint,
 	}, nil
 }
