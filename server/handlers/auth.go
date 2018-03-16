@@ -24,11 +24,11 @@ func AuthHandler(handler http.Handler) authHandler {
 // GetAuthSession pulls the current active authenticated session out of the
 // current request context. This keeps authentication scoped to the active
 // request only.
-func GetAuthSession(ctx context.Context) auth.Session {
-	if session, ok := ctx.Value(authKey).(auth.Session); ok {
+func GetAuthSession(ctx context.Context) *auth.Session {
+	if session, ok := ctx.Value(authKey).(*auth.Session); ok {
 		return session
 	}
-	return auth.Session{}
+	return &auth.Session{}
 }
 
 // ServeHTTP serves HTTP requests through the authentication process scoped to
