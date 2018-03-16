@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"text/template"
 
@@ -222,7 +223,9 @@ func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGro
 	job.TritonAccount = os.Getenv("TRITON_ACCOUNT")
 	job.TritonURL = os.Getenv("TRITON_URL")
 	job.TritonKeyID = os.Getenv("TRITON_KEY_ID")
-	job.TritonKeyMaterial = os.Getenv("TRITON_KEY_MATERIAL")
+
+	keyMaterial := strings.Replace(os.Getenv("TRITON_KEY_MATERIAL"), "\n", `\n`, -1)
+	job.TritonKeyMaterial = keyMaterial
 
 	return job
 }
