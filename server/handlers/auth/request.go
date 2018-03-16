@@ -18,6 +18,7 @@ type parsedRequest struct {
 var (
 	ErrUnauthRequest = errors.New("received unauthenticated request")
 	ErrBadKeyID      = errors.New("couldn't parse keyId within authorization header")
+	ErrParseAuth     = errors.New("bad values parsed from keyId header")
 )
 
 func parseRequest(req *http.Request) (*parsedRequest, error) {
@@ -46,12 +47,26 @@ func parseRequest(req *http.Request) (*parsedRequest, error) {
 		}
 	}
 
+	accountName := parts[0]
+	fingerprint := parts[1]
+
+	if accountName == "" || fingerprint == "" {
+		return nil, ErrParseAuth
+	}
+
 	return &parsedRequest{
 		dateHeader:  dateHeader,
 		authHeader:  authHeader,
-		accountName: parts[0],
-		fingerprint: parts[1],
+		accountName: accountName,
+		fingerprint: fingerprint,
 	}, nil
+}
+
+func (r *parsedRequest) hasValues() bool {
+	return r.dateHeader != "" &&
+		r.authHeader != "" &&
+		r.accountName != "" &&
+		r.fingerprint != ""
 }
 
 func (r *parsedRequest) getHeader() *http.Header {
