@@ -32,10 +32,15 @@ func GetAuthSession(ctx context.Context) auth.Session {
 }
 
 // ServeHTTP serves HTTP requests through the authentication process scoped to
-// whatever pre-defined data we need accessible through the authHandler struct.
+// whatever pre-defined data we need accessible through the authHandler
+// struct. This method finalizes by calling ServeHTTP on the handler that this
+// authHandler was constructed for, passing along the active request down it's
+// chain of middleware.
 func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	session := auth.Session{
-		AccountID: "joyent",
+	session, err := auth.NewSession(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if !session.IsAuthenticated() {
