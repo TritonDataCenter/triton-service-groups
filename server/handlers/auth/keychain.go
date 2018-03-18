@@ -12,16 +12,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-// we're using us-sw-1 as a miniscule hedge against LDAP latency
-const tritonBaseURL = "https://us-sw-1.api.joyent.com/"
-
-// type foundKeys struct {
-// 	vault   map[string]bool
-// 	account map[string]bool
-// }
+// we're using us-west-1 as a miniscule hedge against LDAP latency
+const tritonBaseURL = "https://us-west-1.api.joyent.com/"
 
 type Keychain struct {
-	*parsedRequest
+	*ParsedRequest
 
 	// found  foundKeys
 	config *triton.ClientConfig
@@ -29,20 +24,17 @@ type Keychain struct {
 	AccountKey *account.Key
 }
 
-func NewKeychain(req *parsedRequest) *Keychain {
+func NewKeychain(req *ParsedRequest) *Keychain {
 	signer := &authentication.TestSigner{}
 	config := &triton.ClientConfig{
 		TritonURL:   tritonBaseURL,
-		AccountName: req.accountName,
+		AccountName: req.AccountName,
 		Signers:     []authentication.Signer{signer},
 	}
 
 	return &Keychain{
-		parsedRequest: req,
+		ParsedRequest: req,
 		config:        config,
-		// found: foundKeys{
-		// 	account: make(map[string]bool, 0),
-		// },
 	}
 }
 
@@ -58,7 +50,7 @@ func (k *Keychain) CheckTriton(ctx context.Context) error {
 		return errors.Wrap(err, "failed to create account keys client")
 	}
 
-	a.SetHeader(k.parsedRequest.getHeader())
+	a.SetHeader(k.ParsedRequest.Header())
 
 	listInput := &account.ListKeysInput{}
 	keys, err := a.Keys().List(ctx, listInput)
@@ -82,7 +74,7 @@ func (k *Keychain) AddKey(ctx context.Context, keypair *KeyPair) error {
 		return errors.Wrap(err, "failed to create new key client")
 	}
 
-	a.SetHeader(k.parsedRequest.getHeader())
+	a.SetHeader(k.ParsedRequest.Header())
 
 	name := fmt.Sprintf("tsg-%s", time.Now().Format("20060102150405"))
 

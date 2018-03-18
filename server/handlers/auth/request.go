@@ -8,11 +8,12 @@ import (
 	"strings"
 )
 
-type parsedRequest struct {
-	authHeader  string
-	dateHeader  string
-	accountName string
-	fingerprint string
+type ParsedRequest struct {
+	authHeader string
+	dateHeader string
+
+	AccountName string
+	Fingerprint string
 }
 
 var (
@@ -21,7 +22,7 @@ var (
 	ErrParseAuth     = errors.New("bad values parsed from keyId header")
 )
 
-func parseRequest(req *http.Request) (*parsedRequest, error) {
+func ParseRequest(req *http.Request) (*ParsedRequest, error) {
 	dateHeader := req.Header.Get("Date")
 	authHeader := req.Header.Get("Authorization")
 
@@ -54,22 +55,22 @@ func parseRequest(req *http.Request) (*parsedRequest, error) {
 		return nil, ErrParseAuth
 	}
 
-	return &parsedRequest{
+	return &ParsedRequest{
 		dateHeader:  dateHeader,
 		authHeader:  authHeader,
-		accountName: accountName,
-		fingerprint: fingerprint,
+		AccountName: accountName,
+		Fingerprint: fingerprint,
 	}, nil
 }
 
-func (r *parsedRequest) hasValues() bool {
+func (r *ParsedRequest) HasValues() bool {
 	return r.dateHeader != "" &&
 		r.authHeader != "" &&
-		r.accountName != "" &&
-		r.fingerprint != ""
+		r.AccountName != "" &&
+		r.Fingerprint != ""
 }
 
-func (r *parsedRequest) getHeader() *http.Header {
+func (r *ParsedRequest) Header() *http.Header {
 	header := &http.Header{}
 	header.Set("date", r.dateHeader)
 	header.Set("Authorization", r.authHeader)

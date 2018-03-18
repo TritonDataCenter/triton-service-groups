@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
@@ -11,20 +12,37 @@ import (
 // authSession a private struct which is only accessible by pulling out of the
 // current request `context.Context`.
 type Session struct {
+	*ParsedRequest
+
 	AccountID      string
 	KeyFingerprint string
 
-	*parsedRequest
+	devMode bool
 }
 
+const (
+	testAccountID      = "joyent"
+	testKeyFingerprint = "12:34:56:78:90:12:34:56:78:90:12:34:56:78:90:AB"
+)
+
+// NewSession constructs and returns a new Session by parsing the HTTP request,
+// validating and pulling out authentication headers.
 func NewSession(req *http.Request) (*Session, error) {
-	parsedReq, err := parseRequest(req)
+	if devMode := os.Getenv("TSG_DEV_MODE"); devMode == "true" {
+		return &Session{
+			AccountID:      testAccountID,
+			KeyFingerprint: testKeyFingerprint,
+			devMode:        true,
+		}, nil
+	}
+
+	parsedReq, err := ParseRequest(req)
 	if err != nil {
 		return &Session{}, errors.Wrap(err, "failed to parse auth request")
 	}
 
 	return &Session{
-		parsedRequest: parsedReq,
+		ParsedRequest: parsedReq,
 	}, nil
 }
 
@@ -40,7 +58,16 @@ func (a *Session) IsAuthenticated() bool {
 // Other edge cases will be developed later like the account having multiple TSG
 // keys or no active keys but Vault stored keys, etc.
 func (s *Session) EnsureKey(ctx context.Context) error {
-	keychain := NewKeychain(s.parsedRequest)
+	if s.devMode {
+		log.Debug().
+			Str("account", s.AccountID).
+			Str("fingerprint", s.KeyFingerprint).
+			Msg("auth: ignoring authentication via TSG_DEV_MODE")
+
+		return nil
+	}
+
+	keychain := NewKeychain(s.ParsedRequest)
 
 	if err := keychain.CheckTriton(ctx); err != nil {
 		err = errors.Wrap(err, "failed to check triton keys")
@@ -52,11 +79,11 @@ func (s *Session) EnsureKey(ctx context.Context) error {
 	// differentiating debug logs between creating/adding and existing
 	if keychain.HasKey() {
 		log.Debug().
-			Str("account", s.parsedRequest.accountName).
+			Str("account", s.ParsedRequest.AccountName).
 			Str("fingerprint", keychain.AccountKey.Fingerprint).
 			Msg("auth: found existing key in Triton")
 
-		s.AccountID = s.parsedRequest.accountName
+		s.AccountID = s.ParsedRequest.AccountName
 		s.KeyFingerprint = keychain.AccountKey.Fingerprint
 
 		return nil
@@ -78,11 +105,11 @@ func (s *Session) EnsureKey(ctx context.Context) error {
 
 	if keychain.HasKey() {
 		log.Debug().
-			Str("account", s.parsedRequest.accountName).
+			Str("account", s.ParsedRequest.AccountName).
 			Str("fingerprint", keychain.AccountKey.Fingerprint).
 			Msg("auth: successfully created and stored new Triton key")
 
-		s.AccountID = s.parsedRequest.accountName
+		s.AccountID = s.ParsedRequest.AccountName
 		s.KeyFingerprint = keychain.AccountKey.Fingerprint
 	}
 
