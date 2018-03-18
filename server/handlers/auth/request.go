@@ -18,8 +18,9 @@ type ParsedRequest struct {
 
 var (
 	ErrUnauthRequest = errors.New("received unauthenticated request")
-	ErrBadKeyID      = errors.New("couldn't parse keyId within authorization header")
-	ErrParseAuth     = errors.New("bad values parsed from keyId header")
+	ErrBadKeyID      = errors.New("couldn't parse keyId within header")
+	ErrParseAuth     = errors.New("failed to parse values from keyId")
+	ErrParseValue    = errors.New("incorrect values parsed from keyId")
 )
 
 func ParseRequest(req *http.Request) (*ParsedRequest, error) {
@@ -48,11 +49,15 @@ func ParseRequest(req *http.Request) (*ParsedRequest, error) {
 		}
 	}
 
+	if len(parts) < 2 {
+		return nil, ErrParseAuth
+	}
+
 	accountName := parts[0]
 	fingerprint := parts[1]
 
 	if accountName == "" || fingerprint == "" {
-		return nil, ErrParseAuth
+		return nil, ErrParseValue
 	}
 
 	return &ParsedRequest{
