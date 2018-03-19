@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	authHeader    = "Signature keyId=\"/testaccount/keys/12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01\",algorithm=\"rsa-sha1\",headers=\"date\",signature=\"AABBCCDDEEFFGG\""
-	badAuthHeader = "Signature keyId=\"//keys/12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01\",algorithm=\"rsa-sha1\",headers=\"date\",signature=\"AABBCCDDEEFFGG\""
-	dateHeader    = "Sat, 17 Mar 2018 16:12:06 UTC"
+	authHeader      = "Signature keyId=\"/testaccount/keys/12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01\",algorithm=\"rsa-sha1\",headers=\"date\",signature=\"AABBCCDDEEFFGG\""
+	badAuthHeader   = "Signature keyId=\"//keys/12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01\",algorithm=\"rsa-sha1\",headers=\"date\",signature=\"AABBCCDDEEFFGG\""
+	badFPrintHeader = "Signature keyId=\"/testaccount/keys/\",algorithm=\"rsa-sha1\",headers=\"date\",signature=\"AABBCCDDEEFFGG\""
+	dateHeader      = "Sat, 17 Mar 2018 16:12:06 UTC"
 )
 
 func TestParseRequest(t *testing.T) {
@@ -48,6 +49,12 @@ func TestParseRequest(t *testing.T) {
 	h.Set("Date", dateHeader)
 	badNameReq.Header = h
 
+	badFPrintReq := &http.Request{}
+	h = http.Header{}
+	h.Set("Authorization", badFPrintHeader)
+	h.Set("Date", dateHeader)
+	badFPrintReq.Header = h
+
 	tests := []struct {
 		name   string
 		input  *http.Request
@@ -59,6 +66,7 @@ func TestParseRequest(t *testing.T) {
 		{"missing auth", noAuthReq, nil, auth.ErrUnauthRequest},
 		{"bad auth header parse", badKeyReq, nil, auth.ErrBadKeyID},
 		{"bad account name parse", badNameReq, nil, auth.ErrParseAuth},
+		{"bad fingerprint parse", badFPrintReq, nil, auth.ErrParseAuth},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

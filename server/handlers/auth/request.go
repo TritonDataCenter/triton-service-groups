@@ -56,6 +56,9 @@ func ParseRequest(req *http.Request) (*ParsedRequest, error) {
 	accountName := parts[0]
 	fingerprint := parts[1]
 
+	// TODO(justinwr): Whether or not this is an empty string is sort of
+	// irrelevant. We need to ensure that there is a properly formatted
+	// AccountName and Fingerprint within each value.
 	if accountName == "" || fingerprint == "" {
 		return nil, ErrParseValue
 	}
@@ -66,13 +69,6 @@ func ParseRequest(req *http.Request) (*ParsedRequest, error) {
 		AccountName: accountName,
 		Fingerprint: fingerprint,
 	}, nil
-}
-
-func (r *ParsedRequest) HasValues() bool {
-	return r.dateHeader != "" &&
-		r.authHeader != "" &&
-		r.AccountName != "" &&
-		r.Fingerprint != ""
 }
 
 func (r *ParsedRequest) Header() *http.Header {
