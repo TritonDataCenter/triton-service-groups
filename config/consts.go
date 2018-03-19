@@ -29,6 +29,9 @@ const (
 
 	KeyHTTPServerBind = "http.bind"
 	KeyHTTPServerPort = "http.port"
+
+	KeyNomadURL  = "nomad.url"
+	KeyNomadPort = "nomad.port"
 )
 
 const (
