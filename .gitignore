@@ -11,4 +11,6 @@
 
 coverage.txt
 data/
+
 bin/
+.vagrant/
