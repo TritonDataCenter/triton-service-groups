@@ -19,7 +19,7 @@ import (
 )
 
 type OrchestratorJob struct {
-	AccountID           string
+	AccountID           int64
 	JobName             string
 	HealthCheckInterval int
 	DesiredCount        int

@@ -14,7 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func FindGroups(ctx context.Context, accountID string) ([]*ServiceGroup, error) {
+func FindGroups(ctx context.Context, accountID int) ([]*ServiceGroup, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -51,7 +51,7 @@ AND archived = false;`
 	return groups, nil
 }
 
-func FindGroupByID(ctx context.Context, key int64, accountID string) (*ServiceGroup, bool) {
+func FindGroupByID(ctx context.Context, key int64, accountID int) (*ServiceGroup, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -83,7 +83,7 @@ AND archived = false;`
 	}
 }
 
-func FindGroupByName(ctx context.Context, name string, accountID string) (*ServiceGroup, bool) {
+func FindGroupByName(ctx context.Context, name string, accountID int) (*ServiceGroup, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -115,7 +115,7 @@ AND archived = false;`
 	}
 }
 
-func SaveGroup(ctx context.Context, accountID string, group *ServiceGroup) {
+func SaveGroup(ctx context.Context, accountID int, group *ServiceGroup) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -134,7 +134,7 @@ VALUES ($1, $2, $3, $4, $5)
 	}
 }
 
-func UpdateGroup(ctx context.Context, name string, accountID string, group *ServiceGroup) {
+func UpdateGroup(ctx context.Context, name string, accountID int, group *ServiceGroup) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -154,7 +154,7 @@ WHERE name = $1 and account_id = $2
 	}
 }
 
-func RemoveGroup(ctx context.Context, identifier int64, accountID string) {
+func RemoveGroup(ctx context.Context, identifier int64, accountID int) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
