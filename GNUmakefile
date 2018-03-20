@@ -24,21 +24,21 @@ testacc:: ## Run acceptance tests
 
 check::
 	gometalinter \
-    		--deadline 10m \
-    		--vendor \
-    		--sort="path" \
-    		--aggregate \
-    		--enable-gc \
-    		--disable-all \
-    		--enable goimports \
-    		--enable misspell \
-    		--enable vet \
-    		--enable deadcode \
-    		--enable varcheck \
-    		--enable ineffassign \
-    		--enable errcheck \
-    		--enable gofmt \
-    		./...
+			--deadline 10m \
+			--vendor \
+			--sort="path" \
+			--aggregate \
+			--enable-gc \
+			--disable-all \
+			--enable goimports \
+			--enable misspell \
+			--enable vet \
+			--enable deadcode \
+			--enable varcheck \
+			--enable ineffassign \
+			--enable errcheck \
+			--enable gofmt \
+			./...
 
 dev-db-start:: ## Start the development database
 	@echo "==> Running docker-compose up"
@@ -48,6 +48,12 @@ dev-db-stop:: ## Stop the development database
 	@echo "==> Running docker-compose kill"
 	docker-compose kill
 	rm -rf data/
+
+dev-db-clean:: ## Cleans CRDB of all data
+	cockroach sql --database triton --host localhost --insecure --certs-dir ./dev/vagrant/certs < ./dev/clean.sql
+
+dev-db-seed:: ## Seed CRDB with test data (run from project root)
+	cockroach sql --database triton --host localhost --insecure --certs-dir ./dev/vagrant/certs < ./dev/backup.sql
 
 .PHONY: help
 help:: ## Display this help message
