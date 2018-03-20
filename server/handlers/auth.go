@@ -4,19 +4,22 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/jackc/pgx"
 	"github.com/joyent/triton-service-groups/server/handlers/auth"
 )
 
 // authHandler encapsulates the authentication HTTP handler itself. We pipe all
 // active HTTP requests through this object's ServeHTTP method.
 type authHandler struct {
+	pool    *pgx.ConnPool
 	handler http.Handler
 }
 
 // AuthHandler constructs and returns the HTTP handler object responsible for
 // authenticating a request. This accepts a chain of HTTP handlers.
-func AuthHandler(handler http.Handler) authHandler {
+func AuthHandler(pool *pgx.ConnPool, handler http.Handler) authHandler {
 	return authHandler{
+		pool:    pool,
 		handler: handler,
 	}
 }
