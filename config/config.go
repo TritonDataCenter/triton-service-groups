@@ -55,7 +55,8 @@ func (l *PGXLogger) Log(level pgx.LogLevel, msg string, data map[string]interfac
 		zlevel = zerolog.DebugLevel
 	}
 
-	l.logger.WithLevel(zlevel).Msg(msg)
+	pgxlog := l.logger.With().Fields(data).Logger()
+	pgxlog.WithLevel(zlevel).Msg(msg)
 }
 
 func NewDefault() (cfg *Config, err error) {
