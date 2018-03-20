@@ -14,14 +14,14 @@ import (
 type Session struct {
 	*ParsedRequest
 
-	AccountID      string
+	AccountID      int
 	KeyFingerprint string
 
 	devMode bool
 }
 
 const (
-	testAccountID      = "joyent"
+	testAccountID      = 332378521158418433
 	testKeyFingerprint = "12:34:56:78:90:12:34:56:78:90:12:34:56:78:90:AB"
 )
 
@@ -49,7 +49,7 @@ func NewSession(req *http.Request) (*Session, error) {
 // IsAuthenticated encapsulates whatever it means for an authSession to be
 // deemed authenticated.
 func (a *Session) IsAuthenticated() bool {
-	return a.AccountID != "" && a.KeyFingerprint != ""
+	return a.AccountID != 0 && a.KeyFingerprint != ""
 }
 
 // EnsureKey checks Triton for an active TSG account key. If we cannot find one,
@@ -60,7 +60,7 @@ func (a *Session) IsAuthenticated() bool {
 func (s *Session) EnsureKey(ctx context.Context) error {
 	if s.devMode {
 		log.Debug().
-			Str("account", s.AccountID).
+			Int("account_id", s.AccountID).
 			Str("fingerprint", s.KeyFingerprint).
 			Msg("auth: ignoring authentication via TSG_DEV_MODE")
 
@@ -75,15 +75,13 @@ func (s *Session) EnsureKey(ctx context.Context) error {
 		return err
 	}
 
-	// NOTE(justinwr): this is duplicate logic from below but I wanted
-	// differentiating debug logs between creating/adding and existing
 	if keychain.HasKey() {
 		log.Debug().
-			Str("account", s.ParsedRequest.AccountName).
+			Int("account_id", testAccountID).
 			Str("fingerprint", keychain.AccountKey.Fingerprint).
 			Msg("auth: found existing key in Triton")
 
-		s.AccountID = s.ParsedRequest.AccountName
+		s.AccountID = testAccountID
 		s.KeyFingerprint = keychain.AccountKey.Fingerprint
 
 		return nil
@@ -105,11 +103,11 @@ func (s *Session) EnsureKey(ctx context.Context) error {
 
 	if keychain.HasKey() {
 		log.Debug().
-			Str("account", s.ParsedRequest.AccountName).
+			Int("account_id", testAccountID).
 			Str("fingerprint", keychain.AccountKey.Fingerprint).
 			Msg("auth: successfully created and stored new Triton key")
 
-		s.AccountID = s.ParsedRequest.AccountName
+		s.AccountID = testAccountID
 		s.KeyFingerprint = keychain.AccountKey.Fingerprint
 	}
 
