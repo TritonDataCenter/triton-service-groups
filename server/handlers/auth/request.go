@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 type ParsedRequest struct {
@@ -13,15 +15,59 @@ type ParsedRequest struct {
 	dateHeader string
 
 	AccountName string
+	UserName    string
 	Fingerprint string
 }
 
 var (
 	ErrUnauthRequest = errors.New("received unauthenticated request")
+	ErrMissingSig    = errors.New("missing signature within auth header")
 	ErrBadKeyID      = errors.New("couldn't parse keyId within header")
 	ErrParseAuth     = errors.New("failed to parse values from keyId")
 	ErrParseValue    = errors.New("incorrect values parsed from keyId")
+	ErrNameLen       = errors.New("parsed name is too short")
+	ErrNameFormat    = errors.New("parsed name is not formatted properly")
 )
+
+const (
+	matchName  = `^[a-zA-Z][a-zA-Z0-9_\.@]+$`
+	matchKeyId = `keyId=\"(.*?)\"`
+)
+
+func parseKeyId(keyId string) (string, string, string, error) {
+	matches := strings.Split(keyId, `/`)
+
+	if strings.Contains(keyId, `/users/`) {
+		if len(matches) != 6 {
+			return "", "", "", ErrParseAuth
+		}
+
+		return matches[1], matches[3], matches[5], nil
+	}
+
+	if len(matches) != 4 {
+		return "", "", "", ErrParseAuth
+	}
+
+	return matches[1], "", matches[3], nil
+}
+
+func validateName(name string) error {
+	if len(name) < 3 {
+		return ErrNameLen
+	}
+
+	matched, err := regexp.MatchString(matchName, name)
+	if err != nil {
+		log.Error().Err(err)
+		return ErrNameFormat
+	}
+	if !matched {
+		return ErrNameFormat
+	}
+
+	return nil
+}
 
 func ParseRequest(req *http.Request) (*ParsedRequest, error) {
 	dateHeader := req.Header.Get("Date")
@@ -31,7 +77,7 @@ func ParseRequest(req *http.Request) (*ParsedRequest, error) {
 		return nil, ErrUnauthRequest
 	}
 
-	re, err := regexp.Compile("keyId=\"(.*?)\"")
+	re, err := regexp.Compile(matchKeyId)
 	if err != nil {
 		return nil, err
 	}
@@ -41,32 +87,30 @@ func ParseRequest(req *http.Request) (*ParsedRequest, error) {
 		return nil, ErrBadKeyID
 	}
 
-	authParts := strings.Split(matches[1], "/")
-	parts := []string{}
-	for _, part := range authParts {
-		if part != "" && part != "keys" {
-			parts = append(parts, part)
-		}
+	accountName, userName, fingerprint, err := parseKeyId(matches[1])
+	if err != nil {
+		log.Error().Err(err)
+		return nil, err
 	}
 
-	if len(parts) < 2 {
-		return nil, ErrParseAuth
-	}
-
-	accountName := parts[0]
-	fingerprint := parts[1]
-
-	// TODO(justinwr): Whether or not this is an empty string is sort of
-	// irrelevant. We need to ensure that there is a properly formatted
-	// AccountName and Fingerprint within each value.
 	if accountName == "" || fingerprint == "" {
 		return nil, ErrParseValue
+	}
+
+	if err := validateName(accountName); err != nil {
+		return nil, err
+	}
+	if userName != "" {
+		if err := validateName(userName); err != nil {
+			return nil, err
+		}
 	}
 
 	return &ParsedRequest{
 		dateHeader:  dateHeader,
 		authHeader:  authHeader,
 		AccountName: accountName,
+		UserName:    userName,
 		Fingerprint: fingerprint,
 	}, nil
 }
