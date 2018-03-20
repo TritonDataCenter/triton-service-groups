@@ -20,7 +20,7 @@ import (
 type InstanceTemplate struct {
 	ID                 int64             `json:"id"`
 	TemplateName       string            `json:"template_name"`
-	AccountID          string            `json:"account_id"`
+	AccountID          int               `json:"account_id"`
 	Package            string            `json:"package"`
 	ImageID            string            `json:"image_id"`
 	InstanceNamePrefix string            `json:"instance_name_prefix"`
