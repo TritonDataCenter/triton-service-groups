@@ -20,6 +20,8 @@ id SERIAL PRIMARY KEY,
 name STRING NOT NULL,
 fingerprint STRING,
 material TEXT,
+created_at TIMESTAMPTZ NOT NULL,
+updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_accounts (
