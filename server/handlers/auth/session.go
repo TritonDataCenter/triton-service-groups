@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/joyent/triton-service-groups/accounts"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
@@ -50,6 +51,32 @@ func NewSession(req *http.Request) (*Session, error) {
 // deemed authenticated.
 func (a *Session) IsAuthenticated() bool {
 	return a.AccountID != 0 && a.KeyFingerprint != ""
+}
+
+func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) error {
+	if s.devMode {
+		log.Debug().
+			Int("account_id", s.AccountID).
+			Msg("auth: ignoring account via TSG_DEV_MODE")
+
+		return nil
+	}
+
+	check := NewAccountCheck(s.ParsedRequest, store)
+
+	if err := check.OnTriton(ctx); err != nil {
+		return err
+	}
+
+	if !check.HasAccount() {
+		return errors.New("could not authenticate account with triton")
+	}
+
+	if err := check.SaveAccount(ctx); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // EnsureKey checks Triton for an active TSG account key. If we cannot find one,

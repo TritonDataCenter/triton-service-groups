@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx"
+	"github.com/joyent/triton-service-groups/accounts"
 	"github.com/joyent/triton-service-groups/server/handlers/auth"
 )
 
@@ -45,6 +46,13 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	session, err := auth.NewSession(req)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	store := accounts.NewStore(a.pool)
+
+	if err := session.EnsureAccount(ctx, store); err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
