@@ -40,6 +40,13 @@ check::
 			--enable gofmt \
 			./...
 
+dev-db-repl:: ## Start the CRDB repl
+	@cockroach sql \
+		--database triton \
+		--host localhost \
+		--insecure \
+		--certs-dir ./dev/vagrant/certs
+
 dev-db-start:: ## Start the development database
 	@echo "==> Running docker-compose up"
 	docker-compose up -d
@@ -51,6 +58,9 @@ dev-db-stop:: ## Stop the development database
 
 dev-db-clean:: ## Cleans CRDB of all data
 	cockroach sql --database triton --host localhost --insecure --certs-dir ./dev/vagrant/certs < ./dev/clean.sql
+
+dev-db-drop:: ## Drops all tables within CRDB
+	cockroach sql --database triton --host localhost --insecure --certs-dir ./dev/vagrant/certs < ./dev/drop.sql
 
 dev-db-seed:: ## Seed CRDB with test data (run from project root)
 	cockroach sql --database triton --host localhost --insecure --certs-dir ./dev/vagrant/certs < ./dev/backup.sql

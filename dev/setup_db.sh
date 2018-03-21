@@ -15,21 +15,28 @@ fi
 for env in triton triton_test; do
     $SQL -e "CREATE DATABASE IF NOT EXISTS ${env};"
 
+    $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_keys (
+id SERIAL PRIMARY KEY,
+name STRING NOT NULL,
+fingerprint STRING,
+material TEXT,
+archived BOOL DEFAULT false);"
+
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_accounts (
 id SERIAL PRIMARY KEY,
 account_name STRING NOT NULL,
 triton_uuid STRING,
-key_name STRING,
-created_at TIMESTAMP NOT NULL,
-updated_at TIMESTAMP NOT NULL,
+key_id INT REFERENCES tsg_keys (id),
+created_at TIMESTAMPTZ NOT NULL,
+updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_users (
 id SERIAL PRIMARY KEY,
 username STRING NOT NULL,
 account_id INT NOT NULL REFERENCES tsg_accounts (id),
-created_at TIMESTAMP NOT NULL,
-updated_at TIMESTAMP NOT NULL,
+created_at TIMESTAMPTZ NOT NULL,
+updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_templates (
