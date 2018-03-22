@@ -56,10 +56,10 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err := session.EnsureKey(ctx); err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
+	// if err := session.EnsureKey(ctx, store); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusUnauthorized)
+	// 	return
+	// }
 
 	if !session.IsAuthenticated() {
 		http.Error(w, ErrFailedAuth.Error(), http.StatusUnauthorized)

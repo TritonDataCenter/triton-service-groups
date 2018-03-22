@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -15,15 +16,13 @@ import (
 type Session struct {
 	*ParsedRequest
 
-	AccountID      int
-	KeyFingerprint string
+	AccountID int64
 
 	devMode bool
 }
 
 const (
-	testAccountID      = 332378521158418433
-	testKeyFingerprint = "12:34:56:78:90:12:34:56:78:90:12:34:56:78:90:AB"
+	testAccountID = 332378521158418433
 )
 
 // NewSession constructs and returns a new Session by parsing the HTTP request,
@@ -31,9 +30,8 @@ const (
 func NewSession(req *http.Request) (*Session, error) {
 	if devMode := os.Getenv("TSG_DEV_MODE"); devMode == "true" {
 		return &Session{
-			AccountID:      testAccountID,
-			KeyFingerprint: testKeyFingerprint,
-			devMode:        true,
+			AccountID: testAccountID,
+			devMode:   true,
 		}, nil
 	}
 
@@ -50,13 +48,13 @@ func NewSession(req *http.Request) (*Session, error) {
 // IsAuthenticated encapsulates whatever it means for an authSession to be
 // deemed authenticated.
 func (a *Session) IsAuthenticated() bool {
-	return a.AccountID != 0 && a.KeyFingerprint != ""
+	return a.AccountID != 0
 }
 
 func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) error {
 	if s.devMode {
 		log.Debug().
-			Int("account_id", s.AccountID).
+			Str("account_id", fmt.Sprintf("%d", s.AccountID)).
 			Msg("auth: ignoring account via TSG_DEV_MODE")
 
 		return nil
@@ -68,13 +66,20 @@ func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) erro
 		return err
 	}
 
-	if !check.HasAccount() {
+	if !check.HasTritonAccount() {
 		return errors.New("could not authenticate account with triton")
 	}
 
 	if err := check.SaveAccount(ctx); err != nil {
 		return err
 	}
+
+	s.AccountID = check.Account.ID
+
+	log.Debug().
+		Str("account_id", fmt.Sprintf("%d", s.AccountID)).
+		Str("account_name", check.Account.AccountName).
+		Msg("auth: session account has been authenticated")
 
 	return nil
 }
@@ -84,11 +89,10 @@ func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) erro
 //
 // Other edge cases will be developed later like the account having multiple TSG
 // keys or no active keys but Vault stored keys, etc.
-func (s *Session) EnsureKey(ctx context.Context) error {
+func (s *Session) EnsureKey(ctx context.Context, store *accounts.Store) error {
 	if s.devMode {
 		log.Debug().
-			Int("account_id", s.AccountID).
-			Str("fingerprint", s.KeyFingerprint).
+			Str("account_id", fmt.Sprintf("%d", s.AccountID)).
 			Msg("auth: ignoring authentication via TSG_DEV_MODE")
 
 		return nil
@@ -104,12 +108,10 @@ func (s *Session) EnsureKey(ctx context.Context) error {
 
 	if keychain.HasKey() {
 		log.Debug().
-			Int("account_id", testAccountID).
-			Str("fingerprint", keychain.AccountKey.Fingerprint).
-			Msg("auth: found existing key in Triton")
+			Str("account_id", fmt.Sprintf("%d", s.AccountID)).
+			Msg("auth: found existing key in triton")
 
 		s.AccountID = testAccountID
-		s.KeyFingerprint = keychain.AccountKey.Fingerprint
 
 		return nil
 	}
@@ -130,12 +132,10 @@ func (s *Session) EnsureKey(ctx context.Context) error {
 
 	if keychain.HasKey() {
 		log.Debug().
-			Int("account_id", testAccountID).
-			Str("fingerprint", keychain.AccountKey.Fingerprint).
-			Msg("auth: successfully created and stored new Triton key")
+			Str("account_id", fmt.Sprintf("%d", s.AccountID)).
+			Msg("auth: successfully created and stored new triton key")
 
 		s.AccountID = testAccountID
-		s.KeyFingerprint = keychain.AccountKey.Fingerprint
 	}
 
 	return nil
