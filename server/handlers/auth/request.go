@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -18,21 +17,6 @@ type ParsedRequest struct {
 	UserName    string
 	Fingerprint string
 }
-
-var (
-	ErrUnauthRequest = errors.New("received unauthenticated request")
-	ErrMissingSig    = errors.New("missing signature within auth header")
-	ErrBadKeyID      = errors.New("couldn't parse keyId within header")
-	ErrParseAuth     = errors.New("failed to parse values from keyId")
-	ErrParseValue    = errors.New("incorrect values parsed from keyId")
-	ErrNameLen       = errors.New("parsed name is too short")
-	ErrNameFormat    = errors.New("parsed name is not formatted properly")
-)
-
-const (
-	matchName  = `^[a-zA-Z][a-zA-Z0-9_\.@]+$`
-	matchKeyId = `keyId=\"(.*?)\"`
-)
 
 func parseKeyId(keyId string) (string, string, string, error) {
 	matches := strings.Split(keyId, `/`)

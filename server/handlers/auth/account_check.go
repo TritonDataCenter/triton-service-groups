@@ -13,16 +13,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const (
-	// NOTE: if this is set to true than a triton account must be manually added
-	// to the tsg_accounts table, auto account creation will be disabled
-	isWhitelistOnly = true
-)
-
-var (
-	ErrWhitelist = errors.New("service only accessible by whitelist")
-)
-
 type AccountCheck struct {
 	*ParsedRequest
 	*accounts.Account
