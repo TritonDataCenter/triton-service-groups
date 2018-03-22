@@ -13,6 +13,16 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const (
+	// NOTE: if this is set to true than a triton account must be manually added
+	// to the tsg_accounts table, auto account creation will be disabled
+	isWhitelistOnly = true
+)
+
+var (
+	ErrWhitelist = errors.New("service only accessible by whitelist")
+)
+
 type AccountCheck struct {
 	*ParsedRequest
 	*accounts.Account
@@ -61,6 +71,26 @@ func (ac *AccountCheck) OnTriton(ctx context.Context) error {
 	return nil
 }
 
+func (ac *AccountCheck) createAccount(ctx context.Context) error {
+	newAccount := accounts.New(ac.store)
+	newAccount.AccountName = ac.TritonAccount.Login
+	newAccount.TritonUUID = ac.TritonAccount.ID
+
+	if err := newAccount.Insert(ctx); err != nil {
+		return errors.Wrapf(err, "failed to insert %q account", newAccount.AccountName)
+	}
+
+	ac.Account = newAccount
+
+	log.Debug().
+		Str("id", fmt.Sprintf("%d", ac.Account.ID)).
+		Str("name", ac.Account.AccountName).
+		Str("uuid", ac.Account.TritonUUID).
+		Msg("auth: inserted new account into database")
+
+	return nil
+}
+
 // Save saves the TSG account from the Triton Account.
 func (ac *AccountCheck) SaveAccount(ctx context.Context) error {
 	var exists bool
@@ -75,22 +105,20 @@ func (ac *AccountCheck) SaveAccount(ctx context.Context) error {
 		return err
 	}
 
-	if !exists {
-		newAccount := accounts.New(ac.store)
-		newAccount.AccountName = ac.TritonAccount.Login
-		newAccount.TritonUUID = ac.TritonAccount.ID
-
-		if err := newAccount.Insert(ctx); err != nil {
-			return errors.Wrapf(err, "failed to insert %q account", newAccount.AccountName)
-		}
-
-		ac.Account = newAccount
-
+	if !exists && isWhitelistOnly {
 		log.Debug().
-			Str("id", fmt.Sprintf("%d", ac.Account.ID)).
-			Str("name", ac.Account.AccountName).
-			Str("uuid", ac.Account.TritonUUID).
-			Msg("auth: inserted new account into database")
+			Str("name", ac.TritonAccount.Login).
+			Str("uuid", ac.TritonAccount.ID).
+			Str("module", "whitelist").
+			Msg("auth: access denied to new service users")
+
+		return ErrWhitelist
+	}
+
+	if !exists {
+		if err := ac.createAccount(ctx); err != nil {
+			return err
+		}
 
 		return nil
 	}
