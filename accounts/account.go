@@ -65,7 +65,7 @@ func (a *Account) Save(ctx context.Context) error {
 	}
 
 	query := `
-UPDATE tsg_accounts SET (account_name, triton_uuid, updated_at) = ($2, $3, $4)
+UPDATE tsg_accounts SET (account_name, triton_uuid, key_id, updated_at) = ($2, $3, $4, $5)
 WHERE id = $1;
 `
 	updatedAt := time.Now()
@@ -74,6 +74,7 @@ WHERE id = $1;
 		a.ID,
 		a.AccountName,
 		a.TritonUUID,
+		a.KeyID,
 		updatedAt,
 	)
 	if err != nil {
