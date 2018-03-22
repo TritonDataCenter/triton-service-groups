@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx"
 	"github.com/joyent/triton-service-groups/accounts"
+	"github.com/joyent/triton-service-groups/keys"
 	"github.com/joyent/triton-service-groups/server/handlers/auth"
 )
 
@@ -49,17 +50,20 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	store := accounts.NewStore(a.pool)
+	accountStore := accounts.NewStore(a.pool)
 
-	if err := session.EnsureAccount(ctx, store); err != nil {
+	acct, err := session.EnsureAccount(ctx, accountStore)
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	// if err := session.EnsureKey(ctx, store); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusUnauthorized)
-	// 	return
-	// }
+	keyStore := keys.NewStore(a.pool)
+
+	if err := session.EnsureKeys(ctx, acct, keyStore); err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	if !session.IsAuthenticated() {
 		http.Error(w, ErrFailedAuth.Error(), http.StatusUnauthorized)

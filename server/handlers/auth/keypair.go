@@ -46,6 +46,25 @@ func NewKeyPair(bits int) (*KeyPair, error) {
 	}, nil
 }
 
+func DecodeKeyPair(material string) (*KeyPair, error) {
+	privateKey, err := x509.ParsePKCS1PrivateKey([]byte(material))
+	if err != nil {
+		return nil, err
+	}
+
+	sshPublicKey, err := ssh.NewPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return nil, err
+	}
+	fingerprintMD5 := ssh.FingerprintLegacyMD5(sshPublicKey)
+
+	return &KeyPair{
+		PrivateKey:     privateKey,
+		PublicKey:      sshPublicKey,
+		FingerprintMD5: fingerprintMD5,
+	}, nil
+}
+
 func (kp *KeyPair) genPrivateKeyPEM() error {
 	privateKeyBuff := &bytes.Buffer{}
 	privatePEM := bufio.NewWriter(privateKeyBuff)
