@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func FindTemplateByName(ctx context.Context, key string, accountID int) (*InstanceTemplate, bool) {
+func FindTemplateByName(ctx context.Context, key string, accountID int64) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -69,7 +69,7 @@ AND archived = false;`
 	}
 }
 
-func FindTemplateByID(ctx context.Context, key int64, accountID int) (*InstanceTemplate, bool) {
+func FindTemplateByID(ctx context.Context, key int64, accountID int64) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -123,7 +123,7 @@ AND archived = false;`
 	}
 }
 
-func FindTemplates(ctx context.Context, accountID int) ([]*InstanceTemplate, error) {
+func FindTemplates(ctx context.Context, accountID int64) ([]*InstanceTemplate, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -183,7 +183,7 @@ AND archived = false;`
 	return templates, nil
 }
 
-func SaveTemplate(ctx context.Context, accountID int, template *InstanceTemplate) {
+func SaveTemplate(ctx context.Context, accountID int64, template *InstanceTemplate) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -216,7 +216,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 	}
 }
 
-func RemoveTemplate(ctx context.Context, identifier int64, accountID int) {
+func RemoveTemplate(ctx context.Context, identifier int64, accountID int64) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
