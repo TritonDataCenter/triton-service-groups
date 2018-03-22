@@ -2,12 +2,15 @@ package auth
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/jackc/pgx"
 	triton "github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/account"
 	"github.com/joyent/triton-go/authentication"
 	"github.com/joyent/triton-service-groups/accounts"
 	"github.com/pkg/errors"
+	"github.com/rs/zerolog/log"
 )
 
 type AccountCheck struct {
@@ -60,18 +63,67 @@ func (ac *AccountCheck) OnTriton(ctx context.Context) error {
 
 // Save saves the TSG account from the Triton Account.
 func (ac *AccountCheck) SaveAccount(ctx context.Context) error {
-	a := accounts.New(ac.store)
-	a.AccountName = ac.TritonAccount.Login
-	a.TritonUUID = ac.TritonAccount.ID
+	var exists bool
 
-	if err := a.Save(ctx); err != nil {
+	curAccount, err := ac.store.FindByName(ctx, ac.TritonAccount.Login)
+	switch err {
+	case nil:
+		exists = true
+	case pgx.ErrNoRows:
+		exists = false
+	default:
 		return err
 	}
+
+	if !exists {
+		newAccount := accounts.New(ac.store)
+		newAccount.AccountName = ac.TritonAccount.Login
+		newAccount.TritonUUID = ac.TritonAccount.ID
+
+		if err := newAccount.Insert(ctx); err != nil {
+			return errors.Wrapf(err, "failed to insert %q account", newAccount.AccountName)
+		}
+
+		ac.Account = newAccount
+
+		log.Debug().
+			Str("id", fmt.Sprintf("%d", ac.Account.ID)).
+			Str("name", ac.Account.AccountName).
+			Str("uuid", ac.Account.TritonUUID).
+			Msg("auth: inserted new account into database")
+
+		return nil
+	}
+
+	if curAccount.TritonUUID != ac.TritonAccount.ID {
+		curAccount.TritonUUID = ac.TritonAccount.ID
+
+		if err := curAccount.Save(ctx); err != nil {
+			return errors.Wrapf(err, "failed to save %q account", curAccount.AccountName)
+		}
+	}
+
+	ac.Account = curAccount
+
+	log.Debug().
+		Str("id", fmt.Sprintf("%d", ac.Account.ID)).
+		Str("name", ac.Account.AccountName).
+		Str("uuid", ac.Account.TritonUUID).
+		Msg("auth: found existing account in database")
 
 	return nil
 }
 
-// HasAccount returns a boolean whether or not we've authenticated with Triton.
-func (ac *AccountCheck) HasAccount() bool {
+// HasTritonAccount returns a boolean whether or not we've authenticated with Triton.
+func (ac *AccountCheck) HasTritonAccount() bool {
 	return ac.TritonAccount != nil
+}
+
+// HasAccount returns a boolean whether or not the database has a valid Account.
+func (ac *AccountCheck) HasAccount() bool {
+	return ac.Account != nil
+}
+
+func (ac *AccountCheck) IsAuthentic() bool {
+	return ac.HasTritonAccount() && ac.HasAccount()
 }
