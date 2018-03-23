@@ -10,7 +10,6 @@ import (
 	"github.com/joyent/triton-service-groups/keys"
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
-	"github.com/y0ssar1an/q"
 )
 
 // authSession a private struct which is only accessible by pulling out of the
@@ -86,17 +85,15 @@ func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store 
 
 	if err := check.OnTriton(ctx); err != nil {
 		err = errors.Wrap(err, "failed to check triton for key")
-		log.Debug().Err(err)
+		log.Error().Err(err)
 		return err
 	}
 
 	if err := check.InDatabase(ctx); err != nil {
 		err = errors.Wrap(err, "failed to check database for key")
-		log.Debug().Err(err)
+		log.Error().Err(err)
 		return err
 	}
-
-	q.Q(check.TritonKey, check.Key)
 
 	if check.HasKey() {
 		if check.HasTritonKey() {
@@ -104,7 +101,9 @@ func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store 
 				log.Debug().
 					Str("account_name", acct.AccountName).
 					Str("fingerprint", check.Key.Fingerprint).
-					Msg("auth: found existing key with matching fingerprint")
+					Msg("auth: found existing keys with matching fingerprint")
+
+				s.Fingerprint = check.Key.Fingerprint
 
 				return nil
 			}
@@ -131,7 +130,7 @@ func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store 
 		}
 	} else {
 		if check.HasTritonKey() {
-			err := errors.New("auth: found key in triton not in tsg")
+			err := errors.New("auth: found key in triton but not in tsg")
 			log.Error().
 				Str("account_name", acct.AccountName).
 				Str("fingerprint", check.TritonKey.Fingerprint).
@@ -139,7 +138,6 @@ func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store 
 			return err
 		}
 
-		// create a new key
 		keypair, err := NewKeyPair(1024)
 		if err != nil {
 			err = errors.Wrap(err, "failed to generate new keypair")
@@ -166,7 +164,7 @@ func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store 
 		log.Debug().
 			Str("account_name", acct.AccountName).
 			Str("fingerprint", check.Key.Fingerprint).
-			Msg("auth: found existing key with matching fingerprint")
+			Msg("auth: detected matching fingerprints for service keys")
 
 		s.Fingerprint = check.Key.Fingerprint
 

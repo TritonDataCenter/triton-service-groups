@@ -22,6 +22,7 @@ func NewStore(pool *pgx.ConnPool) *Store {
 func (s *Store) FindByID(ctx context.Context, accountID int64) (*Account, error) {
 	var (
 		id        int64
+		keyID     int64
 		name      string
 		uuid      string
 		createdAt pgtype.Timestamp
@@ -29,7 +30,7 @@ func (s *Store) FindByID(ctx context.Context, accountID int64) (*Account, error)
 	)
 
 	query := `
-SELECT id, account_name, triton_uuid, created_at, updated_at
+SELECT id, account_name, triton_uuid, key_id, created_at, updated_at
 FROM tsg_accounts
 WHERE id = $1 AND archived = false;
 `
@@ -37,6 +38,7 @@ WHERE id = $1 AND archived = false;
 		&id,
 		&name,
 		&uuid,
+		&keyID,
 		&createdAt,
 		&updatedAt,
 	)
@@ -48,6 +50,7 @@ WHERE id = $1 AND archived = false;
 	acct.ID = id
 	acct.AccountName = name
 	acct.TritonUUID = uuid
+	acct.KeyID = keyID
 	acct.CreatedAt = createdAt.Time
 	acct.UpdatedAt = updatedAt.Time
 
@@ -58,6 +61,7 @@ WHERE id = $1 AND archived = false;
 func (s *Store) FindByName(ctx context.Context, accountName string) (*Account, error) {
 	var (
 		id        int64
+		keyID     int64
 		name      string
 		uuid      string
 		createdAt pgtype.Timestamp
@@ -65,7 +69,7 @@ func (s *Store) FindByName(ctx context.Context, accountName string) (*Account, e
 	)
 
 	query := `
-SELECT id, account_name, triton_uuid, created_at, updated_at
+SELECT id, account_name, triton_uuid, key_id, created_at, updated_at
 FROM tsg_accounts
 WHERE account_name = $1 AND archived = false;
 `
@@ -73,6 +77,7 @@ WHERE account_name = $1 AND archived = false;
 		&id,
 		&name,
 		&uuid,
+		&keyID,
 		&createdAt,
 		&updatedAt,
 	)
@@ -84,6 +89,7 @@ WHERE account_name = $1 AND archived = false;
 	acct.ID = id
 	acct.AccountName = name
 	acct.TritonUUID = uuid
+	acct.KeyID = keyID
 	acct.CreatedAt = createdAt.Time
 	acct.UpdatedAt = updatedAt.Time
 
