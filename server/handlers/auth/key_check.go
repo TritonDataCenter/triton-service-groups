@@ -16,8 +16,8 @@ import (
 
 type KeyCheck struct {
 	*ParsedRequest
-	*keys.Key
 
+	Key       *keys.Key
 	TritonKey *account.Key
 
 	config  *triton.ClientConfig
