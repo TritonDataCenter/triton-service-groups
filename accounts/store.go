@@ -5,6 +5,7 @@ import (
 
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
+	"github.com/joyent/triton-service-groups/convert"
 )
 
 type Store struct {
@@ -21,8 +22,8 @@ func NewStore(pool *pgx.ConnPool) *Store {
 // FindByID finds an account by a specific ID.
 func (s *Store) FindByID(ctx context.Context, accountID int64) (*Account, error) {
 	var (
-		id        int64
-		keyID     int64
+		id        pgtype.UUID
+		keyID     pgtype.UUID
 		name      string
 		uuid      string
 		createdAt pgtype.Timestamp
@@ -47,10 +48,10 @@ WHERE id = $1 AND archived = false;
 	}
 
 	acct := New(s)
-	acct.ID = id
+	acct.ID = convert.BytesToUUID(id.Bytes)
 	acct.AccountName = name
 	acct.TritonUUID = uuid
-	acct.KeyID = keyID
+	acct.KeyID = convert.BytesToUUID(keyID.Bytes)
 	acct.CreatedAt = createdAt.Time
 	acct.UpdatedAt = updatedAt.Time
 
@@ -60,8 +61,8 @@ WHERE id = $1 AND archived = false;
 // FindByName finds an account by a specific account_name.
 func (s *Store) FindByName(ctx context.Context, accountName string) (*Account, error) {
 	var (
-		id        int64
-		keyID     int64
+		id        pgtype.UUID
+		keyID     pgtype.UUID
 		name      string
 		uuid      string
 		createdAt pgtype.Timestamp
@@ -86,10 +87,10 @@ WHERE account_name = $1 AND archived = false;
 	}
 
 	acct := New(s)
-	acct.ID = id
+	acct.ID = convert.BytesToUUID(id.Bytes)
 	acct.AccountName = name
 	acct.TritonUUID = uuid
-	acct.KeyID = keyID
+	acct.KeyID = convert.BytesToUUID(keyID.Bytes)
 	acct.CreatedAt = createdAt.Time
 	acct.UpdatedAt = updatedAt.Time
 

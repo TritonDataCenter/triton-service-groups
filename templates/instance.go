@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/server/handlers"
@@ -18,9 +17,9 @@ import (
 )
 
 type InstanceTemplate struct {
-	ID                 int64             `json:"id"`
+	ID                 string            `json:"id"`
 	TemplateName       string            `json:"template_name"`
-	AccountID          int               `json:"account_id"`
+	AccountID          string            `json:"account_id"`
 	Package            string            `json:"package"`
 	ImageID            string            `json:"image_id"`
 	InstanceNamePrefix string            `json:"instance_name_prefix"`
@@ -36,17 +35,11 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	session := handlers.GetAuthSession(ctx)
 
 	vars := mux.Vars(r)
-	identifier := vars["identifier"]
+	uuid := vars["identifier"]
 
 	var template *InstanceTemplate
 
-	id, err := strconv.Atoi(identifier)
-	if err != nil {
-		log.Fatal().Err(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	template, ok := FindTemplateByID(ctx, int64(id), session.AccountID)
+	template, ok := FindTemplateByID(ctx, uuid, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -104,17 +97,11 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	session := handlers.GetAuthSession(ctx)
 
 	vars := mux.Vars(r)
-	identifier := vars["identifier"]
+	uuid := vars["identifier"]
 
 	var template *InstanceTemplate
 
-	id, err := strconv.Atoi(identifier)
-	if err != nil {
-		log.Fatal().Err(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	template, ok := FindTemplateByID(ctx, int64(id), session.AccountID)
+	template, ok := FindTemplateByID(ctx, uuid, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return

@@ -15,10 +15,10 @@ var (
 
 // Account represents the data associated with an tsg_accounts row.
 type Account struct {
-	ID          int64
+	ID          string
 	AccountName string
 	TritonUUID  string
-	KeyID       int64
+	KeyID       string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 
@@ -60,7 +60,7 @@ VALUES ($1, $2, NOW(), NOW());
 
 // Save saves an accounts.Account object and it's field values.
 func (a *Account) Save(ctx context.Context) error {
-	if a.ID == 0 {
+	if a.ID == "" {
 		return ErrMissingID
 	}
 
@@ -89,7 +89,7 @@ WHERE id = $1;
 // Exists returns a boolean and error. True if the row exists, false if it
 // doesn't, error if there was an error executing the query.
 func (a *Account) Exists(ctx context.Context) (bool, error) {
-	if a.AccountName == "" && a.ID == 0 {
+	if a.AccountName == "" && a.ID == "" {
 		return false, ErrExists
 	}
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
+	"github.com/joyent/triton-service-groups/convert"
 )
 
 type Store struct {
@@ -19,9 +20,9 @@ func NewStore(pool *pgx.ConnPool) *Store {
 }
 
 // FindByID finds an account by a specific ID.
-func (s *Store) FindByID(ctx context.Context, keyID int64) (*Key, error) {
+func (s *Store) FindByID(ctx context.Context, keyID string) (*Key, error) {
 	var (
-		id          int64
+		id          pgtype.UUID
 		name        string
 		fingerprint string
 		material    string
@@ -47,7 +48,7 @@ WHERE id = $1 AND archived = false;
 	}
 
 	key := New(s)
-	key.ID = id
+	key.ID = convert.BytesToUUID(id.Bytes)
 	key.Name = name
 	key.Fingerprint = fingerprint
 	key.Material = material
@@ -60,7 +61,7 @@ WHERE id = $1 AND archived = false;
 // FindByName finds an account by a specific account_name.
 func (s *Store) FindByName(ctx context.Context, keyName string) (*Key, error) {
 	var (
-		id          int64
+		id          pgtype.UUID
 		name        string
 		fingerprint string
 		material    string
@@ -86,7 +87,7 @@ WHERE name = $1 AND archived = false;
 	}
 
 	key := New(s)
-	key.ID = id
+	key.ID = convert.BytesToUUID(id.Bytes)
 	key.Name = name
 	key.Fingerprint = fingerprint
 	key.Material = material

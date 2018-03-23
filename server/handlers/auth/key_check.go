@@ -73,7 +73,7 @@ func (k *KeyCheck) OnTriton(ctx context.Context) error {
 
 // InDatabase checks for and sets an account's key within the TSG database.
 func (k *KeyCheck) InDatabase(ctx context.Context) error {
-	if k.account.KeyID == 0 {
+	if k.account.KeyID == "" {
 		return nil
 	}
 

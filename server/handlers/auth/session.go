@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -17,7 +16,7 @@ import (
 type Session struct {
 	*ParsedRequest
 
-	AccountID   int64
+	AccountID   string
 	Fingerprint string
 
 	devMode bool
@@ -46,8 +45,7 @@ func NewSession(req *http.Request) (*Session, error) {
 // IsAuthenticated represents whatever it means for an authSession to be deemed
 // authenticated.
 func (a *Session) IsAuthenticated() bool {
-
-	return a.AccountID != 0 && a.Fingerprint != ""
+	return a.AccountID != "" && a.Fingerprint != ""
 }
 
 // EnsureAccount ensures that a Triton account is authentic and an account has
@@ -57,21 +55,27 @@ func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) (*ac
 	check := NewAccountCheck(s.ParsedRequest, store)
 
 	if err := check.OnTriton(ctx); err != nil {
+		err = errors.Wrap(err, "failed to check triton for account")
+		log.Error().Err(err)
 		return nil, err
 	}
 
 	if !check.HasTritonAccount() {
-		return nil, errors.New("could not authenticate account with triton")
+		err := errors.New("could not authenticate account with triton")
+		log.Error().Err(err)
+		return nil, err
 	}
 
 	if err := check.SaveAccount(ctx); err != nil {
+		err := errors.Wrap(err, "failed to save account in database")
+		log.Error().Err(err)
 		return nil, err
 	}
 
 	s.AccountID = check.Account.ID
 
 	log.Debug().
-		Str("account_id", fmt.Sprintf("%d", s.AccountID)).
+		Str("account_id", s.AccountID).
 		Str("account_name", check.Account.AccountName).
 		Msg("auth: session account has been authenticated")
 
