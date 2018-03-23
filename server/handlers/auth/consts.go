@@ -11,5 +11,5 @@ const (
 	// to the tsg_accounts table, auto account creation will be disabled
 	isWhitelistOnly = true
 
-	testAccountID = 332378521158418433
+	testAccountID = "6f873d02-172c-418f-8416-4da2b50d5c53"
 )

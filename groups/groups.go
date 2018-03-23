@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/server/handlers"
@@ -18,10 +17,10 @@ import (
 )
 
 type ServiceGroup struct {
-	ID                  int64  `json:"id"`
+	ID                  string `json:"id"`
 	GroupName           string `json:"group_name"`
-	TemplateID          int64  `json:"template_id"`
-	AccountID           int64  `json:"account_id"`
+	TemplateID          string `json:"template_id"`
+	AccountID           string `json:"account_id"`
 	Capacity            int    `json:"capacity"`
 	HealthCheckInterval int    `json:"health_check_interval"`
 }
@@ -31,17 +30,11 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	session := handlers.GetAuthSession(ctx)
 
 	vars := mux.Vars(r)
-	identifier := vars["identifier"]
+	uuid := vars["identifier"]
 
 	var group *ServiceGroup
 
-	id, err := strconv.Atoi(identifier)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	group, ok := FindGroupByID(ctx, int64(id), session.AccountID)
+	group, ok := FindGroupByID(ctx, uuid, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -139,17 +132,11 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	session := handlers.GetAuthSession(ctx)
 
 	vars := mux.Vars(r)
-	identifier := vars["identifier"]
+	uuid := vars["identifier"]
 
 	var group *ServiceGroup
 
-	id, err := strconv.Atoi(identifier)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	group, ok := FindGroupByID(ctx, int64(id), session.AccountID)
+	group, ok := FindGroupByID(ctx, uuid, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -157,8 +144,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 
 	RemoveGroup(ctx, group.ID, session.AccountID)
 
-	err = DeleteOrchestratorJob(ctx, group)
-	if err != nil {
+	if err := DeleteOrchestratorJob(ctx, group); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -196,16 +182,10 @@ func Increment(w http.ResponseWriter, r *http.Request) {
 	session := handlers.GetAuthSession(ctx)
 
 	vars := mux.Vars(r)
-	identifier := vars["identifier"]
+	uuid := vars["identifier"]
 
 	// Get the Current Group Config
-	id, err := strconv.Atoi(identifier)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	group, ok := FindGroupByID(ctx, int64(id), session.AccountID)
+	group, ok := FindGroupByID(ctx, uuid, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -230,7 +210,7 @@ func Increment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Update the Database and the orchestration job
-	UpdateGroup(ctx, identifier, session.AccountID, group)
+	UpdateGroup(ctx, uuid, session.AccountID, group)
 
 	err = UpdateOrchestratorJob(ctx, group)
 	if err != nil {
@@ -247,16 +227,10 @@ func Decrement(w http.ResponseWriter, r *http.Request) {
 	session := handlers.GetAuthSession(ctx)
 
 	vars := mux.Vars(r)
-	identifier := vars["identifier"]
+	uuid := vars["identifier"]
 
 	// Get the Current Group Config
-	id, err := strconv.Atoi(identifier)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	group, ok := FindGroupByID(ctx, int64(id), session.AccountID)
+	group, ok := FindGroupByID(ctx, uuid, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -281,10 +255,9 @@ func Decrement(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Update the Database and the orchestration job
-	UpdateGroup(ctx, identifier, session.AccountID, group)
+	UpdateGroup(ctx, uuid, session.AccountID, group)
 
-	err = UpdateOrchestratorJob(ctx, group)
-	if err != nil {
+	if err := UpdateOrchestratorJob(ctx, group); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

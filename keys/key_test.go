@@ -168,7 +168,7 @@ func TestExists(t *testing.T) {
 	}
 
 	key.Name = ""
-	key.ID = 0
+	key.ID = ""
 
 	// false and error if key does not include any fields
 	{

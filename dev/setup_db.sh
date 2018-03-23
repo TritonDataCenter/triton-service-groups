@@ -16,7 +16,7 @@ for env in triton triton_test; do
     $SQL -e "CREATE DATABASE IF NOT EXISTS ${env};"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_keys (
-id SERIAL PRIMARY KEY,
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 name STRING NOT NULL,
 fingerprint STRING,
 material TEXT,
@@ -25,26 +25,26 @@ updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_accounts (
-id SERIAL PRIMARY KEY,
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 account_name STRING NOT NULL,
 triton_uuid STRING,
-key_id INT REFERENCES tsg_keys (id),
+key_id UUID REFERENCES tsg_keys (id),
 created_at TIMESTAMPTZ NOT NULL,
 updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_users (
-id SERIAL PRIMARY KEY,
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 username STRING NOT NULL,
-account_id INT NOT NULL REFERENCES tsg_accounts (id),
+account_id UUID NOT NULL REFERENCES tsg_accounts (id),
 created_at TIMESTAMPTZ NOT NULL,
 updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_templates (
-id SERIAL PRIMARY KEY,
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 template_name STRING NOT NULL,
-account_id INT NOT NULL REFERENCES tsg_accounts (id),
+account_id UUID NOT NULL REFERENCES tsg_accounts (id),
 package STRING NOT NULL,
 image_id STRING NOT NULL,
 instance_name_prefix STRING,
@@ -56,10 +56,10 @@ tags TEXT,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_groups (
-id SERIAL PRIMARY KEY,
+id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 name STRING NOT NULL,
-template_id INT NOT NULL REFERENCES tsg_templates (id),
-account_id INT NOT NULL REFERENCES tsg_accounts (id),
+template_id UUID NOT NULL REFERENCES tsg_templates (id),
+account_id UUID NOT NULL REFERENCES tsg_accounts (id),
 capacity INT NOT NULL,
 health_check_interval INT DEFAULT 300,
 archived BOOL DEFAULT false);"

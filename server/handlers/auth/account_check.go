@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx"
 	triton "github.com/joyent/triton-go"
@@ -73,9 +72,9 @@ func (ac *AccountCheck) createAccount(ctx context.Context) error {
 	ac.Account = newAccount
 
 	log.Debug().
-		Str("id", fmt.Sprintf("%d", ac.Account.ID)).
-		Str("name", ac.Account.AccountName).
-		Str("uuid", ac.Account.TritonUUID).
+		Str("account_id", ac.Account.ID).
+		Str("account_name", ac.Account.AccountName).
+		Str("triton_uuid", ac.Account.TritonUUID).
 		Msg("auth: inserted new account into database")
 
 	return nil
@@ -97,8 +96,8 @@ func (ac *AccountCheck) SaveAccount(ctx context.Context) error {
 
 	if !exists && isWhitelistOnly {
 		log.Debug().
-			Str("name", ac.TritonAccount.Login).
-			Str("uuid", ac.TritonAccount.ID).
+			Str("account_name", ac.TritonAccount.Login).
+			Str("triton_uuid", ac.TritonAccount.ID).
 			Str("module", "whitelist").
 			Msg("auth: access denied to new service users")
 
@@ -124,9 +123,9 @@ func (ac *AccountCheck) SaveAccount(ctx context.Context) error {
 	ac.Account = curAccount
 
 	log.Debug().
-		Str("id", fmt.Sprintf("%d", ac.Account.ID)).
-		Str("name", ac.Account.AccountName).
-		Str("uuid", ac.Account.TritonUUID).
+		Str("account_id", ac.Account.ID).
+		Str("account_name", ac.Account.AccountName).
+		Str("triton_uuid", ac.Account.TritonUUID).
 		Msg("auth: found existing account in database")
 
 	return nil

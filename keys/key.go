@@ -15,7 +15,7 @@ var (
 
 // Key represents the data associated with an tsg_keys row.
 type Key struct {
-	ID          int64
+	ID          string
 	Name        string
 	Fingerprint string
 	Material    string
@@ -63,7 +63,7 @@ VALUES ($1, $2, $3, $4, NOW(), NOW());
 
 // Save saves an keys.Key object and it's field values.
 func (k *Key) Save(ctx context.Context) error {
-	if k.ID == 0 {
+	if k.ID == "" {
 		return ErrMissingID
 	}
 
@@ -93,7 +93,7 @@ WHERE id = $1;
 // Exists returns a boolean and error. True if the row exists, false if it
 // doesn't, error if there was an error executing the query.
 func (k *Key) Exists(ctx context.Context) (bool, error) {
-	if k.Name == "" && k.ID == 0 {
+	if k.Name == "" && k.ID == "" {
 		return false, ErrExists
 	}
 

@@ -6,20 +6,21 @@ DELETE FROM tsg_keys;
 DELETE FROM tsg_users;
 DELETE FROM tsg_accounts;
 
-INSERT INTO tsg_accounts (id, account_name, triton_uuid, created_at, updated_at) VALUES (332378521158418433, 'joyent', '87307a00-ab96-4fec-8df7-1a256e49fbcc', NOW(), NOW());
+INSERT INTO tsg_accounts (id, account_name, triton_uuid, created_at, updated_at)
+VALUES ('6f873d02-172c-418f-8416-4da2b50d5c53', 'joyent', '87307a00-ab96-4fec-8df7-1a256e49fbcc', NOW(), NOW());
 
 INSERT INTO tsg_templates (id, template_name, package, image_id, account_id, instance_name_prefix, firewall_enabled, networks, metadata, userdata, tags, archived) VALUES
-    (319209784155176962, 'test-template-1', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 332378521158418433, 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
-    (319209801539354626, 'test-template-2', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 332378521158418433, 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
-    (319209812150321154, 'test-template-3', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 332378521158418433, 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
-    (319209821014392834, 'test-template-4', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 332378521158418433, 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
-    (319209831565656066, 'test-template-5', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 332378521158418433, 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
-    (319209841670782978, 'test-template-6', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', 332378521158418433, 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false);
+    ('ad74301e-ad62-404a-be44-3b2f24d082ac', 'test-template-1', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', '6f873d02-172c-418f-8416-4da2b50d5c53', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
+    ('f1ead2a9-92fc-4435-9eb8-9e520bc3e4f9', 'test-template-2', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', '6f873d02-172c-418f-8416-4da2b50d5c53', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
+    ('93a4a267-498c-4911-a463-196eca9a5d99', 'test-template-3', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', '6f873d02-172c-418f-8416-4da2b50d5c53', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
+    ('deee2b55-11ef-4ffa-b34d-d1035ae1943b', 'test-template-4', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', '6f873d02-172c-418f-8416-4da2b50d5c53', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
+    ('8b5a6001-8a59-4d85-bc72-1af83015b2c2', 'test-template-5', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', '6f873d02-172c-418f-8416-4da2b50d5c53', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),
+    ('437c560d-b1a9-4dae-b3b3-6dbabb7d23a7', 'test-template-6', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', '6f873d02-172c-418f-8416-4da2b50d5c53', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false);
 
 INSERT INTO tsg_groups (id, "name", template_id, account_id, capacity, health_check_interval, archived) VALUES
-    (320376470673326082, 'test-group-1', 319209784155176962, 332378521158418433, 3, 300, false),
-    (320376528846356482, 'test-group-2', 319209801539354626, 332378521158418433, 3, 300, false),
-    (320377354180919298, 'test-group-3', 319209812150321154, 332378521158418433, 6, 60, false),
-    (320377452358238210, 'test-group-4', 319209821014392834, 332378521158418433, 1, 300, false),
-    (320377513666019330, 'test-group-5', 319209831565656066, 332378521158418433, 3, 120, false),
-    (320377641294168066, 'test-group-6', 319209841670782978, 332378521158418433, 12, 300, false);
+    ('9e075e5d-60d5-4cff-968e-b70db0badc12', 'test-group-1', 'ad74301e-ad62-404a-be44-3b2f24d082ac', '6f873d02-172c-418f-8416-4da2b50d5c53', 3, 300, false),
+    ('77135218-9e49-4ef7-81da-09de9ec580ff', 'test-group-2', 'f1ead2a9-92fc-4435-9eb8-9e520bc3e4f9', '6f873d02-172c-418f-8416-4da2b50d5c53', 3, 300, false),
+    ('95fb339f-8f8d-4184-ac5f-2c57e838136e', 'test-group-3', '93a4a267-498c-4911-a463-196eca9a5d99', '6f873d02-172c-418f-8416-4da2b50d5c53', 6, 60, false),
+    ('9dd64b6a-3d2c-4e92-b280-ef0f6cf49d04', 'test-group-4', 'deee2b55-11ef-4ffa-b34d-d1035ae1943b', '6f873d02-172c-418f-8416-4da2b50d5c53', 1, 300, false),
+    ('e6e5bc41-204f-4729-8189-ae3ec6385e95', 'test-group-5', '8b5a6001-8a59-4d85-bc72-1af83015b2c2', '6f873d02-172c-418f-8416-4da2b50d5c53', 3, 120, false),
+    ('1398d5b9-5750-4ed8-af0d-fe328f5d8cd0', 'test-group-6', '437c560d-b1a9-4dae-b3b3-6dbabb7d23a7', '6f873d02-172c-418f-8416-4da2b50d5c53', 12, 300, false);
