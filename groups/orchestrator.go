@@ -5,17 +5,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"strings"
-
-	"text/template"
-
+	stdlog "log"
 	"os"
+	"strings"
+	"text/template"
 
 	nomad "github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/jobspec"
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/joyent/triton-service-groups/templates"
+	"github.com/rs/zerolog/log"
 )
 
 type OrchestratorJob struct {
@@ -51,12 +50,12 @@ func SubmitOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 		return err
 	}
 
-	deployed, err := registerJob(job)
+	deployed, err := registerJob(ctx, job)
 	if err != nil {
 		return err
 	}
 
-	log.Print(deployed)
+	stdlog.Print(deployed)
 
 	return nil
 }
@@ -74,13 +73,13 @@ func UpdateOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 		return err
 	}
 
-	//we always delete the olb job
-	_, err = deregisterJob(*job.ID)
+	// we always delete the old job
+	_, err = deregisterJob(ctx, *job.ID)
 	if err != nil {
 		return err
 	}
 
-	_, err = registerJob(job)
+	_, err = registerJob(ctx, job)
 	if err != nil {
 		return err
 	}
@@ -104,19 +103,19 @@ func DeleteOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 	}
 
 	// Delete current version of the job
-	_, err = deregisterJob(*job.ID)
+	_, err = deregisterJob(ctx, *job.ID)
 	if err != nil {
 		return err
 	}
 
 	// Submit a new version of the job with a count of 0
-	_, err = registerJob(job)
+	_, err = registerJob(ctx, job)
 	if err != nil {
 		return err
 	}
 
 	// Delete current version of the job
-	_, err = deregisterJob(*job.ID)
+	_, err = deregisterJob(ctx, *job.ID)
 	if err != nil {
 		return err
 	}
@@ -124,15 +123,14 @@ func DeleteOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 	return nil
 }
 
-func deregisterJob(jobID string) (bool, error) {
-	orchestratorUrl := os.Getenv("NOMAD_URL")
-
-	client, err := newNomadClient(orchestratorUrl)
-	if err != nil {
-		return false, err
+func deregisterJob(ctx context.Context, jobID string) (bool, error) {
+	client, ok := handlers.GetNomadClient(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoNomadClient)
+		return false, handlers.ErrNoNomadClient
 	}
 
-	_, _, err = client.Jobs().Deregister(jobID, true, nil)
+	_, _, err := client.Jobs().Deregister(jobID, true, nil)
 	if err != nil {
 		return false, fmt.Errorf("Unable to deregister job with Nomad: %v", err)
 	}
@@ -140,15 +138,14 @@ func deregisterJob(jobID string) (bool, error) {
 	return true, nil
 }
 
-func registerJob(job *nomad.Job) (bool, error) {
-	orchestratorUrl := os.Getenv("NOMAD_URL")
-
-	client, err := newNomadClient(orchestratorUrl)
-	if err != nil {
-		return false, err
+func registerJob(ctx context.Context, job *nomad.Job) (bool, error) {
+	client, ok := handlers.GetNomadClient(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoNomadClient)
+		return false, handlers.ErrNoNomadClient
 	}
 
-	_, _, err = client.Jobs().Validate(job, nil)
+	_, _, err := client.Jobs().Validate(job, nil)
 	if err != nil {
 		return false, fmt.Errorf("Failed to validate Nomad Job: %v", err)
 	}
@@ -283,18 +280,3 @@ job "{{.JobName}}" {
   }
 }
 `
-
-func newNomadClient(addr string) (*nomad.Client, error) {
-	config := nomad.DefaultConfig()
-
-	if addr != "" {
-		config.Address = addr
-	}
-
-	c, err := nomad.NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return c, nil
-}

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	ghandlers "github.com/gorilla/handlers"
+	nomad "github.com/hashicorp/nomad/api"
 	"github.com/jackc/pgx"
 	"github.com/joyent/triton-service-groups/config"
 	"github.com/joyent/triton-service-groups/server/handlers"
@@ -29,11 +30,12 @@ type HTTPServer struct {
 
 	logger zerolog.Logger
 	pool   *pgx.ConnPool
+	nomad  *nomad.Client
 
 	http.Server
 }
 
-func New(cfg config.HTTPServer, pool *pgx.ConnPool) *HTTPServer {
+func New(cfg config.HTTPServer, pool *pgx.ConnPool, nomad *nomad.Client) *HTTPServer {
 	log.Debug().Msg("http: creating new HTTP server")
 	addr := fmt.Sprintf("%s:%d", cfg.Bind, cfg.Port)
 
@@ -43,6 +45,7 @@ func New(cfg config.HTTPServer, pool *pgx.ConnPool) *HTTPServer {
 		Port:   cfg.Port,
 		logger: cfg.Logger,
 		pool:   pool,
+		nomad:  nomad,
 	}
 }
 
@@ -57,7 +60,7 @@ func (srv *HTTPServer) setup() {
 
 	router := router.WithRoutes(RoutingTable)
 	authHandler := handlers.AuthHandler(srv.pool, router)
-	contextHandler := handlers.ContextHandler(srv.pool, authHandler)
+	contextHandler := handlers.ContextHandler(srv.pool, srv.nomad, authHandler)
 	srv.Handler = ghandlers.LoggingHandler(srv.logger, contextHandler)
 
 	ln := srv.listenWithRetry()
