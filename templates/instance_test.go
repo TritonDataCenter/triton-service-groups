@@ -14,9 +14,18 @@ import (
 	"github.com/joyent/triton-service-groups/server"
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/joyent/triton-service-groups/server/router"
+	"github.com/joyent/triton-service-groups/templates"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestShortID(t *testing.T) {
+	tmpl := &templates_v1.InstanceTemplate{}
+	assert.Empty(t, tmpl.ShortID())
+
+	tmpl.ID = "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b"
+	assert.Equal(t, "f5435e8b", tmpl.ShortID())
+}
 
 // TODO: We should refactor how/where our database initializes so we can half
 // bootstrap the application from our tests with a simple one-liner.
