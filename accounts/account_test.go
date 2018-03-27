@@ -14,7 +14,7 @@ import (
 
 func TestNew(t *testing.T) {
 	if os.Getenv("TSG_TEST") == "" {
-		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		t.Skip("Acceptance tests skipped unless env 'TSG_TEST=1' set")
 		return
 	}
 
@@ -33,7 +33,7 @@ func TestNew(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	if os.Getenv("TSG_TEST") == "" {
-		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		t.Skip("Acceptance tests skipped unless env 'TSG_TEST=1' set")
 		return
 	}
 
@@ -66,7 +66,7 @@ func TestInsert(t *testing.T) {
 
 func TestSave(t *testing.T) {
 	if os.Getenv("TSG_TEST") == "" {
-		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		t.Skip("Acceptance tests skipped unless env 'TSG_TEST=1' set")
 		return
 	}
 
@@ -108,7 +108,7 @@ func TestSave(t *testing.T) {
 
 func TestExists(t *testing.T) {
 	if os.Getenv("TSG_TEST") == "" {
-		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		t.Skip("Acceptance tests skipped unless env 'TSG_TEST=1' set")
 		return
 	}
 
@@ -162,7 +162,7 @@ func TestExists(t *testing.T) {
 	}
 
 	account.AccountName = ""
-	account.ID = 0
+	account.ID = ""
 
 	// false and error if account does not include any fields
 	{
