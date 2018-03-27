@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/joyent/triton-service-groups/keys"
 	"github.com/joyent/triton-service-groups/testutils"
@@ -96,8 +95,6 @@ func TestSave(t *testing.T) {
 	assert.Equal(t, key.CreatedAt, key.UpdatedAt)
 
 	key.Name = "hackerman"
-
-	time.Sleep(1 * time.Second)
 
 	err = key.Save(context.Background())
 	require.NoError(t, err)

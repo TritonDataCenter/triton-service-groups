@@ -103,8 +103,14 @@ func (k *Key) Exists(ctx context.Context) (bool, error) {
 SELECT 1 FROM tsg_keys
 WHERE (id = $1 OR name = $2) AND archived = false;
 `
+	// NOTE(justinwr): seriously...
+	keyID := "00000000-0000-0000-0000-000000000000"
+	if k.ID != "" {
+		keyID = k.ID
+	}
+
 	err := k.store.pool.QueryRowEx(ctx, query, nil,
-		k.ID,
+		keyID,
 		k.Name,
 	).Scan(&count)
 	switch err {
