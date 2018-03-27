@@ -76,7 +76,9 @@ func (kp *KeyPair) genPrivateKeyPEM() error {
 	if err := pem.Encode(privatePEM, privatePEMBlock); err != nil {
 		return err
 	}
-	privatePEM.Flush()
+	if err := privatePEM.Flush(); err != nil {
+		return err
+	}
 
 	kp.privateKeyPEM = fmt.Sprintf("%s", privateKeyBuff)
 

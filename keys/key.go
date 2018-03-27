@@ -115,6 +115,4 @@ WHERE (id = $1 OR name = $2) AND archived = false;
 	default:
 		return false, errors.Wrap(err, "failed to check key existence")
 	}
-
-	return true, nil
 }
