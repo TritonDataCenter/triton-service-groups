@@ -18,6 +18,7 @@ type Session struct {
 
 	AccountID   string
 	Fingerprint string
+	Datacenter  string
 
 	devMode bool
 }

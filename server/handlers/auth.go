@@ -15,14 +15,16 @@ import (
 type authHandler struct {
 	pool    *pgx.ConnPool
 	handler http.Handler
+	dc      string
 }
 
 // AuthHandler constructs and returns the HTTP handler object responsible for
 // authenticating a request. This accepts a chain of HTTP handlers.
-func AuthHandler(pool *pgx.ConnPool, handler http.Handler) authHandler {
+func AuthHandler(pool *pgx.ConnPool, dc string, handler http.Handler) authHandler {
 	return authHandler{
 		pool:    pool,
 		handler: handler,
+		dc:      dc,
 	}
 }
 
@@ -71,6 +73,8 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, ErrFailedAuth.Error(), http.StatusUnauthorized)
 		return
 	}
+
+	session.Datacenter = a.dc
 
 	ctx = context.WithValue(ctx, authKey, session)
 	a.handler.ServeHTTP(w, req.WithContext(ctx))
