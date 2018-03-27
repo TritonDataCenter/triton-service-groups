@@ -6,8 +6,11 @@ DELETE FROM tsg_keys;
 DELETE FROM tsg_users;
 DELETE FROM tsg_accounts;
 
-INSERT INTO tsg_accounts (id, account_name, triton_uuid, created_at, updated_at)
-VALUES ('6f873d02-172c-418f-8416-4da2b50d5c53', 'joyent', '87307a00-ab96-4fec-8df7-1a256e49fbcc', NOW(), NOW());
+INSERT INTO tsg_keys (id, name, fingerprint, material, created_at, updated_at)
+VALUES ('1d32f239-81e2-4e35-a258-a5649dc4e6f3', 'TSG_Management', '5a:ce:1e:1d:b0:96:78:c6:7a:f2:f8:26:e1:b3:55:79', 'just a test ssh private key yo', NOW(), NOW());
+
+INSERT INTO tsg_accounts (id, account_name, triton_uuid, key_id, created_at, updated_at)
+VALUES ('6f873d02-172c-418f-8416-4da2b50d5c53', 'joyent', '87307a00-ab96-4fec-8df7-1a256e49fbcc', '1d32f239-81e2-4e35-a258-a5649dc4e6f3', NOW(), NOW());
 
 INSERT INTO tsg_templates (id, template_name, package, image_id, account_id, instance_name_prefix, firewall_enabled, networks, metadata, userdata, tags, archived) VALUES
     ('ad74301e-ad62-404a-be44-3b2f24d082ac', 'test-template-1', 'test-package', '49b22aec-0c8a-11e6-8807-a3eb4db576ba', '6f873d02-172c-418f-8416-4da2b50d5c53', 'sample-', false, 'f7ed95d3-faaf-43ef-9346-15644403b963', NULL, 'bash script here', NULL, false),

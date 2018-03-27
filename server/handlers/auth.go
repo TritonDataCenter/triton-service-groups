@@ -50,19 +50,21 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	accountStore := accounts.NewStore(a.pool)
+	if !session.IsDevMode() {
+		accountStore := accounts.NewStore(a.pool)
 
-	acct, err := session.EnsureAccount(ctx, accountStore)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
+		acct, err := session.EnsureAccount(ctx, accountStore)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
 
-	keyStore := keys.NewStore(a.pool)
+		keyStore := keys.NewStore(a.pool)
 
-	if err := session.EnsureKeys(ctx, acct, keyStore); err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+		if err := session.EnsureKeys(ctx, acct, keyStore); err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
 	}
 
 	if !session.IsAuthenticated() {

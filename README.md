@@ -1,21 +1,31 @@
 # triton-service-groups
 
-The following environment variables are still required to demo.
-
-```
-NOMAD_URL
-TRITON_ACCOUNT
-TRITON_URL
-TRITON_KEY_ID
-TRITON_KEY_MATERIAL
-```
-
 ## Run
 
 ```sh
 $ make build
 $ bin/triton-sg agent --log-level=DEBUG
 ```
+
+While developing eveything besides scaling actions you can rely on `TSG_DEV_MODE=1` to skip authentication.
+
+```sh
+$ TSG_DEV_MODE=1 bin/triton-sg agent --log-level=DEBUG
+```
+
+When dev mode is enabled any request sent to the TSG API (regardless of headerS) will be linked to the seed data we've provided within `./dev/setup_db.sh`. This data is only provided as a stub and will not work against Triton's CloudAPI.
+
+### Whitelist
+
+Authentication provides a whitelisting feature which only allows incoming requests to be authenticated if the account has been entered into the TSG database. If whitelisting is not enabled than all Triton accounts that can be authenticated with CloudAPI will generate a new account and key within the TSG API.
+
+The following SQL is a snippet for adding your Triton account to TSG.
+
+```sql
+INSERT INTO tsg_accounts (account_name, triton_uuid, created_at, updated_at) VALUES ('demouser', 'd82a1f04-b9f6-4075-998f-af20e3d49de6', NOW(), NOW());
+```
+
+To turn off whitelisting requires changing a boolean within `server/handlers/auth/consts.go`. Set `isWhitelistOnly` to either `true` or `false`. `true` is the default. A new build of TSG must include this change as it is not yet configurable within the config file or env var.
 
 ## Environment
 
