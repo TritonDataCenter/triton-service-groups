@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/joyent/triton-service-groups/accounts"
+	"github.com/joyent/triton-service-groups/keys"
 	"github.com/joyent/triton-service-groups/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -50,15 +50,18 @@ func TestInsert(t *testing.T) {
 	account := accounts.New(store)
 	require.NotNil(t, account)
 
-	account.AccountName = "baconuser"
-	account.TritonUUID = "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b"
+	accountName := "johndoe"
+	tritonUUID := "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b"
+
+	account.AccountName = accountName
+	account.TritonUUID = tritonUUID
 
 	err = account.Insert(context.Background())
 	require.NoError(t, err)
 
 	assert.NotZero(t, account.ID)
-	assert.Equal(t, account.AccountName, "baconuser")
-	assert.Equal(t, account.TritonUUID, "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b")
+	assert.Equal(t, account.AccountName, accountName)
+	assert.Equal(t, account.TritonUUID, tritonUUID)
 	assert.NotZero(t, account.CreatedAt)
 	assert.NotZero(t, account.UpdatedAt)
 	assert.Equal(t, account.CreatedAt, account.UpdatedAt)
@@ -80,30 +83,91 @@ func TestSave(t *testing.T) {
 	store := accounts.NewStore(db.Conn)
 	require.NotNil(t, store)
 
-	account := accounts.New(store)
-	require.NotNil(t, account)
+	// with an empty KeyID
+	{
+		account := accounts.New(store)
+		require.NotNil(t, account)
 
-	account.AccountName = "demouser"
-	account.TritonUUID = "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b"
+		accountName := "secondname"
+		tritonUUID := "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b"
 
-	err = account.Insert(context.Background())
-	require.NoError(t, err)
+		account.AccountName = "firstname"
+		account.TritonUUID = tritonUUID
 
-	assert.Equal(t, account.CreatedAt, account.UpdatedAt)
+		err = account.Insert(context.Background())
+		require.NoError(t, err)
 
-	account.AccountName = "hackerman"
+		assert.Empty(t, account.KeyID)
+		assert.Equal(t, account.CreatedAt, account.UpdatedAt)
 
-	time.Sleep(2 * time.Second)
+		account.AccountName = accountName
 
-	err = account.Save(context.Background())
-	require.NoError(t, err)
+		err = account.Save(context.Background())
+		require.NoError(t, err)
 
-	assert.NotZero(t, account.ID)
-	assert.Equal(t, account.AccountName, "hackerman")
-	assert.Equal(t, account.TritonUUID, "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b")
-	assert.NotZero(t, account.CreatedAt)
-	assert.NotZero(t, account.UpdatedAt)
-	assert.NotEqual(t, account.CreatedAt, account.UpdatedAt)
+		acct, err := store.FindByID(context.Background(), account.ID)
+		if err != nil {
+			t.Error(err)
+		}
+
+		assert.NotZero(t, acct.ID)
+		assert.Equal(t, accountName, acct.AccountName)
+		assert.Equal(t, tritonUUID, acct.TritonUUID)
+		assert.Equal(t, "", acct.KeyID)
+		assert.NotZero(t, acct.CreatedAt)
+		assert.NotZero(t, acct.UpdatedAt)
+		assert.NotEqual(t, acct.CreatedAt, acct.UpdatedAt)
+	}
+
+	// with a valid KeyID
+	{
+		account := accounts.New(store)
+		require.NotNil(t, account)
+
+		accountName := "seconduser"
+		tritonUUID := "f5435e8b-70b8-4e4d-8c59-1dbe5d100b5b"
+
+		account.AccountName = "demouser"
+		account.TritonUUID = tritonUUID
+
+		err = account.Insert(context.Background())
+		require.NoError(t, err)
+
+		assert.Empty(t, account.KeyID)
+		assert.Equal(t, account.CreatedAt, account.UpdatedAt)
+
+		keyStore := keys.NewStore(db.Conn)
+		require.NotNil(t, keyStore)
+
+		key := keys.New(keyStore)
+		require.NotNil(t, key)
+
+		key.Name = "testkey"
+		key.Fingerprint = "blahblahblah"
+		key.Material = "blahblahblah"
+
+		err = key.Insert(context.Background())
+		require.NoError(t, err)
+
+		account.AccountName = accountName
+		account.KeyID = key.ID
+
+		err = account.Save(context.Background())
+		require.NoError(t, err)
+
+		acct, err := store.FindByID(context.Background(), account.ID)
+		if err != nil {
+			t.Error(err)
+		}
+
+		assert.NotZero(t, acct.ID)
+		assert.Equal(t, accountName, acct.AccountName)
+		assert.Equal(t, tritonUUID, acct.TritonUUID)
+		assert.Equal(t, key.ID, acct.KeyID)
+		assert.NotZero(t, acct.CreatedAt)
+		assert.NotZero(t, acct.UpdatedAt)
+		assert.NotEqual(t, acct.CreatedAt, acct.UpdatedAt)
+	}
 }
 
 func TestExists(t *testing.T) {

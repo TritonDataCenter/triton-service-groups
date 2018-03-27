@@ -32,6 +32,8 @@ func NewTestDB() (*TestDB, error) {
 }
 
 // Clear clears out all active tables used during automated testing.
+//
+// TODO(justinwr): make this a loop over the tables instead
 func (db *TestDB) Clear(t *testing.T) {
 	_, err := db.Conn.Exec(`DELETE FROM tsg_groups`)
 	if err != nil {
