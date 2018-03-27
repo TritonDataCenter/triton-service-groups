@@ -20,10 +20,11 @@ test:: ## Run unit tests
 
 testacc:: ## Run acceptance tests
 	@echo "==> Running acceptance tests"
-	TRITON_TEST=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+	TSG_TEST=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 check::
 	gometalinter \
+			--skip=examples \
 			--deadline 10m \
 			--vendor \
 			--sort="path" \
