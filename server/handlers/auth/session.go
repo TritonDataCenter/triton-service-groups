@@ -25,10 +25,16 @@ type Session struct {
 // NewSession constructs and returns a new Session by parsing the HTTP request,
 // validating and pulling out authentication headers.
 func NewSession(req *http.Request) (*Session, error) {
-	if devMode := os.Getenv("TSG_DEV_MODE"); devMode == "true" {
+	if devMode := os.Getenv("TSG_DEV_MODE"); devMode != "" {
+		log.Debug().
+			Str("account_id", testAccountID).
+			Str("fingerprint", testFingerprint).
+			Msg("auth: skipping authentication and using seeded defaults")
+
 		return &Session{
-			AccountID: testAccountID,
-			devMode:   true,
+			AccountID:   testAccountID,
+			Fingerprint: testFingerprint,
+			devMode:     true,
 		}, nil
 	}
 
@@ -42,10 +48,14 @@ func NewSession(req *http.Request) (*Session, error) {
 	}, nil
 }
 
+func (s *Session) IsDevMode() bool {
+	return s.devMode
+}
+
 // IsAuthenticated represents whatever it means for an authSession to be deemed
 // authenticated.
-func (a *Session) IsAuthenticated() bool {
-	return a.AccountID != "" && a.Fingerprint != ""
+func (s *Session) IsAuthenticated() bool {
+	return s.AccountID != "" && s.Fingerprint != ""
 }
 
 // EnsureAccount ensures that a Triton account is authentic and an account has

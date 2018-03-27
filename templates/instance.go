@@ -30,6 +30,13 @@ type InstanceTemplate struct {
 	Tags               map[string]string `json:"tags"`
 }
 
+func (t *InstanceTemplate) ShortID() string {
+	if t.ID == "" {
+		return ""
+	}
+	return t.ID[:8]
+}
+
 func Get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	session := handlers.GetAuthSession(ctx)

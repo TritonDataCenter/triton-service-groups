@@ -20,7 +20,7 @@ func NewStore(pool *pgx.ConnPool) *Store {
 }
 
 // FindByID finds an account by a specific ID.
-func (s *Store) FindByID(ctx context.Context, accountID int64) (*Account, error) {
+func (s *Store) FindByID(ctx context.Context, accountID string) (*Account, error) {
 	var (
 		id        pgtype.UUID
 		keyID     pgtype.UUID

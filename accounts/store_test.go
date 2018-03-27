@@ -13,7 +13,7 @@ import (
 
 func TestFindByID(t *testing.T) {
 	if os.Getenv("TSG_TEST") == "" {
-		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		t.Skip("Acceptance tests skipped unless env 'TSG_TEST=1' set")
 		return
 	}
 
@@ -49,7 +49,7 @@ func TestFindByID(t *testing.T) {
 
 func TestFindByName(t *testing.T) {
 	if os.Getenv("TSG_TEST") == "" {
-		t.Skip("Acceptance tests skipped unless env 'TRITON_TEST=1' set")
+		t.Skip("Acceptance tests skipped unless env 'TSG_TEST=1' set")
 		return
 	}
 

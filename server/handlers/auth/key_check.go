@@ -87,8 +87,6 @@ func (k *KeyCheck) InDatabase(ctx context.Context) error {
 	default:
 		return err
 	}
-
-	return nil
 }
 
 // AddKey adds an account key into Triton, converting the passed in KeyPair into

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 )
 
@@ -77,11 +78,21 @@ WHERE id = $1;
 `
 	updatedAt := time.Now()
 
+	keyID := new(pgtype.UUID)
+	if a.KeyID == "" {
+		keyID.Status = pgtype.Null
+	} else {
+		keyID.Status = pgtype.Present
+		if err := keyID.Set(a.KeyID); err != nil {
+			return errors.Wrap(err, "failed to parse KeyID")
+		}
+	}
+
 	_, err := a.store.pool.ExecEx(ctx, query, nil,
 		a.ID,
 		a.AccountName,
 		a.TritonUUID,
-		a.KeyID,
+		keyID,
 		updatedAt,
 	)
 	if err != nil {
@@ -106,10 +117,19 @@ func (a *Account) Exists(ctx context.Context) (bool, error) {
 SELECT 1 FROM tsg_accounts
 WHERE (id = $1 OR account_name = $2) AND archived = false;
 `
+
+	// NOTE(justinwr): seriously...
+	accountID := "00000000-0000-0000-0000-000000000000"
+	if a.ID != "" {
+		accountID = a.ID
+	}
+
 	err := a.store.pool.QueryRowEx(ctx, query, nil,
-		a.ID,
+		accountID,
 		a.AccountName,
-	).Scan(&count)
+	).Scan(
+		&count,
+	)
 	switch err {
 	case nil:
 		return true, nil
@@ -118,8 +138,6 @@ WHERE (id = $1 OR account_name = $2) AND archived = false;
 	default:
 		return false, errors.Wrap(err, "failed to check account existence")
 	}
-
-	return true, nil
 }
 
 // Based on an existing account, we want to get the TritonCredential. If the account

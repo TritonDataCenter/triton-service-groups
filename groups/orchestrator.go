@@ -210,7 +210,7 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGroup) OrchestratorJob {
 	job := OrchestratorJob{
 		AccountID:           group.AccountID,
-		JobName:             fmt.Sprintf("%s_%d", group.GroupName, template.ID),
+		JobName:             fmt.Sprintf("%s_%s", group.GroupName, template.ShortID()),
 		HealthCheckInterval: group.HealthCheckInterval,
 		DesiredCount:        group.Capacity,
 		PackageID:           template.Package,
