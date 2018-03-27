@@ -2,6 +2,7 @@ package accounts
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx"
@@ -23,6 +24,12 @@ type Account struct {
 	UpdatedAt   time.Time
 
 	store *Store
+}
+
+type TritonCredential struct {
+	AccountName string
+	KeyID       string
+	KeyMaterial string
 }
 
 // New constructs a new Account with the Store for backend persistence.
@@ -113,4 +120,34 @@ WHERE (id = $1 OR account_name = $2) AND archived = false;
 	}
 
 	return true, nil
+}
+
+// Based on an existing account, we want to get the TritonCredential. If the account
+// is found, then we will get the KeyID and KeyMaterial for the TSG Management key
+// of that account. If we do not find any credentials, we return an error.
+func (a *Account) GetTritonCredential(ctx context.Context) (*TritonCredential, error) {
+	if a.AccountName == "" && a.ID == "" {
+		return nil, ErrExists
+	}
+
+	var credential *TritonCredential
+
+	query := `
+SELECT account_name, key_id, material FROM tsg_accounts, tsg_keys 
+WHERE tsg_accounts.key_id = tsg_keys.id 
+AND account_name = $1
+AND archived = false;
+`
+	err := a.store.pool.QueryRowEx(ctx, query, nil,
+		a.ID,
+		a.AccountName,
+	).Scan(credential.AccountName,
+		credential.KeyID,
+		credential.KeyMaterial)
+	switch err {
+	case nil:
+		return credential, nil
+	default:
+		return nil, fmt.Errorf("no triton credentials found")
+	}
 }

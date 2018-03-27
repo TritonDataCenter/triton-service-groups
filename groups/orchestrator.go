@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 	stdlog "log"
-	"os"
-	"strings"
 	"text/template"
 
 	nomad "github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/jobspec"
+	"github.com/joyent/triton-service-groups/accounts"
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/joyent/triton-service-groups/templates"
 	"github.com/rs/zerolog/log"
@@ -45,7 +44,7 @@ func SubmitOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 		return errors.New("Error finding template by ID")
 	}
 
-	job, err := prepareJob(t, group)
+	job, err := prepareJob(ctx, t, group)
 	if err != nil {
 		return err
 	}
@@ -68,7 +67,7 @@ func UpdateOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 		return errors.New("Error finding template by ID")
 	}
 
-	job, err := prepareJob(t, group)
+	job, err := prepareJob(ctx, t, group)
 	if err != nil {
 		return err
 	}
@@ -97,7 +96,7 @@ func DeleteOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 
 	g := group
 	g.Capacity = 0
-	job, err := prepareJob(t, g)
+	job, err := prepareJob(ctx, t, g)
 	if err != nil {
 		return err
 	}
@@ -163,9 +162,10 @@ func registerJob(ctx context.Context, job *nomad.Job) (bool, error) {
 	return true, nil
 }
 
-func prepareJob(t *templates_v1.InstanceTemplate, group *ServiceGroup) (*nomad.Job, error) {
+func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *ServiceGroup) (*nomad.Job, error) {
 	tpl := &bytes.Buffer{}
 	details := createJobDetails(t, group)
+	details.getTritonAccountDetails(ctx)
 
 	fmap := template.FuncMap{
 		"formatAsMinutes": formatAsMinutes,
@@ -183,6 +183,28 @@ func prepareJob(t *templates_v1.InstanceTemplate, group *ServiceGroup) (*nomad.J
 	}
 
 	return job, nil
+}
+
+func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		return handlers.ErrNoConnPool
+	}
+	store := accounts.NewStore(db)
+	account := accounts.New(store)
+
+	credential, err := account.GetTritonCredential(ctx)
+	if err != nil {
+		return err
+	}
+
+	j.TritonKeyMaterial = credential.KeyMaterial
+	j.TritonAccount = credential.AccountName
+	j.TritonKeyID = credential.KeyID
+	j.TritonURL = "" //ToDo - this will need set from the work Justin is doing
+
+	return nil
 }
 
 func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGroup) OrchestratorJob {
@@ -216,13 +238,6 @@ func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGro
 	if template.MetaData != nil {
 		job.MetaData = template.MetaData
 	}
-
-	job.TritonAccount = os.Getenv("TRITON_ACCOUNT")
-	job.TritonURL = os.Getenv("TRITON_URL")
-	job.TritonKeyID = os.Getenv("TRITON_KEY_ID")
-
-	keyMaterial := strings.Replace(os.Getenv("TRITON_KEY_MATERIAL"), "\n", `\n`, -1)
-	job.TritonKeyMaterial = keyMaterial
 
 	return job
 }
