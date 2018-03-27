@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	nomad "github.com/hashicorp/nomad/api"
 	"github.com/jackc/pgx"
 	"github.com/joyent/triton-service-groups/buildtime"
 	"github.com/joyent/triton-service-groups/config"
@@ -17,6 +18,7 @@ type Agent struct {
 	shutdown    func()
 	config      *config.Config
 	pool        *pgx.ConnPool
+	nomad       *nomad.Client
 }
 
 func New(cfg *config.Config) *Agent {
@@ -38,7 +40,11 @@ func (a *Agent) Run(ctx context.Context) (err error) {
 		return err
 	}
 
-	srv := server.New(a.config.HTTPServer, a.pool)
+	if err = a.ensureNomadClient(); err != nil {
+		return err
+	}
+
+	srv := server.New(a.config.HTTPServer, a.pool, a.nomad)
 	srv.Start()
 
 	for {

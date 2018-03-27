@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	nomad "github.com/hashicorp/nomad/api"
 	"github.com/jackc/pgx"
 	"github.com/joyent/triton-service-groups/buildtime"
 	"github.com/pkg/errors"
@@ -19,6 +20,7 @@ type Config struct {
 	DBPool
 	Agent
 	HTTPServer
+	Nomad
 }
 
 type Agent struct {
@@ -33,6 +35,12 @@ type HTTPServer struct {
 
 type PGXLogger struct {
 	logger zerolog.Logger
+}
+
+type Nomad struct {
+	Addr      string
+	Port      uint16
+	TLSConfig *nomad.TLSConfig
 }
 
 // Custom logging facade that implements the pgx.Logger interface in order to
@@ -109,6 +117,19 @@ func NewDefault() (cfg *Config, err error) {
 	// default to commonly configured CockroachDB port
 	viper.SetDefault(KeyPGPort, uint16(26257))
 
+	nomadConfig := Nomad{}
+	{
+		url := "127.0.0.1"
+		if url = viper.GetString(KeyNomadURL); url != "" {
+			nomadConfig.Addr = url
+		}
+
+		port := uint16(4242)
+		if port = cast.ToUint16(viper.GetInt(KeyNomadPort)); port != 0 {
+			nomadConfig.Port = port
+		}
+	}
+
 	return &Config{
 		DBPool: pgx.ConnPoolConfig{
 			MaxConnections: 5,
@@ -131,6 +152,7 @@ func NewDefault() (cfg *Config, err error) {
 		},
 		Agent:      agentConfig,
 		HTTPServer: httpServerConfig,
+		Nomad:      nomadConfig,
 	}, nil
 }
 
