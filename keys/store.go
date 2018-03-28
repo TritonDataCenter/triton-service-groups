@@ -59,7 +59,7 @@ WHERE id = $1 AND archived = false;
 }
 
 // FindByName finds an account by a specific account_name.
-func (s *Store) FindByName(ctx context.Context, keyName string) (*Key, error) {
+func (s *Store) FindByName(ctx context.Context, keyName string, accountID string) (*Key, error) {
 	var (
 		id          pgtype.UUID
 		name        string
@@ -72,9 +72,9 @@ func (s *Store) FindByName(ctx context.Context, keyName string) (*Key, error) {
 	query := `
 SELECT id, name, fingerprint, material, created_at, updated_at
 FROM tsg_keys
-WHERE name = $1 AND archived = false;
+WHERE name = $1 AND account_id = $2 AND archived = false;
 `
-	err := s.pool.QueryRowEx(ctx, query, nil, keyName).Scan(
+	err := s.pool.QueryRowEx(ctx, query, nil, keyName, accountID).Scan(
 		&id,
 		&name,
 		&fingerprint,
@@ -88,6 +88,7 @@ WHERE name = $1 AND archived = false;
 
 	key := New(s)
 	key.ID = convert.BytesToUUID(id.Bytes)
+	key.AccountID = accountID
 	key.Name = name
 	key.Fingerprint = fingerprint
 	key.Material = material

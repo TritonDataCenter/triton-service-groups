@@ -49,9 +49,12 @@ func TestInsert(t *testing.T) {
 	key := keys.New(store)
 	require.NotNil(t, key)
 
+	accountID := "d255305d-aa60-49bc-acc2-3713cf0beb1c"
+
 	key.Name = "TSG_Management"
 	key.Fingerprint = "12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01"
 	key.Material = "this is key material"
+	key.AccountID = accountID
 
 	err = key.Insert(context.Background())
 	require.NoError(t, err)
@@ -60,6 +63,7 @@ func TestInsert(t *testing.T) {
 	assert.Equal(t, key.Name, "TSG_Management")
 	assert.Equal(t, key.Fingerprint, "12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01")
 	assert.Equal(t, key.Material, "this is key material")
+	assert.Equal(t, key.AccountID, accountID)
 	assert.False(t, key.Archived)
 	assert.NotZero(t, key.CreatedAt)
 	assert.NotZero(t, key.UpdatedAt)
@@ -85,9 +89,12 @@ func TestSave(t *testing.T) {
 	key := keys.New(store)
 	require.NotNil(t, key)
 
+	accountID := "d255305d-aa60-49bc-acc2-3713cf0beb1c"
+
 	key.Name = "TSG_Management"
 	key.Fingerprint = "12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01"
 	key.Material = "this is key material"
+	key.AccountID = accountID
 
 	err = key.Insert(context.Background())
 	require.NoError(t, err)
@@ -125,9 +132,12 @@ func TestExists(t *testing.T) {
 	store := keys.NewStore(db.Conn)
 	require.NotNil(t, store)
 
+	accountID := "d255305d-aa60-49bc-acc2-3713cf0beb1c"
+
 	created := keys.New(store)
 	require.NotNil(t, created)
 	created.Name = "firstcreate"
+	created.AccountID = accountID
 	created.Insert(context.Background())
 
 	newKey := keys.New(store)
@@ -154,6 +164,7 @@ func TestExists(t *testing.T) {
 		assert.False(t, exists)
 	}
 
+	key.AccountID = accountID
 	err = key.Insert(context.Background())
 	require.NoError(t, err)
 

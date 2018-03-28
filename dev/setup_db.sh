@@ -20,6 +20,7 @@ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 name STRING NOT NULL,
 fingerprint STRING,
 material TEXT,
+account_id UUID,
 created_at TIMESTAMPTZ NOT NULL,
 updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"

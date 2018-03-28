@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	ErrExists    = errors.New("can't check existence without id or name")
-	ErrMissingID = errors.New("missing identifer for save")
+	ErrExists      = errors.New("can't check existence without id or name")
+	ErrNoAccountID = errors.New("missing account identifer for save")
+	ErrMissingID   = errors.New("missing identifer for save")
 )
 
 // Key represents the data associated with an tsg_keys row.
@@ -21,6 +22,7 @@ type Key struct {
 	Material    string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	AccountID   string
 	Archived    bool
 
 	store *Store
@@ -35,21 +37,26 @@ func New(store *Store) *Key {
 
 // Insert inserts a new key into the tsg_keys table.
 func (k *Key) Insert(ctx context.Context) error {
+	if k.AccountID == "" {
+		return ErrNoAccountID
+	}
+
 	query := `
-INSERT INTO tsg_keys (name, fingerprint, material, archived, created_at, updated_at)
-VALUES ($1, $2, $3, $4, NOW(), NOW());
+INSERT INTO tsg_keys (name, fingerprint, material, account_id, archived, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, NOW(), NOW());
 `
 	_, err := k.store.pool.ExecEx(ctx, query, nil,
 		k.Name,
 		k.Fingerprint,
 		k.Material,
+		k.AccountID,
 		k.Archived,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to insert key")
 	}
 
-	key, err := k.store.FindByName(ctx, k.Name)
+	key, err := k.store.FindByName(ctx, k.Name, k.AccountID)
 	if err != nil {
 		return errors.Wrap(err, "failed to find key after insert")
 	}
