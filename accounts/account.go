@@ -45,12 +45,24 @@ func (a *Account) Insert(ctx context.Context) error {
 INSERT INTO tsg_accounts (account_name, triton_uuid, created_at, updated_at)
 VALUES ($1, $2, NOW(), NOW());
 `
-	_, err := a.store.pool.ExecEx(ctx, query, nil,
+	pool := a.store.pool
+
+	tx, err := pool.Begin()
+	if err != nil {
+		return errors.Wrap(err, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	_, err = pool.ExecEx(ctx, query, nil,
 		a.AccountName,
 		a.TritonUUID,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to insert account")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	acct, err := a.store.FindByName(ctx, a.AccountName)
@@ -73,12 +85,20 @@ func (a *Account) Save(ctx context.Context) error {
 
 	updatedAt := time.Now()
 
+	pool := a.store.pool
+
+	tx, err := pool.Begin()
+	if err != nil {
+		return errors.Wrap(err, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
 	if a.KeyID == "" {
 		query := `
 UPDATE tsg_accounts SET (account_name, triton_uuid, updated_at) = ($2, $3, $4)
 WHERE id = $1;
 `
-		_, err := a.store.pool.ExecEx(ctx, query, nil,
+		_, err := pool.ExecEx(ctx, query, nil,
 			a.ID,
 			a.AccountName,
 			a.TritonUUID,
@@ -93,7 +113,7 @@ WHERE id = $1;
 UPDATE tsg_accounts SET (account_name, triton_uuid, key_id, updated_at) = ($2, $3, $4, $5)
 WHERE id = $1;
 `
-		_, err := a.store.pool.ExecEx(ctx, query, nil,
+		_, err := pool.ExecEx(ctx, query, nil,
 			a.ID,
 			a.AccountName,
 			a.TritonUUID,
@@ -103,6 +123,10 @@ WHERE id = $1;
 		if err != nil {
 			return errors.Wrap(err, "failed to save account with key")
 		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	a.UpdatedAt = updatedAt
