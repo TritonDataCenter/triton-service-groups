@@ -24,8 +24,8 @@ func FindTemplateByName(ctx context.Context, key string, accountID string) (*Ins
 		return nil, false
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
-FROM triton.tsg_templates
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
+FROM tsg_templates
 WHERE template_name = $1 and account_id = $2
 AND archived = false;`
 
@@ -36,6 +36,7 @@ AND archived = false;`
 		networksList      string
 		templateID        pgtype.UUID
 		templateAccountID pgtype.UUID
+		createdAt         pgtype.Timestamp
 	)
 
 	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).Scan(
@@ -49,6 +50,7 @@ AND archived = false;`
 		&metaDataJson,
 		&template.UserData,
 		&tagsJson,
+		&createdAt,
 	)
 	switch err {
 	case nil:
@@ -68,6 +70,8 @@ AND archived = false;`
 		template.Tags = tags
 
 		template.Networks = strings.Split(networksList, ",")
+
+		template.CreatedAt = createdAt.Time
 
 		return &template, true
 	case pgx.ErrNoRows:
@@ -84,8 +88,8 @@ func FindTemplateByID(ctx context.Context, key string, accountID string) (*Insta
 		return nil, false
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
-FROM triton.tsg_templates
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
+FROM tsg_templates
 WHERE id = $1 and account_id = $2
 AND archived = false;`
 
@@ -96,6 +100,7 @@ AND archived = false;`
 		networksList      string
 		templateID        pgtype.UUID
 		templateAccountID pgtype.UUID
+		createdAt         pgtype.Timestamp
 	)
 
 	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).Scan(
@@ -109,6 +114,7 @@ AND archived = false;`
 		&metaDataJson,
 		&template.UserData,
 		&tagsJson,
+		&createdAt,
 	)
 	switch err {
 	case nil:
@@ -129,6 +135,8 @@ AND archived = false;`
 
 		template.Networks = strings.Split(networksList, ",")
 
+		template.CreatedAt = createdAt.Time
+
 		return &template, true
 	case pgx.ErrNoRows:
 		return nil, false
@@ -144,8 +152,8 @@ func FindTemplates(ctx context.Context, accountID string) ([]*InstanceTemplate, 
 		return nil, handlers.ErrNoConnPool
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '')
-FROM triton.tsg_templates
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, ''), created_at
+FROM tsg_templates
 WHERE account_id = $1
 AND archived = false;`
 
@@ -156,6 +164,7 @@ AND archived = false;`
 		networksList      string
 		templateID        pgtype.UUID
 		templateAccountID pgtype.UUID
+		createdAt         pgtype.Timestamp
 	)
 
 	rows, err := db.QueryEx(ctx, sqlStatement, nil, accountID)
@@ -176,6 +185,7 @@ AND archived = false;`
 			&metaDataJson,
 			&template.UserData,
 			&tagsJson,
+			&createdAt,
 		)
 		if err != nil {
 			return nil, err
@@ -198,6 +208,8 @@ AND archived = false;`
 
 		template.Networks = strings.Split(networksList, ",")
 
+		template.CreatedAt = createdAt.Time
+
 		templates = append(templates, &template)
 	}
 
@@ -212,8 +224,8 @@ func SaveTemplate(ctx context.Context, accountID string, template *InstanceTempl
 	}
 
 	sqlStatement := `
-INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, networks, metadata, userdata, tags)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+INSERT INTO tsg_templates (template_name, package, image_id, account_id, firewall_enabled, networks, metadata, userdata, tags, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
 `
 
 	metaDataJson, err := convertToJson(template.MetaData)
@@ -229,9 +241,16 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	networksList := strings.Join(template.Networks, ",")
 
 	_, err = db.ExecEx(ctx, sqlStatement, nil,
-		template.TemplateName, template.Package, template.ImageID,
-		accountID, template.FirewallEnabled, networksList, metaDataJson,
-		template.UserData, tagsJson)
+		template.TemplateName,
+		template.Package,
+		template.ImageID,
+		accountID,
+		template.FirewallEnabled,
+		networksList,
+		metaDataJson,
+		template.UserData,
+		tagsJson,
+	)
 	if err != nil {
 		panic(err)
 	}
