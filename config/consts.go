@@ -10,14 +10,14 @@ import (
 const (
 	KeyLogLevel = "log.level"
 
-	KeyPGDatabase = "postgresql.database"
-	KeyPGHost     = "postgresql.host"
-	KeyPGPort     = "postgresql.port"
-	KeyPGUser     = "postgresql.user"
-	KeyPGPassword = "postgresql.password"
-	KeyPGMode     = "postgresql.mode"
+	KeyCRDBDatabase = "crdb.database"
+	KeyCRDBHost     = "crdb.host"
+	KeyCRDBPort     = "crdb.port"
+	KeyCRDBUser     = "crdb.user"
+	KeyCRDBPassword = "crdb.password"
+	KeyCRDBMode     = "crdb.mode"
 
-	KeyAgentLogFormat = "run.log-format"
+	KeyAgentLogFormat = "agent.log-format"
 
 	KeyGoogleAgentEnable = "gops.enable"
 	KeyGoogleAgentBind   = "gops.bind"
@@ -29,6 +29,7 @@ const (
 
 	KeyHTTPServerBind = "http.bind"
 	KeyHTTPServerPort = "http.port"
+	KeyHTTPServerDC   = "http.dc"
 
 	KeyNomadURL  = "nomad.url"
 	KeyNomadPort = "nomad.port"

@@ -31,6 +31,7 @@ type HTTPServer struct {
 	Bind   string
 	Port   uint16
 	Logger zerolog.Logger
+	DC     string
 }
 
 type PGXLogger struct {
@@ -107,6 +108,11 @@ func NewDefault() (cfg *Config, err error) {
 		if port := viper.GetInt(KeyHTTPServerPort); port != 0 {
 			httpServerConfig.Port = uint16(port)
 		}
+
+		httpServerConfig.DC = "us-east-1"
+		if dc := viper.GetString(KeyHTTPServerDC); dc != "" {
+			httpServerConfig.DC = dc
+		}
 	}
 
 	pgxLogger := &PGXLogger{}
@@ -115,7 +121,7 @@ func NewDefault() (cfg *Config, err error) {
 	}
 
 	// default to commonly configured CockroachDB port
-	viper.SetDefault(KeyPGPort, uint16(26257))
+	viper.SetDefault(KeyCRDBPort, uint16(26257))
 
 	nomadConfig := Nomad{}
 	{
@@ -137,11 +143,11 @@ func NewDefault() (cfg *Config, err error) {
 			AcquireTimeout: 0,
 
 			ConnConfig: pgx.ConnConfig{
-				Database: viper.GetString(KeyPGDatabase),
-				User:     viper.GetString(KeyPGUser),
-				Password: viper.GetString(KeyPGPassword),
-				Host:     viper.GetString(KeyPGHost),
-				Port:     cast.ToUint16(viper.GetInt(KeyPGPort)),
+				Database: viper.GetString(KeyCRDBDatabase),
+				User:     viper.GetString(KeyCRDBUser),
+				Password: viper.GetString(KeyCRDBPassword),
+				Host:     viper.GetString(KeyCRDBHost),
+				Port:     cast.ToUint16(viper.GetInt(KeyCRDBPort)),
 				// TLSConfig: &tls.Config{},
 				Logger:   pgxLogger,
 				LogLevel: pgxLogLevel,
