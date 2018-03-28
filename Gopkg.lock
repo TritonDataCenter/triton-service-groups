@@ -174,10 +174,34 @@
   version = "v3.1.0"
 
 [[projects]]
+  name = "github.com/joyent/triton-go"
+  packages = [
+    ".",
+    "account",
+    "authentication",
+    "client",
+    "errors"
+  ]
+  revision = "f9375d2183ed70c9ca96e15e7a6869e0cea77e1f"
+  version = "1.2.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/kardianos/osext"
   packages = ["."]
   revision = "ae77be60afb1dcacde03767a8c37337fad28ac14"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kr/pretty"
+  packages = ["."]
+  revision = "cfb55aafdaf3ec08f0db22699ab822c50091b1c4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kr/text"
+  packages = ["."]
+  revision = "7cafcd837844e784b526369c9bce262804aebc60"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -228,10 +252,10 @@
   version = "v1.1.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/pkg/errors"
   packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  revision = "816c9085562cd7ee03e7f8188a1cfd942858cded"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -260,6 +284,12 @@
   name = "github.com/sean-/pager"
   packages = ["."]
   revision = "666be9bf53b5257ca07b4a16227df91e104c0519"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/sean-/seed"
+  packages = ["."]
+  revision = "e2103e2c35297fb7e17febb81e49b312087a2372"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -303,7 +333,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/stretchr/testify"
-  packages = ["assert"]
+  packages = [
+    "assert",
+    "require"
+  ]
   revision = "be8372ae8ec5c6daaed3cc28ebf73c54b737c240"
 
 [[projects]]
@@ -313,9 +346,24 @@
   version = "v1.1"
 
 [[projects]]
+  name = "github.com/y0ssar1an/q"
+  packages = ["."]
+  revision = "a594777528d69da7978e1e90b205d6cdd7dda29f"
+  version = "1.0.3"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["blake2b"]
+  packages = [
+    "blake2b",
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "internal/chacha20",
+    "poly1305",
+    "ssh",
+    "ssh/agent"
+  ]
   revision = "c4a91bd4f524f10d064139674cf55852e055ad01"
 
 [[projects]]
@@ -346,6 +394,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b563dbc65b08eab8a8b99bc7d3261c64966dc4140624e888afdec71e9d961167"
+  inputs-digest = "fbeb83e7ced64bd017cbfbe9043e00032ab1c0720c64aeeea8c991d44a97ea05"
   solver-name = "gps-cdcl"
   solver-version = 1
