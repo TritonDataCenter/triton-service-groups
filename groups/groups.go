@@ -12,7 +12,12 @@ import (
 	"path"
 
 	"github.com/gorilla/mux"
+	"github.com/joyent/triton-go"
+	"github.com/joyent/triton-go/authentication"
+	"github.com/joyent/triton-go/compute"
+	"github.com/joyent/triton-service-groups/accounts"
 	"github.com/joyent/triton-service-groups/server/handlers"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -264,6 +269,84 @@ func Decrement(w http.ResponseWriter, r *http.Request) {
 
 	//Return a 202 to suggest accepted
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func ListInstances(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	session := handlers.GetAuthSession(ctx)
+
+	vars := mux.Vars(r)
+	uuid := vars["identifier"]
+
+	group, ok := FindGroupByID(ctx, uuid, session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		log.Fatal().Err(handlers.ErrNoConnPool)
+		http.Error(w, handlers.ErrNoConnPool.Error(), http.StatusInternalServerError)
+	}
+	store := accounts.NewStore(db)
+	account, err := store.FindByID(ctx, session.AccountID)
+	if err != nil {
+		log.Error().Err(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	credential, err := account.GetTritonCredential(ctx)
+	if err != nil {
+		log.Fatal().Err(err)
+		return
+	}
+
+	input := authentication.PrivateKeySignerInput{
+		KeyID:              credential.KeyID,
+		PrivateKeyMaterial: []byte(credential.KeyMaterial),
+		AccountName:        credential.AccountName,
+	}
+	signer, err := authentication.NewPrivateKeySigner(input)
+	if err != nil {
+		returnError := errors.Wrapf(err, "error Creating SSH Private Key Signer")
+		log.Fatal().Err(returnError)
+		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+	}
+
+	config := &triton.ClientConfig{
+		TritonURL:   session.TritonURL,
+		AccountName: credential.AccountName,
+		Signers:     []authentication.Signer{signer},
+	}
+
+	c, err := compute.NewClient(config)
+	if err != nil {
+		returnError := errors.Wrapf(err, "error constructing ComputeClient")
+		log.Fatal().Err(returnError)
+		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+	}
+
+	params := &compute.ListInstancesInput{}
+	t := make(map[string]interface{}, 0)
+	t["tsg.name"] = group.GroupName
+	params.Tags = t
+
+	instances, err := c.Instances().List(ctx, params)
+	if err != nil {
+		returnError := errors.Wrapf(err, "error listing instances in TSG")
+		log.Fatal().Err(returnError)
+		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+	}
+
+	bytes, err := json.Marshal(instances)
+	if err != nil {
+		returnError := errors.Wrapf(err, "error marshalling TSG instance list")
+		log.Fatal().Err(returnError)
+		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+	}
+
+	writeJsonResponse(w, bytes)
 }
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
