@@ -45,7 +45,16 @@ func (k *Key) Insert(ctx context.Context) error {
 INSERT INTO tsg_keys (name, fingerprint, material, account_id, archived, created_at, updated_at)
 VALUES ($1, $2, $3, $4, $5, NOW(), NOW());
 `
-	_, err := k.store.pool.ExecEx(ctx, query, nil,
+
+	pool := k.store.pool
+
+	tx, err := pool.Begin()
+	if err != nil {
+		return errors.Wrap(err, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	_, err = pool.ExecEx(ctx, query, nil,
 		k.Name,
 		k.Fingerprint,
 		k.Material,
@@ -54,6 +63,10 @@ VALUES ($1, $2, $3, $4, $5, NOW(), NOW());
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to insert key")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	key, err := k.store.FindByName(ctx, k.Name, k.AccountID)
@@ -80,7 +93,15 @@ WHERE id = $1;
 `
 	updatedAt := time.Now()
 
-	_, err := k.store.pool.ExecEx(ctx, query, nil,
+	pool := k.store.pool
+
+	tx, err := pool.Begin()
+	if err != nil {
+		return errors.Wrap(err, "failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	_, err = pool.ExecEx(ctx, query, nil,
 		k.ID,
 		k.Name,
 		k.Fingerprint,
@@ -89,7 +110,11 @@ WHERE id = $1;
 		updatedAt,
 	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to update key")
+	}
+
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	k.UpdatedAt = updatedAt
