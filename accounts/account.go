@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 )
 
@@ -72,31 +71,38 @@ func (a *Account) Save(ctx context.Context) error {
 		return ErrMissingID
 	}
 
-	query := `
+	updatedAt := time.Now()
+
+	if a.KeyID == "" {
+		query := `
+UPDATE tsg_accounts SET (account_name, triton_uuid, updated_at) = ($2, $3, $4)
+WHERE id = $1;
+`
+		_, err := a.store.pool.ExecEx(ctx, query, nil,
+			a.ID,
+			a.AccountName,
+			a.TritonUUID,
+			updatedAt,
+		)
+		if err != nil {
+			return errors.Wrap(err, "failed to save account with key")
+		}
+	} else {
+
+		query := `
 UPDATE tsg_accounts SET (account_name, triton_uuid, key_id, updated_at) = ($2, $3, $4, $5)
 WHERE id = $1;
 `
-	updatedAt := time.Now()
-
-	keyID := new(pgtype.UUID)
-	if a.KeyID == "" {
-		keyID.Status = pgtype.Null
-	} else {
-		keyID.Status = pgtype.Present
-		if err := keyID.Set(a.KeyID); err != nil {
-			return errors.Wrap(err, "failed to parse KeyID")
+		_, err := a.store.pool.ExecEx(ctx, query, nil,
+			a.ID,
+			a.AccountName,
+			a.TritonUUID,
+			a.KeyID,
+			updatedAt,
+		)
+		if err != nil {
+			return errors.Wrap(err, "failed to save account with key")
 		}
-	}
-
-	_, err := a.store.pool.ExecEx(ctx, query, nil,
-		a.ID,
-		a.AccountName,
-		a.TritonUUID,
-		keyID,
-		updatedAt,
-	)
-	if err != nil {
-		return errors.Wrap(err, "failed to save account")
 	}
 
 	a.UpdatedAt = updatedAt
@@ -151,8 +157,8 @@ func (a *Account) GetTritonCredential(ctx context.Context) (*TritonCredential, e
 	var credential *TritonCredential
 
 	query := `
-SELECT account_name, key_id, material FROM tsg_accounts, tsg_keys 
-WHERE tsg_accounts.key_id = tsg_keys.id 
+SELECT account_name, key_id, material FROM tsg_accounts, tsg_keys
+WHERE tsg_accounts.key_id = tsg_keys.id
 AND account_name = $1
 AND archived = false;
 `
