@@ -78,6 +78,12 @@ var groupRoutes = router.Routes{
 		Pattern: "/v1/tsg/{identifier}/decrement",
 		Handler: groups_v1.Decrement,
 	},
+	router.Route{
+		Name:    "ListInstancesInGroup",
+		Method:  http.MethodGet,
+		Pattern: "/v1/tsg/{identifier}/instances",
+		Handler: groups_v1.ListInstances,
+	},
 }
 
 var RoutingTable = router.RouteTable{
