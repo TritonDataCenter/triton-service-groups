@@ -4,7 +4,7 @@ Triton Service Groups provide a simple way to scale instances to meet capacity n
 
 Triton Service Groups help you maximize application efficiency so that you only pay for resources that you actually need.
 
-At this time, there is no integration with `triton`.
+At this time, there is no integration with Triton CLI.
 
 ## Run
 
