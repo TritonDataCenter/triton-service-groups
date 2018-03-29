@@ -1,6 +1,6 @@
 # triton-service-groups
 
-Triton Service Groups provide monitoring for applications, automatically scaling to meet capacity needs and maintain performance at the lowest possible cost. Build plans using the TSG API or with Terraform to scale resources on Triton including VMs and containers. 
+Triton Service Groups provide monitoring for Triton applications, automatically scaling to meet capacity needs and maintain performance at the lowest possible cost. Manage applications using the TSG API or with Terraform to scale resources on Triton including VMs and containers. 
 
 Triton Service Groups help you maximize application efficiency so that you only pay for resources that you actually need. If demand decreases, TSG will adjust and remove unnecessary resources to optimize your spending on Triton.
 
