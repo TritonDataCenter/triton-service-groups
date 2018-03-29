@@ -4,6 +4,8 @@ Triton Service Groups provide monitoring for Triton applications, automatically 
 
 Triton Service Groups help you maximize application efficiency so that you only pay for resources that you actually need. If demand decreases, TSG will adjust and remove unnecessary resources to optimize your spending on Triton.
 
+At this time, there is no integration with `triton`.
+
 ## Run
 
 ```sh
@@ -82,3 +84,7 @@ enable = true
 bind = "127.0.0.1"
 port = 9090
 ```
+
+## Terraform
+
+Implement Triton Service Groups in Terraform by using a template resource.
