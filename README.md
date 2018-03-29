@@ -11,13 +11,13 @@ $ make build
 $ bin/triton-sg agent --log-level=DEBUG
 ```
 
-While developing eveything besides scaling actions you can rely on `TSG_DEV_MODE=1` to skip authentication.
+While developing anything except scaling actions, you can rely on `TSG_DEV_MODE=1` to skip authentication.
 
 ```sh
 $ TSG_DEV_MODE=1 bin/triton-sg agent --log-level=DEBUG
 ```
 
-When dev mode is enabled any request sent to the TSG API (regardless of headerS) will be linked to the seed data we've provided within `./dev/setup_db.sh`. This data is only provided as a stub and will not work against Triton's CloudAPI.
+When dev mode is enabled any request sent to the TSG API (regardless of headers) will be linked to the seed data we've provided within `./dev/setup_db.sh`. This data is only provided as a stub and will not work against CloudAPI.
 
 ### Whitelist
 
