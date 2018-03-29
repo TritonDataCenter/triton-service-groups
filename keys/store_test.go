@@ -30,9 +30,12 @@ func TestFindByID(t *testing.T) {
 	key := keys.New(store)
 	require.NotNil(t, key)
 
+	accountID := "d255305d-aa60-49bc-acc2-3713cf0beb1c"
+
 	key.Name = "TSG_Management"
 	key.Fingerprint = "12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01"
 	key.Material = "this is key material"
+	key.AccountID = accountID
 
 	err = key.Insert(context.Background())
 	require.NoError(t, err)
@@ -69,22 +72,26 @@ func TestFindByName(t *testing.T) {
 	key := keys.New(store)
 	require.NotNil(t, key)
 
+	accountID := "d255305d-aa60-49bc-acc2-3713cf0beb1c"
+
 	key.Name = "TSG_Management"
 	key.Fingerprint = "12:23:34:45:56:67:78:89:90:0A:AB:BC:CD:DE:AD:01"
 	key.Material = "this is key material"
+	key.AccountID = accountID
 
 	err = key.Insert(context.Background())
 	require.NoError(t, err)
 
 	require.NotZero(t, key.ID)
 
-	found, err := store.FindByName(context.Background(), key.Name)
+	found, err := store.FindByName(context.Background(), key.Name, accountID)
 	require.NoError(t, err)
 
 	assert.Equal(t, key.ID, found.ID)
 	assert.Equal(t, key.Name, found.Name)
 	assert.Equal(t, key.Fingerprint, found.Fingerprint)
 	assert.Equal(t, key.Material, found.Material)
+	assert.Equal(t, key.AccountID, found.AccountID)
 	assert.Equal(t, key.CreatedAt, found.CreatedAt)
 	assert.Equal(t, key.UpdatedAt, found.UpdatedAt)
 }

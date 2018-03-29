@@ -145,6 +145,7 @@ func TestSave(t *testing.T) {
 		key.Name = "testkey"
 		key.Fingerprint = "blahblahblah"
 		key.Material = "blahblahblah"
+		key.AccountID = account.ID
 
 		err = key.Insert(context.Background())
 		require.NoError(t, err)
