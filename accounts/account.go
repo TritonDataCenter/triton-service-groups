@@ -51,7 +51,7 @@ VALUES ($1, $2, NOW(), NOW());
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
 	}
-	defer tx.Rollback()
+	defer tx.Rollback() // nolint: errcheck
 
 	_, err = pool.ExecEx(ctx, query, nil,
 		a.AccountName,
@@ -91,7 +91,7 @@ func (a *Account) Save(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
 	}
-	defer tx.Rollback()
+	defer tx.Rollback() // nolint: errcheck
 
 	if a.KeyID == "" {
 		query := `
