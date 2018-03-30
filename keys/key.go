@@ -52,7 +52,7 @@ VALUES ($1, $2, $3, $4, $5, NOW(), NOW());
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
 	}
-	defer tx.Rollback()
+	defer tx.Rollback() // nolint: errcheck
 
 	_, err = pool.ExecEx(ctx, query, nil,
 		k.Name,
@@ -99,7 +99,7 @@ WHERE id = $1;
 	if err != nil {
 		return errors.Wrap(err, "failed to begin transaction")
 	}
-	defer tx.Rollback()
+	defer tx.Rollback() // nolint: errcheck
 
 	_, err = pool.ExecEx(ctx, query, nil,
 		k.ID,
