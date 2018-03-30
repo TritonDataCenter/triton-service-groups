@@ -2,7 +2,6 @@ package templates_v1_test
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/joyent/triton-service-groups/server/router"
 	"github.com/joyent/triton-service-groups/templates"
+	"github.com/joyent/triton-service-groups/testutils"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,12 +58,17 @@ func TestAcc_Get(t *testing.T) {
 
 	pool, err := initDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
+	}
+
+	nomad, err := testutils.NewNomadClient()
+	if err != nil {
+		t.Error(err)
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
 	authHandler := handlers.AuthHandler(pool, router)
-	contextHandler := handlers.ContextHandler(pool, authHandler)
+	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/319209784155176962", nil)
 	recorder := httptest.NewRecorder()
@@ -87,12 +92,17 @@ func TestAcc_GetIncorrectTemplateName(t *testing.T) {
 
 	pool, err := initDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
+	}
+
+	nomad, err := testutils.NewNomadClient()
+	if err != nil {
+		t.Error(err)
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
 	authHandler := handlers.AuthHandler(pool, router)
-	contextHandler := handlers.ContextHandler(pool, authHandler)
+	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/12345", nil)
 	recorder := httptest.NewRecorder()
@@ -112,12 +122,17 @@ func TestAcc_List(t *testing.T) {
 
 	pool, err := initDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
+	}
+
+	nomad, err := testutils.NewNomadClient()
+	if err != nil {
+		t.Error(err)
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
 	authHandler := handlers.AuthHandler(pool, router)
-	contextHandler := handlers.ContextHandler(pool, authHandler)
+	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates", nil)
 	recorder := httptest.NewRecorder()
@@ -142,12 +157,17 @@ func TestAcc_Delete(t *testing.T) {
 
 	pool, err := initDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
+	}
+
+	nomad, err := testutils.NewNomadClient()
+	if err != nil {
+		t.Error(err)
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
 	authHandler := handlers.AuthHandler(pool, router)
-	contextHandler := handlers.ContextHandler(pool, authHandler)
+	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/328937419456806913", nil)
 	recorder := httptest.NewRecorder()
@@ -168,12 +188,17 @@ func TestAcc_DeleteNonExistantTemplate(t *testing.T) {
 
 	pool, err := initDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
+	}
+
+	nomad, err := testutils.NewNomadClient()
+	if err != nil {
+		t.Error(err)
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
 	authHandler := handlers.AuthHandler(pool, router)
-	contextHandler := handlers.ContextHandler(pool, authHandler)
+	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/1234", nil)
 	recorder := httptest.NewRecorder()
@@ -193,12 +218,17 @@ func TestAcc_CreateTemplate(t *testing.T) {
 
 	pool, err := initDB()
 	if err != nil {
-		log.Fatal(err)
+		t.Error(err)
+	}
+
+	nomad, err := testutils.NewNomadClient()
+	if err != nil {
+		t.Error(err)
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
 	authHandler := handlers.AuthHandler(pool, router)
-	contextHandler := handlers.ContextHandler(pool, authHandler)
+	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	testBody := `{
 	"template_name": "test-template-7",
