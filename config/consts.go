@@ -29,7 +29,9 @@ const (
 
 	KeyHTTPServerBind = "http.bind"
 	KeyHTTPServerPort = "http.port"
-	KeyHTTPServerDC   = "http.dc"
+
+	KeyTritonDC  = "triton.dc"
+	KeyTritonURL = "triton.url"
 
 	KeyNomadURL  = "nomad.url"
 	KeyNomadPort = "nomad.port"

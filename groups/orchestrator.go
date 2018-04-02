@@ -188,6 +188,8 @@ func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *Se
 }
 
 func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
+	session := handlers.GetAuthSession(ctx)
+
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -204,7 +206,7 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 	j.TritonKeyMaterial = credential.KeyMaterial
 	j.TritonAccount = credential.AccountName
 	j.TritonKeyID = credential.KeyID
-	j.TritonURL = "" //ToDo - this will need set from the work Justin is doing
+	j.TritonURL = session.TritonURL
 
 	return nil
 }

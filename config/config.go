@@ -28,10 +28,11 @@ type Agent struct {
 }
 
 type HTTPServer struct {
-	Bind   string
-	Port   uint16
-	Logger zerolog.Logger
-	DC     string
+	Bind      string
+	Port      uint16
+	Logger    zerolog.Logger
+	DC        string
+	TritonURL string
 }
 
 type PGXLogger struct {
@@ -110,8 +111,13 @@ func NewDefault() (cfg *Config, err error) {
 		}
 
 		httpServerConfig.DC = "us-east-1"
-		if dc := viper.GetString(KeyHTTPServerDC); dc != "" {
+		if dc := viper.GetString(KeyTritonDC); dc != "" {
 			httpServerConfig.DC = dc
+		}
+
+		httpServerConfig.TritonURL = "https://us-east-1.api.joyent.com"
+		if url := viper.GetString(KeyTritonURL); url != "" {
+			httpServerConfig.TritonURL = url
 		}
 	}
 

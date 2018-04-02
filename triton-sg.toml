@@ -29,3 +29,7 @@ port = 9090
 [nomad]
 url = "127.0.0.1"
 port = 4646
+
+[triton]
+dc = "us-east-1"
+url = "https://us-east-1.api.joyent.com"

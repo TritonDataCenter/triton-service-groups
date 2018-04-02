@@ -170,9 +170,10 @@ WHERE (id = $1 OR account_name = $2) AND archived = false;
 	}
 }
 
-// Based on an existing account, we want to get the TritonCredential. If the account
-// is found, then we will get the KeyID and KeyMaterial for the TSG Management key
-// of that account. If we do not find any credentials, we return an error.
+// GetTritonCredential gets Triton credentials from an existing Account. If the
+// account is found, then we will get the KeyID and KeyMaterial for the TSG
+// Management key of that account. If we do not find any credentials, we return
+// an error.
 func (a *Account) GetTritonCredential(ctx context.Context) (*TritonCredential, error) {
 	if a.AccountName == "" && a.ID == "" {
 		return nil, ErrExists
@@ -189,9 +190,11 @@ AND archived = false;
 	err := a.store.pool.QueryRowEx(ctx, query, nil,
 		a.ID,
 		a.AccountName,
-	).Scan(credential.AccountName,
+	).Scan(
+		credential.AccountName,
 		credential.KeyID,
-		credential.KeyMaterial)
+		credential.KeyMaterial,
+	)
 	switch err {
 	case nil:
 		return credential, nil

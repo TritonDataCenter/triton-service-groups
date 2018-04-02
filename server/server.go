@@ -28,10 +28,11 @@ type HTTPServer struct {
 	Bind string
 	Port uint16
 
-	dc     string
-	logger zerolog.Logger
-	pool   *pgx.ConnPool
-	nomad  *nomad.Client
+	dc        string
+	tritonURL string
+	logger    zerolog.Logger
+	pool      *pgx.ConnPool
+	nomad     *nomad.Client
 
 	http.Server
 }
@@ -41,13 +42,14 @@ func New(cfg config.HTTPServer, pool *pgx.ConnPool, nomad *nomad.Client) *HTTPSe
 	addr := fmt.Sprintf("%s:%d", cfg.Bind, cfg.Port)
 
 	return &HTTPServer{
-		Addr:   addr,
-		Bind:   cfg.Bind,
-		Port:   cfg.Port,
-		dc:     cfg.DC,
-		logger: cfg.Logger,
-		pool:   pool,
-		nomad:  nomad,
+		Addr:      addr,
+		Bind:      cfg.Bind,
+		Port:      cfg.Port,
+		dc:        cfg.DC,
+		tritonURL: cfg.TritonURL,
+		logger:    cfg.Logger,
+		pool:      pool,
+		nomad:     nomad,
 	}
 }
 
@@ -61,7 +63,7 @@ func (srv *HTTPServer) setup() {
 	log.Debug().Msg("http: mounting routes as endpoints")
 
 	router := router.WithRoutes(RoutingTable)
-	authHandler := handlers.AuthHandler(srv.pool, srv.dc, router)
+	authHandler := handlers.AuthHandler(srv.pool, srv.dc, srv.tritonURL, router)
 	contextHandler := handlers.ContextHandler(srv.pool, srv.nomad, authHandler)
 	srv.Handler = ghandlers.LoggingHandler(srv.logger, contextHandler)
 
