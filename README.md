@@ -1,6 +1,6 @@
 # triton-service-groups
 
-Triton Service Groups provide a simple way to scale instances to meet capacity needs and maintain performance at the lowest possible cost. Manage applications using the TSG API or with Terraform to scale VMs and containers on Triton. 
+Triton Service Groups (TSGs) provide a simple way to manage any number of instances running the same image with the same configuration. Simply define the instance template, then create the service group and set the number of instances that are needed. As needs change, you can easily scale the number of instances.
 
 Triton Service Groups help you maximize application efficiency so that you only pay for resources that you actually need.
 
@@ -84,7 +84,3 @@ enable = true
 bind = "127.0.0.1"
 port = 9090
 ```
-
-## Terraform
-
-Implement Triton Service Groups in Terraform by using a template resource.
