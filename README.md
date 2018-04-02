@@ -46,6 +46,10 @@ TSG_GOPS_PORT=9090
 TSG_PPROF_ENABLE=true
 TSG_PPROF_BIND=127.0.0.1
 TSG_PPROF_PORT=9191
+TSG_NOMAD_URL=127.0.0.1
+TSG_NOMAD_PORT=4646
+TSG_TRITON_DC=us-east-1
+TSG_TRITON_URL=https://us-east-1.api.joyent.com
 ```
 
 ## Configuration
@@ -54,19 +58,20 @@ TSG_PPROF_PORT=9191
 [log]
 level = "INFO"
 
-[postgresql]
+[crdb]
 database = "triton"
 host = "127.0.0.1"
 port = 26257
 password = ""
 user = "root"
 
-[run]
+[agent]
 log-format = "auto"
 
 [http]
 bind = "127.0.0.1"
 port = 3000
+dc = "us-east-1"
 
 [gops]
 enable = true
@@ -77,4 +82,12 @@ port = 9191
 enable = true
 bind = "127.0.0.1"
 port = 9090
+
+[nomad]
+url = "127.0.0.1"
+port = 4646
+
+[triton]
+dc = "us-east-1"
+url = "https://us-east-1.api.joyent.com"
 ```
