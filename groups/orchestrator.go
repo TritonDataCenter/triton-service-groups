@@ -165,7 +165,9 @@ func registerJob(ctx context.Context, job *nomad.Job) (bool, error) {
 func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *ServiceGroup) (*nomad.Job, error) {
 	tpl := &bytes.Buffer{}
 	details := createJobDetails(t, group)
-	details.getTritonAccountDetails(ctx)
+	if err := details.getTritonAccountDetails(ctx); err != nil {
+		return nil, err
+	}
 
 	fmap := template.FuncMap{
 		"formatAsMinutes": formatAsMinutes,

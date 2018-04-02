@@ -125,13 +125,13 @@ func NewDefault() (cfg *Config, err error) {
 
 	nomadConfig := Nomad{}
 	{
-		url := "127.0.0.1"
-		if url = viper.GetString(KeyNomadURL); url != "" {
+		nomadConfig.Addr = "127.0.0.1"
+		if url := viper.GetString(KeyNomadURL); url != "" {
 			nomadConfig.Addr = url
 		}
 
-		port := uint16(4242)
-		if port = cast.ToUint16(viper.GetInt(KeyNomadPort)); port != 0 {
+		nomadConfig.Port = uint16(4242)
+		if port := cast.ToUint16(viper.GetInt(KeyNomadPort)); port != 0 {
 			nomadConfig.Port = port
 		}
 	}
