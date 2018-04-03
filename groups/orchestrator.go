@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	stdlog "log"
+	"strings"
 	"text/template"
 
 	nomad "github.com/hashicorp/nomad/api"
@@ -216,7 +217,7 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 		Str("fingerprint", credential.KeyID).
 		Msg("orchestrator: found triton credentials for account")
 
-	j.TritonKeyMaterial = credential.KeyMaterial
+	j.TritonKeyMaterial = strings.Replace(credential.KeyMaterial, "\n", `\n`, -1)
 	j.TritonAccount = credential.AccountName
 	j.TritonKeyID = credential.KeyID
 	j.TritonURL = session.TritonURL
@@ -267,7 +268,7 @@ const jobTemplate = `
 job "{{.JobName}}" {
   type = "batch"
   periodic {
-	cron = "*/{{.HealthCheckInterval | formatAsMinutes}} * * * * "
+	cron = "*/{{.HealthCheckInterval | formatAsMinutes}} * * * * *"
 	prohibit_overlap = true
   }
   datacenters = ["dc1"]

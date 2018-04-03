@@ -117,7 +117,7 @@ func (k *KeyCheck) InsertKey(ctx context.Context, keypair *KeyPair) error {
 	key := keys.New(k.store)
 	key.Name = defaultKeyName
 	key.Fingerprint = keypair.FingerprintMD5
-	key.Material = keypair.PublicKeyBase64()
+	key.Material = keypair.PrivateKeyPEM()
 	key.AccountID = k.account.ID
 
 	if err := key.Insert(ctx); err != nil {
