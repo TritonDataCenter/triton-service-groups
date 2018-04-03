@@ -192,16 +192,29 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
+		log.Error().Err(handlers.ErrNoConnPool)
 		return handlers.ErrNoConnPool
 	}
+
 	store := accounts.NewStore(db)
-	account := accounts.New(store)
+
+	account, err := store.FindByID(ctx, session.AccountID)
+	if err != nil {
+		log.Error().Err(err)
+		return err
+	}
 
 	credential, err := account.GetTritonCredential(ctx)
 	if err != nil {
+		log.Error().Err(err)
 		return err
 	}
+
+	log.Debug().
+		Str("account_id", account.ID).
+		Str("account_name", account.AccountName).
+		Str("fingerprint", credential.KeyID).
+		Msg("orchestrator: found triton credentials for account")
 
 	j.TritonKeyMaterial = credential.KeyMaterial
 	j.TritonAccount = credential.AccountName

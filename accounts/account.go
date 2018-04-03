@@ -2,7 +2,6 @@ package accounts
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx"
@@ -10,8 +9,9 @@ import (
 )
 
 var (
-	ErrExists    = errors.New("can't check existence without id or name")
-	ErrMissingID = errors.New("missing identifer for save")
+	ErrCredExists = errors.New("can't check credentials without key id and name")
+	ErrExists     = errors.New("can't check existence without id or name")
+	ErrMissingID  = errors.New("missing identifer for save")
 )
 
 // Account represents the data associated with an tsg_accounts row.
@@ -175,30 +175,28 @@ WHERE (id = $1 OR account_name = $2) AND archived = false;
 // Management key of that account. If we do not find any credentials, we return
 // an error.
 func (a *Account) GetTritonCredential(ctx context.Context) (*TritonCredential, error) {
-	if a.AccountName == "" && a.ID == "" {
-		return nil, ErrExists
+	if a.AccountName == "" && a.KeyID == "" {
+		return nil, ErrCredExists
 	}
 
-	var credential *TritonCredential
-
-	query := `
-SELECT account_name, key_id, material FROM tsg_accounts, tsg_keys
-WHERE tsg_accounts.key_id = tsg_keys.id
-AND account_name = $1
-AND archived = false;
-`
-	err := a.store.pool.QueryRowEx(ctx, query, nil,
-		a.ID,
-		a.AccountName,
-	).Scan(
-		credential.AccountName,
-		credential.KeyID,
-		credential.KeyMaterial,
+	var (
+		fingerprint string
+		material    string
 	)
-	switch err {
-	case nil:
-		return credential, nil
-	default:
-		return nil, fmt.Errorf("no triton credentials found")
+
+	query := `SELECT fingerprint, material FROM tsg_keys WHERE id = $1 AND archived = false;`
+
+	err := a.store.pool.QueryRowEx(ctx, query, nil, a.KeyID).Scan(
+		&fingerprint,
+		&material,
+	)
+	if err != nil {
+		return nil, err
 	}
+
+	return &TritonCredential{
+		AccountName: a.AccountName,
+		KeyID:       fingerprint,
+		KeyMaterial: material,
+	}, nil
 }
