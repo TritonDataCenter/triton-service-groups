@@ -41,3 +41,7 @@ required = ["golang.org/x/crypto/blake2b", "golang.org/x/sys/unix", "golang.org/
 [[constraint]]
   name = "github.com/hashicorp/nomad"
   branch = "master"
+
+[[constraint]]
+  name = "github.com/joyent/triton-go"
+  branch = "master"

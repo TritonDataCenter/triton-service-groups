@@ -52,6 +52,9 @@ func (ac *AccountCheck) OnTriton(ctx context.Context) error {
 
 	acct, err := a.Get(ctx, &account.GetInput{})
 	if err != nil {
+		log.Debug().
+			Str("account_name", ac.ParsedRequest.AccountName).
+			Msg("failed to get account")
 		return errors.Wrap(err, "failed to get account")
 	}
 

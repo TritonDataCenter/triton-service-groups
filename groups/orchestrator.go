@@ -140,7 +140,7 @@ func deregisterJob(ctx context.Context, jobID string) (bool, error) {
 func registerJob(ctx context.Context, job *nomad.Job) (bool, error) {
 	client, ok := handlers.GetNomadClient(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoNomadClient)
+		log.Error().Err(handlers.ErrNoNomadClient)
 		return false, handlers.ErrNoNomadClient
 	}
 
@@ -188,23 +188,38 @@ func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *Se
 }
 
 func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
+	session := handlers.GetAuthSession(ctx)
+
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
+		log.Error().Err(handlers.ErrNoConnPool)
 		return handlers.ErrNoConnPool
 	}
+
 	store := accounts.NewStore(db)
-	account := accounts.New(store)
+
+	account, err := store.FindByID(ctx, session.AccountID)
+	if err != nil {
+		log.Error().Err(err)
+		return err
+	}
 
 	credential, err := account.GetTritonCredential(ctx)
 	if err != nil {
+		log.Error().Err(err)
 		return err
 	}
+
+	log.Debug().
+		Str("account_id", account.ID).
+		Str("account_name", account.AccountName).
+		Str("fingerprint", credential.KeyID).
+		Msg("orchestrator: found triton credentials for account")
 
 	j.TritonKeyMaterial = credential.KeyMaterial
 	j.TritonAccount = credential.AccountName
 	j.TritonKeyID = credential.KeyID
-	j.TritonURL = "" //ToDo - this will need set from the work Justin is doing
+	j.TritonURL = session.TritonURL
 
 	return nil
 }

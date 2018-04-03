@@ -19,6 +19,7 @@ type Session struct {
 	AccountID   string
 	Fingerprint string
 	Datacenter  string
+	TritonURL   string
 
 	devMode bool
 }

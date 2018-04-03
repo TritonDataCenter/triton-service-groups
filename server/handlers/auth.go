@@ -13,18 +13,20 @@ import (
 // authHandler encapsulates the authentication HTTP handler itself. We pipe all
 // active HTTP requests through this object's ServeHTTP method.
 type authHandler struct {
-	pool    *pgx.ConnPool
-	handler http.Handler
-	dc      string
+	pool      *pgx.ConnPool
+	handler   http.Handler
+	dc        string
+	tritonURL string
 }
 
 // AuthHandler constructs and returns the HTTP handler object responsible for
 // authenticating a request. This accepts a chain of HTTP handlers.
-func AuthHandler(pool *pgx.ConnPool, dc string, handler http.Handler) authHandler {
+func AuthHandler(pool *pgx.ConnPool, dc string, url string, handler http.Handler) authHandler {
 	return authHandler{
-		pool:    pool,
-		handler: handler,
-		dc:      dc,
+		pool:      pool,
+		handler:   handler,
+		dc:        dc,
+		tritonURL: url,
 	}
 }
 
@@ -75,6 +77,7 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	session.Datacenter = a.dc
+	session.TritonURL = a.tritonURL
 
 	ctx = context.WithValue(ctx, authKey, session)
 	a.handler.ServeHTTP(w, req.WithContext(ctx))
