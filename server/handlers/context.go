@@ -58,5 +58,6 @@ func ContextHandler(pool *pgx.ConnPool, nomad *nomad.Client, h http.Handler) *co
 
 func (h *contextHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := context.WithValue(req.Context(), dbKeyName, dbValue{h.pool})
+	ctx = context.WithValue(ctx, nomadKeyName, nomadValue{h.nomad})
 	h.handler.ServeHTTP(w, req.WithContext(ctx))
 }

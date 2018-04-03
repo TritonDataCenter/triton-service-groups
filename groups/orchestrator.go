@@ -140,7 +140,7 @@ func deregisterJob(ctx context.Context, jobID string) (bool, error) {
 func registerJob(ctx context.Context, job *nomad.Job) (bool, error) {
 	client, ok := handlers.GetNomadClient(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoNomadClient)
+		log.Error().Err(handlers.ErrNoNomadClient)
 		return false, handlers.ErrNoNomadClient
 	}
 
