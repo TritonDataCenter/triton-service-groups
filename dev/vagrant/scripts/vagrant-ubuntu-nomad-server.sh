@@ -4,6 +4,8 @@ set -o errexit
 
 (
 cat <<-EOF
+datacenter = "dc1"
+
 # Increase log verbosity
 log_level = "DEBUG"
 
