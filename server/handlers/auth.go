@@ -48,7 +48,7 @@ func GetAuthSession(ctx context.Context) *auth.Session {
 func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
-	session, err := auth.NewSession(req)
+	session, err := auth.NewSession(req, a.dc, a.tritonURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -75,9 +75,6 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, ErrFailedAuth.Error(), http.StatusUnauthorized)
 		return
 	}
-
-	session.Datacenter = a.dc
-	session.TritonURL = a.tritonURL
 
 	ctx = context.WithValue(ctx, authKey, session)
 	a.handler.ServeHTTP(w, req.WithContext(ctx))

@@ -26,7 +26,7 @@ type Session struct {
 
 // NewSession constructs and returns a new Session by parsing the HTTP request,
 // validating and pulling out authentication headers.
-func NewSession(req *http.Request) (*Session, error) {
+func NewSession(req *http.Request, dc string, tritonURL string) (*Session, error) {
 	if devMode := os.Getenv("TSG_DEV_MODE"); devMode != "" {
 		log.Debug().
 			Str("account_id", testAccountID).
@@ -36,6 +36,8 @@ func NewSession(req *http.Request) (*Session, error) {
 		return &Session{
 			AccountID:   testAccountID,
 			Fingerprint: testFingerprint,
+			Datacenter:  dc,
+			TritonURL:   tritonURL,
 			devMode:     true,
 		}, nil
 	}
@@ -47,6 +49,8 @@ func NewSession(req *http.Request) (*Session, error) {
 
 	return &Session{
 		ParsedRequest: parsedReq,
+		Datacenter:    dc,
+		TritonURL:     tritonURL,
 	}, nil
 }
 
