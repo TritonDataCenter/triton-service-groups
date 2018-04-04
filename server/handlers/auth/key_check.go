@@ -27,10 +27,10 @@ type KeyCheck struct {
 	dc      string
 }
 
-func NewKeyCheck(req *ParsedRequest, acct *accounts.Account, store *keys.Store, dc string) *KeyCheck {
+func NewKeyCheck(req *ParsedRequest, acct *accounts.Account, store *keys.Store, dc string, authURL string) *KeyCheck {
 	signer := &authentication.TestSigner{}
 	config := &triton.ClientConfig{
-		TritonURL:   tritonBaseURL,
+		TritonURL:   authURL,
 		AccountName: req.AccountName,
 		Signers:     []authentication.Signer{signer},
 	}

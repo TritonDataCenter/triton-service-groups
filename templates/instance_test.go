@@ -22,6 +22,7 @@ import (
 const (
 	datacenter = "us-east-1"
 	tritonURL  = "https://us-east-1.api.joyent.com"
+	authURL    = "https://us-west-1.api.joyent.com"
 )
 
 func TestShortID(t *testing.T) {
@@ -72,7 +73,7 @@ func TestAcc_Get(t *testing.T) {
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
-	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, router)
+	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, authURL, router)
 	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/319209784155176962", nil)
@@ -106,7 +107,7 @@ func TestAcc_GetIncorrectTemplateName(t *testing.T) {
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
-	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, router)
+	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, authURL, router)
 	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates/12345", nil)
@@ -136,7 +137,7 @@ func TestAcc_List(t *testing.T) {
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
-	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, router)
+	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, authURL, router)
 	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("GET", "http://example.com/v1/tsg/templates", nil)
@@ -171,7 +172,7 @@ func TestAcc_Delete(t *testing.T) {
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
-	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, router)
+	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, authURL, router)
 	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/328937419456806913", nil)
@@ -202,7 +203,7 @@ func TestAcc_DeleteNonExistantTemplate(t *testing.T) {
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
-	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, router)
+	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, authURL, router)
 	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	req := httptest.NewRequest("DELETE", "http://example.com/v1/tsg/templates/1234", nil)
@@ -232,7 +233,7 @@ func TestAcc_CreateTemplate(t *testing.T) {
 	}
 
 	router := router.WithRoutes(server.RoutingTable)
-	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, router)
+	authHandler := handlers.AuthHandler(pool, datacenter, tritonURL, authURL, router)
 	contextHandler := handlers.ContextHandler(pool, nomad, authHandler)
 
 	testBody := `{

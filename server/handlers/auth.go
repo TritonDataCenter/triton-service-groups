@@ -18,16 +18,18 @@ type authHandler struct {
 	handler   http.Handler
 	dc        string
 	tritonURL string
+	authURL   string
 }
 
 // AuthHandler constructs and returns the HTTP handler object responsible for
 // authenticating a request. This accepts a chain of HTTP handlers.
-func AuthHandler(pool *pgx.ConnPool, dc string, url string, handler http.Handler) authHandler {
+func AuthHandler(pool *pgx.ConnPool, dc string, tritonURL string, authURL string, handler http.Handler) authHandler {
 	return authHandler{
 		pool:      pool,
 		handler:   handler,
 		dc:        dc,
-		tritonURL: url,
+		tritonURL: tritonURL,
+		authURL:   authURL,
 	}
 }
 
@@ -61,7 +63,7 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if !session.IsDevMode() {
 		accountStore := accounts.NewStore(a.pool)
 
-		acct, err := session.EnsureAccount(ctx, accountStore)
+		acct, err := session.EnsureAccount(ctx, accountStore, a.authURL)
 		if err != nil {
 			log.Debug().
 				Str("module", "auth").
@@ -72,7 +74,7 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		keyStore := keys.NewStore(a.pool)
 
-		if err := session.EnsureKeys(ctx, acct, keyStore); err != nil {
+		if err := session.EnsureKeys(ctx, acct, keyStore, a.authURL); err != nil {
 			log.Debug().
 				Str("module", "auth").
 				Err(err)

@@ -5,7 +5,6 @@ const (
 	matchKeyId = `keyId=\"(.*?)\"`
 
 	defaultKeyName = "TSG_Management"
-	tritonBaseURL  = "https://us-west-1.api.joyent.com/"
 
 	// NOTE: if this is set to true than a triton account must be manually added
 	// to the tsg_accounts table, auto account creation will be disabled

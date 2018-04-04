@@ -30,6 +30,7 @@ type HTTPServer struct {
 
 	dc        string
 	tritonURL string
+	authURL   string
 	logger    zerolog.Logger
 	pool      *pgx.ConnPool
 	nomad     *nomad.Client
@@ -47,6 +48,7 @@ func New(cfg config.HTTPServer, pool *pgx.ConnPool, nomad *nomad.Client) *HTTPSe
 		Port:      cfg.Port,
 		dc:        cfg.DC,
 		tritonURL: cfg.TritonURL,
+		authURL:   cfg.AuthURL,
 		logger:    cfg.Logger,
 		pool:      pool,
 		nomad:     nomad,
@@ -63,7 +65,7 @@ func (srv *HTTPServer) setup() {
 	log.Debug().Msg("http: mounting routes as endpoints")
 
 	router := router.WithRoutes(RoutingTable)
-	authHandler := handlers.AuthHandler(srv.pool, srv.dc, srv.tritonURL, router)
+	authHandler := handlers.AuthHandler(srv.pool, srv.dc, srv.tritonURL, srv.authURL, router)
 	contextHandler := handlers.ContextHandler(srv.pool, srv.nomad, authHandler)
 	srv.Handler = ghandlers.LoggingHandler(srv.logger, contextHandler)
 

@@ -22,10 +22,10 @@ type AccountCheck struct {
 	store  *accounts.Store
 }
 
-func NewAccountCheck(req *ParsedRequest, store *accounts.Store) *AccountCheck {
+func NewAccountCheck(req *ParsedRequest, store *accounts.Store, authURL string) *AccountCheck {
 	signer := &authentication.TestSigner{}
 	config := &triton.ClientConfig{
-		TritonURL:   tritonBaseURL,
+		TritonURL:   authURL,
 		AccountName: req.AccountName,
 		Signers:     []authentication.Signer{signer},
 	}

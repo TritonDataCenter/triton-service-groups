@@ -33,6 +33,7 @@ type HTTPServer struct {
 	Logger    zerolog.Logger
 	DC        string
 	TritonURL string
+	AuthURL   string
 }
 
 type PGXLogger struct {
@@ -118,6 +119,11 @@ func NewDefault() (cfg *Config, err error) {
 		httpServerConfig.TritonURL = "https://us-east-1.api.joyent.com"
 		if url := viper.GetString(KeyTritonURL); url != "" {
 			httpServerConfig.TritonURL = url
+		}
+
+		httpServerConfig.AuthURL = "https://us-west-1.api.joyent.com"
+		if authURL := viper.GetString(KeyTritonAuthURL); authURL != "" {
+			httpServerConfig.AuthURL = authURL
 		}
 	}
 
