@@ -30,9 +30,11 @@ const (
 	KeyHTTPServerBind = "http.bind"
 	KeyHTTPServerPort = "http.port"
 
-	KeyTritonDC      = "triton.dc"
-	KeyTritonURL     = "triton.url"
-	KeyTritonAuthURL = "triton.auth-url"
+	KeyTritonDC        = "triton.dc"
+	KeyTritonURL       = "triton.url"
+	KeyTritonAuthURL   = "triton.auth-url"
+	KeyTritonKeyPrefix = "triton.key-prefix"
+	KeyTritonWhitelist = "triton.whitelist"
 
 	KeyNomadURL  = "nomad.url"
 	KeyNomadPort = "nomad.port"

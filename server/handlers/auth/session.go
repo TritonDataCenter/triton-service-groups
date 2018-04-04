@@ -22,11 +22,12 @@ type Session struct {
 	TritonURL   string
 
 	devMode bool
+	config  Config
 }
 
 // NewSession constructs and returns a new Session by parsing the HTTP request,
 // validating and pulling out authentication headers.
-func NewSession(req *http.Request, dc string, tritonURL string) (*Session, error) {
+func NewSession(req *http.Request, cfg Config) (*Session, error) {
 	if devMode := os.Getenv("TSG_DEV_MODE"); devMode != "" {
 		log.Debug().
 			Str("account_id", testAccountID).
@@ -36,8 +37,8 @@ func NewSession(req *http.Request, dc string, tritonURL string) (*Session, error
 		return &Session{
 			AccountID:   testAccountID,
 			Fingerprint: testFingerprint,
-			Datacenter:  dc,
-			TritonURL:   tritonURL,
+			Datacenter:  cfg.Datacenter,
+			TritonURL:   cfg.TritonURL,
 			devMode:     true,
 		}, nil
 	}
@@ -49,8 +50,9 @@ func NewSession(req *http.Request, dc string, tritonURL string) (*Session, error
 
 	return &Session{
 		ParsedRequest: parsedReq,
-		Datacenter:    dc,
-		TritonURL:     tritonURL,
+		Datacenter:    cfg.Datacenter,
+		TritonURL:     cfg.TritonURL,
+		config:        cfg,
 	}, nil
 }
 
@@ -67,8 +69,8 @@ func (s *Session) IsAuthenticated() bool {
 // EnsureAccount ensures that a Triton account is authentic and an account has
 // been created for it within the TSG database. Returns the TSG account that was
 // either created or found.
-func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store, authURL string) (*accounts.Account, error) {
-	check := NewAccountCheck(s.ParsedRequest, store, authURL)
+func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) (*accounts.Account, error) {
+	check := NewAccountCheck(s.ParsedRequest, store, s.config)
 
 	if err := check.OnTriton(ctx); err != nil {
 		err = errors.Wrap(err, "failed to check triton for account")
@@ -100,8 +102,8 @@ func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store, auth
 
 // EnsureKey checks Triton for an active TSG account key. If one cannot be found
 // than a new key is created and stored it into the TSG database.
-func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store *keys.Store, authURL string) error {
-	check := NewKeyCheck(s.ParsedRequest, acct, store, s.Datacenter, authURL)
+func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store *keys.Store) error {
+	check := NewKeyCheck(s.ParsedRequest, acct, store, s.config)
 
 	if err := check.OnTriton(ctx); err != nil {
 		err = errors.Wrap(err, "failed to check triton for key")

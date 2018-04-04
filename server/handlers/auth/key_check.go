@@ -24,23 +24,25 @@ type KeyCheck struct {
 	config  *triton.ClientConfig
 	store   *keys.Store
 	account *accounts.Account
-	dc      string
+	keyName string
 }
 
-func NewKeyCheck(req *ParsedRequest, acct *accounts.Account, store *keys.Store, dc string, authURL string) *KeyCheck {
+func NewKeyCheck(req *ParsedRequest, acct *accounts.Account, store *keys.Store, cfg Config) *KeyCheck {
 	signer := &authentication.TestSigner{}
 	config := &triton.ClientConfig{
-		TritonURL:   authURL,
+		TritonURL:   cfg.AuthURL,
 		AccountName: req.AccountName,
 		Signers:     []authentication.Signer{signer},
 	}
+
+	keyName := strings.Join([]string{cfg.KeyNamePrefix, cfg.Datacenter}, "_")
 
 	return &KeyCheck{
 		ParsedRequest: req,
 		account:       acct,
 		config:        config,
 		store:         store,
-		dc:            dc,
+		keyName:       keyName,
 	}
 }
 
@@ -59,7 +61,7 @@ func (k *KeyCheck) OnTriton(ctx context.Context) error {
 	a.SetHeader(k.ParsedRequest.Header())
 
 	input := &account.GetKeyInput{
-		KeyName: keyNameForDC(k.dc),
+		KeyName: k.keyName,
 	}
 	key, err := a.Keys().Get(ctx, input)
 	if err != nil {
@@ -103,7 +105,7 @@ func (k *KeyCheck) AddTritonKey(ctx context.Context, keypair *KeyPair) error {
 	a.SetHeader(k.ParsedRequest.Header())
 
 	createInput := &account.CreateKeyInput{
-		Name: keyNameForDC(k.dc),
+		Name: k.keyName,
 		Key:  keypair.PublicKeyBase64(),
 	}
 	key, err := a.Keys().Create(ctx, createInput)
@@ -119,7 +121,7 @@ func (k *KeyCheck) AddTritonKey(ctx context.Context, keypair *KeyPair) error {
 func (k *KeyCheck) InsertKey(ctx context.Context, keypair *KeyPair) error {
 	key := keys.New(k.store)
 
-	key.Name = keyNameForDC(k.dc)
+	key.Name = k.keyName
 	key.Fingerprint = keypair.FingerprintMD5
 	key.Material = keypair.PrivateKeyPEM()
 	key.AccountID = k.account.ID
@@ -144,8 +146,4 @@ func (k *KeyCheck) HasTritonKey() bool {
 
 func (k *KeyCheck) HasKey() bool {
 	return k.Key != nil
-}
-
-func keyNameForDC(dc string) string {
-	return strings.Join([]string{defaultKeyName, dc}, "_")
 }

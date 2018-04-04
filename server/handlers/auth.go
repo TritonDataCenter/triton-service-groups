@@ -14,22 +14,18 @@ import (
 // authHandler encapsulates the authentication HTTP handler itself. We pipe all
 // active HTTP requests through this object's ServeHTTP method.
 type authHandler struct {
-	pool      *pgx.ConnPool
-	handler   http.Handler
-	dc        string
-	tritonURL string
-	authURL   string
+	pool    *pgx.ConnPool
+	handler http.Handler
+	config  auth.Config
 }
 
 // AuthHandler constructs and returns the HTTP handler object responsible for
 // authenticating a request. This accepts a chain of HTTP handlers.
-func AuthHandler(pool *pgx.ConnPool, dc string, tritonURL string, authURL string, handler http.Handler) authHandler {
+func AuthHandler(pool *pgx.ConnPool, config auth.Config, handler http.Handler) authHandler {
 	return authHandler{
-		pool:      pool,
-		handler:   handler,
-		dc:        dc,
-		tritonURL: tritonURL,
-		authURL:   authURL,
+		pool:    pool,
+		handler: handler,
+		config:  config,
 	}
 }
 
@@ -51,7 +47,7 @@ func GetAuthSession(ctx context.Context) *auth.Session {
 func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
-	session, err := auth.NewSession(req, a.dc, a.tritonURL)
+	session, err := auth.NewSession(req, a.config)
 	if err != nil {
 		log.Debug().
 			Str("module", "auth").
@@ -63,7 +59,7 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if !session.IsDevMode() {
 		accountStore := accounts.NewStore(a.pool)
 
-		acct, err := session.EnsureAccount(ctx, accountStore, a.authURL)
+		acct, err := session.EnsureAccount(ctx, accountStore)
 		if err != nil {
 			log.Debug().
 				Str("module", "auth").
@@ -74,7 +70,7 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		keyStore := keys.NewStore(a.pool)
 
-		if err := session.EnsureKeys(ctx, acct, keyStore, a.authURL); err != nil {
+		if err := session.EnsureKeys(ctx, acct, keyStore); err != nil {
 			log.Debug().
 				Str("module", "auth").
 				Err(err)

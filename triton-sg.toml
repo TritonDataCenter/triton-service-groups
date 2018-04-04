@@ -34,3 +34,7 @@ port = 4646
 dc = "us-east-1"
 url = "https://us-east-1.api.joyent.com"
 auth-url = "https://us-west-1.api.joyent.com"
+key-prefix = "TSG_Management"
+whitelist = true
+
+
