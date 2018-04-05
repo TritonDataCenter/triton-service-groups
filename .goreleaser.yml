@@ -12,7 +12,7 @@ builds:
     # GOOS list to build in.
     # For more info refer to https://golang.org/doc/install/source#environment
     goos:
-      - darwin
+      #- darwin
       #- freebsd
       - linux
       #- solaris
