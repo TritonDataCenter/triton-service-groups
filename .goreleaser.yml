@@ -80,6 +80,7 @@ archive:
   files:
     - LICENSE
     - README.md
+    - CHANGELOG.md
 
 release:
   # Repo in which the release will be created.

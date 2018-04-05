@@ -8,7 +8,7 @@ dev:: ## Build the API server
 	govvv build -o bin/triton-sg ./cmd/triton-sg
 
 release: default ## Making release build of the API
-	@goreleaser --rm-dist
+	@goreleaser --rm-dist --release-notes=CHANGELOG.md
 
 tools:: ## Download and install all dev/code tools
 	@echo "==> Installing dev/build tools"

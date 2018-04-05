@@ -11,7 +11,7 @@
 
 coverage.txt
 data/
-
+dist/
 bin/
 .vagrant/
 profile.out
