@@ -14,6 +14,7 @@ import (
 	"github.com/jackc/pgx"
 	"github.com/joyent/triton-service-groups/config"
 	"github.com/joyent/triton-service-groups/server/handlers"
+	"github.com/joyent/triton-service-groups/server/handlers/auth"
 	"github.com/joyent/triton-service-groups/server/router"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -28,11 +29,10 @@ type HTTPServer struct {
 	Bind string
 	Port uint16
 
-	dc        string
-	tritonURL string
-	logger    zerolog.Logger
-	pool      *pgx.ConnPool
-	nomad     *nomad.Client
+	logger     zerolog.Logger
+	pool       *pgx.ConnPool
+	nomad      *nomad.Client
+	authConfig auth.Config
 
 	http.Server
 }
@@ -41,15 +41,22 @@ func New(cfg config.HTTPServer, pool *pgx.ConnPool, nomad *nomad.Client) *HTTPSe
 	log.Debug().Msg("http: creating new HTTP server")
 	addr := fmt.Sprintf("%s:%d", cfg.Bind, cfg.Port)
 
+	authConfig := auth.Config{
+		Datacenter:      cfg.DC,
+		TritonURL:       cfg.TritonURL,
+		AuthURL:         cfg.AuthURL,
+		KeyNamePrefix:   cfg.KeyNamePrefix,
+		EnableWhitelist: cfg.EnableWhitelist,
+	}
+
 	return &HTTPServer{
-		Addr:      addr,
-		Bind:      cfg.Bind,
-		Port:      cfg.Port,
-		dc:        cfg.DC,
-		tritonURL: cfg.TritonURL,
-		logger:    cfg.Logger,
-		pool:      pool,
-		nomad:     nomad,
+		Addr:       addr,
+		Bind:       cfg.Bind,
+		Port:       cfg.Port,
+		logger:     cfg.Logger,
+		authConfig: authConfig,
+		pool:       pool,
+		nomad:      nomad,
 	}
 }
 
@@ -63,7 +70,8 @@ func (srv *HTTPServer) setup() {
 	log.Debug().Msg("http: mounting routes as endpoints")
 
 	router := router.WithRoutes(RoutingTable)
-	authHandler := handlers.AuthHandler(srv.pool, srv.dc, srv.tritonURL, router)
+
+	authHandler := handlers.AuthHandler(srv.pool, srv.authConfig, router)
 	contextHandler := handlers.ContextHandler(srv.pool, srv.nomad, authHandler)
 	srv.Handler = ghandlers.LoggingHandler(srv.logger, contextHandler)
 

@@ -28,11 +28,14 @@ type Agent struct {
 }
 
 type HTTPServer struct {
-	Bind      string
-	Port      uint16
-	Logger    zerolog.Logger
-	DC        string
-	TritonURL string
+	Bind            string
+	Port            uint16
+	Logger          zerolog.Logger
+	DC              string
+	TritonURL       string
+	AuthURL         string
+	KeyNamePrefix   string
+	EnableWhitelist bool
 }
 
 type PGXLogger struct {
@@ -96,6 +99,8 @@ func NewDefault() (cfg *Config, err error) {
 		}
 	}
 
+	viper.SetDefault(KeyTritonWhitelist, true)
+
 	httpServerConfig := HTTPServer{}
 	{
 		httpServerConfig.Logger = log.Logger.With().Str("module", "http").Logger()
@@ -118,6 +123,18 @@ func NewDefault() (cfg *Config, err error) {
 		httpServerConfig.TritonURL = "https://us-east-1.api.joyent.com"
 		if url := viper.GetString(KeyTritonURL); url != "" {
 			httpServerConfig.TritonURL = url
+		}
+
+		httpServerConfig.AuthURL = httpServerConfig.TritonURL
+		if authURL := viper.GetString(KeyTritonAuthURL); authURL != "" {
+			httpServerConfig.AuthURL = authURL
+		}
+
+		httpServerConfig.EnableWhitelist = viper.GetBool(KeyTritonWhitelist)
+
+		httpServerConfig.KeyNamePrefix = "TSG_Management"
+		if prefix := viper.GetString(KeyTritonKeyPrefix); prefix != "" {
+			httpServerConfig.KeyNamePrefix = prefix
 		}
 	}
 

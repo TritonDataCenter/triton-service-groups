@@ -22,11 +22,12 @@ type Session struct {
 	TritonURL   string
 
 	devMode bool
+	config  Config
 }
 
 // NewSession constructs and returns a new Session by parsing the HTTP request,
 // validating and pulling out authentication headers.
-func NewSession(req *http.Request) (*Session, error) {
+func NewSession(req *http.Request, cfg Config) (*Session, error) {
 	if devMode := os.Getenv("TSG_DEV_MODE"); devMode != "" {
 		log.Debug().
 			Str("account_id", testAccountID).
@@ -36,6 +37,8 @@ func NewSession(req *http.Request) (*Session, error) {
 		return &Session{
 			AccountID:   testAccountID,
 			Fingerprint: testFingerprint,
+			Datacenter:  cfg.Datacenter,
+			TritonURL:   cfg.TritonURL,
 			devMode:     true,
 		}, nil
 	}
@@ -47,6 +50,9 @@ func NewSession(req *http.Request) (*Session, error) {
 
 	return &Session{
 		ParsedRequest: parsedReq,
+		Datacenter:    cfg.Datacenter,
+		TritonURL:     cfg.TritonURL,
+		config:        cfg,
 	}, nil
 }
 
@@ -64,7 +70,7 @@ func (s *Session) IsAuthenticated() bool {
 // been created for it within the TSG database. Returns the TSG account that was
 // either created or found.
 func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) (*accounts.Account, error) {
-	check := NewAccountCheck(s.ParsedRequest, store)
+	check := NewAccountCheck(s.ParsedRequest, store, s.config)
 
 	if err := check.OnTriton(ctx); err != nil {
 		err = errors.Wrap(err, "failed to check triton for account")
@@ -97,7 +103,7 @@ func (s *Session) EnsureAccount(ctx context.Context, store *accounts.Store) (*ac
 // EnsureKey checks Triton for an active TSG account key. If one cannot be found
 // than a new key is created and stored it into the TSG database.
 func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store *keys.Store) error {
-	check := NewKeyCheck(s.ParsedRequest, acct, store)
+	check := NewKeyCheck(s.ParsedRequest, acct, store, s.config)
 
 	if err := check.OnTriton(ctx); err != nil {
 		err = errors.Wrap(err, "failed to check triton for key")
@@ -124,11 +130,10 @@ func (s *Session) EnsureKeys(ctx context.Context, acct *accounts.Account, store 
 				return nil
 			}
 
-			err := errors.New("auth: found conflicting key state")
 			log.Error().
 				Str("account_name", acct.AccountName).
-				Err(err)
-			return err
+				Err(ErrKeyConflict)
+			return ErrKeyConflict
 		} else {
 			keypair, err := DecodeKeyPair(check.Key.Material)
 			if err != nil {

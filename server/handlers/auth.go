@@ -8,25 +8,24 @@ import (
 	"github.com/joyent/triton-service-groups/accounts"
 	"github.com/joyent/triton-service-groups/keys"
 	"github.com/joyent/triton-service-groups/server/handlers/auth"
+	"github.com/rs/zerolog/log"
 )
 
 // authHandler encapsulates the authentication HTTP handler itself. We pipe all
 // active HTTP requests through this object's ServeHTTP method.
 type authHandler struct {
-	pool      *pgx.ConnPool
-	handler   http.Handler
-	dc        string
-	tritonURL string
+	pool    *pgx.ConnPool
+	handler http.Handler
+	config  auth.Config
 }
 
 // AuthHandler constructs and returns the HTTP handler object responsible for
 // authenticating a request. This accepts a chain of HTTP handlers.
-func AuthHandler(pool *pgx.ConnPool, dc string, url string, handler http.Handler) authHandler {
+func AuthHandler(pool *pgx.ConnPool, config auth.Config, handler http.Handler) authHandler {
 	return authHandler{
-		pool:      pool,
-		handler:   handler,
-		dc:        dc,
-		tritonURL: url,
+		pool:    pool,
+		handler: handler,
+		config:  config,
 	}
 }
 
@@ -48,9 +47,12 @@ func GetAuthSession(ctx context.Context) *auth.Session {
 func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 
-	session, err := auth.NewSession(req)
+	session, err := auth.NewSession(req, a.config)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Debug().
+			Str("module", "auth").
+			Err(err)
+		http.Error(w, ErrFailedSession.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -59,14 +61,20 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 		acct, err := session.EnsureAccount(ctx, accountStore)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			log.Debug().
+				Str("module", "auth").
+				Err(err)
+			http.Error(w, ErrFailedAccount.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		keyStore := keys.NewStore(a.pool)
 
 		if err := session.EnsureKeys(ctx, acct, keyStore); err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			log.Debug().
+				Str("module", "auth").
+				Err(err)
+			http.Error(w, ErrFailedKey.Error(), http.StatusUnauthorized)
 			return
 		}
 	}
@@ -75,9 +83,6 @@ func (a authHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, ErrFailedAuth.Error(), http.StatusUnauthorized)
 		return
 	}
-
-	session.Datacenter = a.dc
-	session.TritonURL = a.tritonURL
 
 	ctx = context.WithValue(ctx, authKey, session)
 	a.handler.ServeHTTP(w, req.WithContext(ctx))

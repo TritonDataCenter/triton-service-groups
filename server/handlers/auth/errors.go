@@ -10,6 +10,7 @@ var (
 	ErrParseValue    = errors.New("incorrect values parsed from keyId")
 	ErrNameLen       = errors.New("parsed name is too short")
 	ErrNameFormat    = errors.New("parsed name is not formatted properly")
+	ErrKeyConflict   = errors.New("auth: found conflicting key state")
 
 	ErrWhitelist = errors.New("service only accessible by whitelist")
 )

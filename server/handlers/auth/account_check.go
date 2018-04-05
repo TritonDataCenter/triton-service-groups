@@ -18,22 +18,24 @@ type AccountCheck struct {
 
 	TritonAccount *account.Account
 
-	config *triton.ClientConfig
-	store  *accounts.Store
+	config          *triton.ClientConfig
+	store           *accounts.Store
+	enableWhitelist bool
 }
 
-func NewAccountCheck(req *ParsedRequest, store *accounts.Store) *AccountCheck {
+func NewAccountCheck(req *ParsedRequest, store *accounts.Store, cfg Config) *AccountCheck {
 	signer := &authentication.TestSigner{}
 	config := &triton.ClientConfig{
-		TritonURL:   tritonBaseURL,
+		TritonURL:   cfg.AuthURL,
 		AccountName: req.AccountName,
 		Signers:     []authentication.Signer{signer},
 	}
 
 	return &AccountCheck{
-		ParsedRequest: req,
-		config:        config,
-		store:         store,
+		ParsedRequest:   req,
+		config:          config,
+		store:           store,
+		enableWhitelist: cfg.EnableWhitelist,
 	}
 }
 
@@ -97,7 +99,7 @@ func (ac *AccountCheck) SaveAccount(ctx context.Context) error {
 		return err
 	}
 
-	if !exists && isWhitelistOnly {
+	if !exists && ac.enableWhitelist {
 		log.Debug().
 			Str("account_name", ac.TritonAccount.Login).
 			Str("triton_uuid", ac.TritonAccount.ID).
