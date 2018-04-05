@@ -1,4 +1,4 @@
-project_name: Triton Service Groups
+project_name: triton-service-groups
 
 builds:
   -
@@ -35,7 +35,7 @@ builds:
     # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
     # Date format is `2006-01-02_15:04:05`
     ldflags: github.com/joyent/triton-service-groups/cmd/triton-sg=-X github.com/joyent/triton-service-groups/buildtime/buildtime.BuildDate={{.Date}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitCommit={{.Commit}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitBranch={{.Tag}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitState={{.Tag}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitSummary={{.Commit}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.Version={{.Version}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.DocsDate={{.Date}}"
-    main: ./cmd/vpc/
+    main: ./cmd/triton-sg/
 
     # Hooks can be used to customize the final binary, for example, to run
     # generator or whatever you want.
@@ -90,7 +90,7 @@ release:
 
   # If set to true, will not auto-publish the release.
   # Default is false
-  draft: true
+  draft: false
 
 snapshot:
   # Allows you to change the name of the generated snapshot
