@@ -2,9 +2,9 @@ project_name: triton-service-groups
 
 builds:
   -
-    binary: tsg
+    binary: triton-sg
     env:
-    - CGO_ENABLED=0
+    - CGO_ENABLED=1
 
     # Custom build tags.
     flags: -tags dev
