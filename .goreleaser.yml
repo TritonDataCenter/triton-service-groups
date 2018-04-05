@@ -34,7 +34,7 @@ builds:
     # - Version (Tag with the `v` prefix stripped)
     # The default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}`
     # Date format is `2006-01-02_15:04:05`
-    ldflags: github.com/joyent/triton-service-groups/cmd/triton-sg=-X github.com/joyent/triton-service-groups/buildtime/buildtime.BuildDate={{.Date}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitCommit={{.Commit}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitBranch={{.Tag}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitState={{.Tag}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.GitSummary={{.Commit}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.Version={{.Version}} -X github.com/joyent/triton-service-groups/buildtime/buildtime.DocsDate={{.Date}}"
+    ldflags: -X main.BuildDate={{.Date}} -X main.GitCommit={{.Commit}} -X main.GitBranch={{.Tag}} -X main.GitState={{.Tag}} -X main.GitSummary={{.Commit}} -X main.Version={{.Version}} -X main.DocsDate={{.Date}}"
     main: ./cmd/triton-sg/
 
     # Hooks can be used to customize the final binary, for example, to run
@@ -88,10 +88,6 @@ release:
   github:
     owner: joyent
     name: triton-service-groups
-
-  # If set to true, will not auto-publish the release.
-  # Default is false
-  draft: false
 
 snapshot:
   # Allows you to change the name of the generated snapshot
