@@ -19,6 +19,7 @@ import (
 
 type OrchestratorJob struct {
 	AccountID           string
+	Datacenter          string
 	JobName             string
 	HealthCheckInterval int
 	DesiredCount        int
@@ -164,8 +165,11 @@ func registerJob(ctx context.Context, job *nomad.Job) (bool, error) {
 }
 
 func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *ServiceGroup) (*nomad.Job, error) {
+	session := handlers.GetAuthSession(ctx)
+
 	tpl := &bytes.Buffer{}
 	details := createJobDetails(t, group)
+	details.Datacenter = session.Datacenter
 	if err := details.getTritonAccountDetails(ctx); err != nil {
 		return nil, err
 	}
@@ -271,7 +275,7 @@ job "{{.JobName}}" {
 	cron = "*/{{.HealthCheckInterval | formatAsMinutes}} * * * * *"
 	prohibit_overlap = true
   }
-  datacenters = ["dc1"]
+  datacenters = ["{{ .Datacenter }}"]
   group "scale" {
 	task "healthy" {
 	  driver = "exec"
