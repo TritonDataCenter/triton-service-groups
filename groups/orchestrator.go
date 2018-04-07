@@ -18,24 +18,23 @@ import (
 )
 
 type OrchestratorJob struct {
-	AccountID           string
-	Datacenter          string
-	JobName             string
-	HealthCheckInterval int
-	DesiredCount        int
-	InstanceNamePrefix  string
-	PackageID           string
-	ImageID             string
-	ServiceGroupName    string
-	UserData            string
-	FirewallEnabled     bool
-	Networks            []string
-	Tags                map[string]string
-	MetaData            map[string]string
-	TritonAccount       string
-	TritonURL           string
-	TritonKeyID         string
-	TritonKeyMaterial   string
+	AccountID          string
+	Datacenter         string
+	JobName            string
+	DesiredCount       int
+	InstanceNamePrefix string
+	PackageID          string
+	ImageID            string
+	ServiceGroupName   string
+	UserData           string
+	FirewallEnabled    bool
+	Networks           []string
+	Tags               map[string]string
+	MetaData           map[string]string
+	TritonAccount      string
+	TritonURL          string
+	TritonKeyID        string
+	TritonKeyMaterial  string
 }
 
 func SubmitOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
@@ -231,14 +230,13 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 
 func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGroup) OrchestratorJob {
 	job := OrchestratorJob{
-		AccountID:           group.AccountID,
-		JobName:             fmt.Sprintf("%s_%s", group.GroupName, template.ShortID()),
-		HealthCheckInterval: group.HealthCheckInterval,
-		DesiredCount:        group.Capacity,
-		PackageID:           template.Package,
-		ImageID:             template.ImageID,
-		ServiceGroupName:    group.GroupName,
-		FirewallEnabled:     template.FirewallEnabled,
+		AccountID:        group.AccountID,
+		JobName:          fmt.Sprintf("%s_%s", group.GroupName, template.ShortID()),
+		DesiredCount:     group.Capacity,
+		PackageID:        template.Package,
+		ImageID:          template.ImageID,
+		ServiceGroupName: group.GroupName,
+		FirewallEnabled:  template.FirewallEnabled,
 	}
 
 	if template.InstanceNamePrefix != "" {
@@ -264,15 +262,11 @@ func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGro
 	return job
 }
 
-func formatAsMinutes(interval int) (string, error) {
-	return fmt.Sprintf("%d", interval/60), nil
-}
-
 const jobTemplate = `
 job "{{.JobName}}" {
   type = "batch"
   periodic {
-	cron = "*/{{.HealthCheckInterval | formatAsMinutes}} * * * * *"
+	cron = "*/2 * * * * *"
 	prohibit_overlap = true
   }
   datacenters = ["{{ .Datacenter }}"]
