@@ -283,6 +283,7 @@ job "{{.JobName}}" {
 		  "--pkg-id", "{{ .PackageID }}",
 		  "--img-id", "{{ .ImageID }}",
 		  "--tsg-name", "{{ .ServiceGroupName }}",
+		  "--template-id", "{{ .TemplateID }}",
 		  {{if .UserData -}}
 		  "--userdata", "{{ .UserData }}",
 		  {{- end }}
