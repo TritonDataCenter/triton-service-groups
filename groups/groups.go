@@ -22,12 +22,11 @@ import (
 )
 
 type ServiceGroup struct {
-	ID                  string `json:"id"`
-	GroupName           string `json:"group_name"`
-	TemplateID          string `json:"template_id"`
-	AccountID           string `json:"account_id"`
-	Capacity            int    `json:"capacity"`
-	HealthCheckInterval int    `json:"health_check_interval"`
+	ID         string `json:"id"`
+	GroupName  string `json:"group_name"`
+	TemplateID string `json:"template_id"`
+	AccountID  string `json:"account_id"`
+	Capacity   int    `json:"capacity"`
 }
 
 func Get(w http.ResponseWriter, r *http.Request) {

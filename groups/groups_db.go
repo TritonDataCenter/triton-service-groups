@@ -39,8 +39,7 @@ AND archived = false;`
 			&group.GroupName,
 			&group.AccountID,
 			&group.TemplateID,
-			&group.Capacity,
-			&group.HealthCheckInterval)
+			&group.Capacity)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +59,7 @@ func FindGroupByID(ctx context.Context, key string, accountID string) (*ServiceG
 
 	var group ServiceGroup
 
-	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity
 FROM triton.tsg_groups
 WHERE account_id = $2 and id = $1
 AND archived = false;`
@@ -70,8 +69,7 @@ AND archived = false;`
 			&group.GroupName,
 			&group.AccountID,
 			&group.TemplateID,
-			&group.Capacity,
-			&group.HealthCheckInterval)
+			&group.Capacity)
 	switch err {
 	case nil:
 		return &group, true
@@ -92,7 +90,7 @@ func FindGroupByName(ctx context.Context, name string, accountID string) (*Servi
 
 	var group ServiceGroup
 
-	sqlStatement := `SELECT id, name, account_id, template_id, capacity, health_check_interval
+	sqlStatement := `SELECT id, name, account_id, template_id, capacity
 FROM triton.tsg_groups
 WHERE account_id = $2 and name = $1
 AND archived = false;`
@@ -102,8 +100,7 @@ AND archived = false;`
 			&group.GroupName,
 			&group.AccountID,
 			&group.TemplateID,
-			&group.Capacity,
-			&group.HealthCheckInterval)
+			&group.Capacity)
 	switch err {
 	case nil:
 		return &group, true
@@ -123,12 +120,12 @@ func SaveGroup(ctx context.Context, accountID string, group *ServiceGroup) {
 	}
 
 	sqlStatement := `
-INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id, health_check_interval)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO triton.tsg_groups (name, template_id, capacity, account_id)
+VALUES ($1, $2, $3, $4)
 `
 	_, err := db.ExecEx(ctx, sqlStatement, nil,
 		group.GroupName, group.TemplateID, group.Capacity,
-		accountID, group.HealthCheckInterval)
+		accountID)
 	if err != nil {
 		panic(err)
 	}
@@ -143,12 +140,12 @@ func UpdateGroup(ctx context.Context, name string, accountID string, group *Serv
 
 	sqlStatement := `
 Update triton.tsg_groups
-SET template_id = $3, capacity = $4, health_check_interval = $5
+SET template_id = $3, capacity = $4
 WHERE name = $1 and account_id = $2
 `
 
 	_, err := db.ExecEx(ctx, sqlStatement, nil,
-		name, accountID, group.TemplateID, group.Capacity, group.HealthCheckInterval)
+		name, accountID, group.TemplateID, group.Capacity)
 	if err != nil {
 		panic(err)
 	}
