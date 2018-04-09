@@ -277,6 +277,14 @@ job "{{.JobName}}" {
   }
   datacenters = ["{{ .Datacenter }}"]
   group "scale" {
+	constraint {
+      distinct_hosts = true
+    }
+    constraint {
+      operator = "="
+      attribute = "${meta.role}"
+      value = "automater"
+    }
 	task "healthy" {
 	  driver = "exec"
 	  artifact {
