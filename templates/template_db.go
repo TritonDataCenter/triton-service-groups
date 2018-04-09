@@ -24,7 +24,7 @@ func FindTemplateByName(ctx context.Context, key string, accountID string) (*Ins
 		return nil, false
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
 FROM triton.tsg_templates
 WHERE template_name = $1 and account_id = $2
 AND archived = false;`
@@ -43,7 +43,6 @@ AND archived = false;`
 		&template.TemplateName,
 		&template.Package,
 		&template.ImageID,
-		&template.InstanceNamePrefix,
 		&templateAccountID,
 		&template.FirewallEnabled,
 		&networksList,
@@ -85,7 +84,7 @@ func FindTemplateByID(ctx context.Context, key string, accountID string) (*Insta
 		return nil, false
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, instance_name_prefix, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,'')
 FROM triton.tsg_templates
 WHERE id = $1 and account_id = $2
 AND archived = false;`
@@ -104,7 +103,6 @@ AND archived = false;`
 		&template.TemplateName,
 		&template.Package,
 		&template.ImageID,
-		&template.InstanceNamePrefix,
 		&templateAccountID,
 		&template.FirewallEnabled,
 		&networksList,
@@ -146,7 +144,7 @@ func FindTemplates(ctx context.Context, accountID string) ([]*InstanceTemplate, 
 		return nil, handlers.ErrNoConnPool
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '')
+	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, '')
 FROM triton.tsg_templates
 WHERE account_id = $1
 AND archived = false;`
@@ -174,7 +172,6 @@ AND archived = false;`
 			&template.ImageID,
 			&templateAccountID,
 			&template.FirewallEnabled,
-			&template.InstanceNamePrefix,
 			&networksList,
 			&metaDataJson,
 			&template.UserData,
@@ -215,8 +212,8 @@ func SaveTemplate(ctx context.Context, accountID string, template *InstanceTempl
 	}
 
 	sqlStatement := `
-INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, instance_name_prefix, networks, metadata, userdata, tags)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+INSERT INTO triton.tsg_templates (template_name, package, image_id, account_id, firewall_enabled, networks, metadata, userdata, tags)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
 	metaDataJson, err := convertToJson(template.MetaData)
@@ -233,7 +230,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 
 	_, err = db.ExecEx(ctx, sqlStatement, nil,
 		template.TemplateName, template.Package, template.ImageID,
-		accountID, template.FirewallEnabled, template.InstanceNamePrefix, networksList, metaDataJson,
+		accountID, template.FirewallEnabled, networksList, metaDataJson,
 		template.UserData, tagsJson)
 	if err != nil {
 		panic(err)

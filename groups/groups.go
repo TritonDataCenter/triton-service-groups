@@ -61,10 +61,10 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	var group *ServiceGroup
-	err = json.Unmarshal(body, &group)
+	group, err := decodeResponseBodyAndValidate(body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	SaveGroup(ctx, session.AccountID, group)
@@ -103,10 +103,10 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	var group *ServiceGroup
-	err = json.Unmarshal(body, &group)
+	group, err := decodeResponseBodyAndValidate(body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	UpdateGroup(ctx, identifier, session.AccountID, group)
@@ -370,4 +370,18 @@ func buildActionableInput(r *http.Request) (*ActionableInput, error) {
 	}
 
 	return input, nil
+}
+
+func decodeResponseBodyAndValidate(body []byte) (*ServiceGroup, error) {
+	var group *ServiceGroup
+	err := json.Unmarshal(body, &group)
+	if err != nil {
+		return nil, errors.New("error in unmarshal request body")
+	}
+
+	if len(group.GroupName) > 182 {
+		return nil, errors.New("group name cannot be more than 182 characters")
+	}
+
+	return group, nil
 }
