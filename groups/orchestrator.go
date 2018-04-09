@@ -18,23 +18,22 @@ import (
 )
 
 type OrchestratorJob struct {
-	AccountID          string
-	Datacenter         string
-	JobName            string
-	DesiredCount       int
-	InstanceNamePrefix string
-	PackageID          string
-	ImageID            string
-	ServiceGroupName   string
-	UserData           string
-	FirewallEnabled    bool
-	Networks           []string
-	Tags               map[string]string
-	MetaData           map[string]string
-	TritonAccount      string
-	TritonURL          string
-	TritonKeyID        string
-	TritonKeyMaterial  string
+	AccountID         string
+	Datacenter        string
+	JobName           string
+	DesiredCount      int
+	PackageID         string
+	ImageID           string
+	ServiceGroupName  string
+	UserData          string
+	FirewallEnabled   bool
+	Networks          []string
+	Tags              map[string]string
+	MetaData          map[string]string
+	TritonAccount     string
+	TritonURL         string
+	TritonKeyID       string
+	TritonKeyMaterial string
 }
 
 func SubmitOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
@@ -173,11 +172,7 @@ func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *Se
 		return nil, err
 	}
 
-	fmap := template.FuncMap{
-		"formatAsMinutes": formatAsMinutes,
-	}
-
-	jobT := template.Must(template.New("job").Funcs(fmap).Parse(jobTemplate))
+	jobT := template.Must(template.New("job").Parse(jobTemplate))
 	err := jobT.Execute(tpl, details)
 	if err != nil {
 		return nil, err
@@ -239,10 +234,6 @@ func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGro
 		FirewallEnabled:  template.FirewallEnabled,
 	}
 
-	if template.InstanceNamePrefix != "" {
-		job.InstanceNamePrefix = template.InstanceNamePrefix
-	}
-
 	if template.UserData != "" {
 		job.UserData = template.UserData
 	}
@@ -292,9 +283,6 @@ job "{{.JobName}}" {
 		  "--pkg-id", "{{ .PackageID }}",
 		  "--img-id", "{{ .ImageID }}",
 		  "--tsg-name", "{{ .ServiceGroupName }}",
-		  {{if .InstanceNamePrefix -}}
-		  "--name-prefix", "{{ .InstanceNamePrefix }}",
-		  {{- end }}
 		  {{if .UserData -}}
 		  "--userdata", "{{ .UserData }}",
 		  {{- end }}

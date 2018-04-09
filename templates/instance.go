@@ -17,17 +17,16 @@ import (
 )
 
 type InstanceTemplate struct {
-	ID                 string            `json:"id"`
-	TemplateName       string            `json:"template_name"`
-	AccountID          string            `json:"account_id"`
-	Package            string            `json:"package"`
-	ImageID            string            `json:"image_id"`
-	InstanceNamePrefix string            `json:"instance_name_prefix"`
-	FirewallEnabled    bool              `json:"firewall_enabled"`
-	Networks           []string          `json:"networks"`
-	UserData           string            `json:"userdata"`
-	MetaData           map[string]string `json:"metadata"`
-	Tags               map[string]string `json:"tags"`
+	ID              string            `json:"id"`
+	TemplateName    string            `json:"template_name"`
+	AccountID       string            `json:"account_id"`
+	Package         string            `json:"package"`
+	ImageID         string            `json:"image_id"`
+	FirewallEnabled bool              `json:"firewall_enabled"`
+	Networks        []string          `json:"networks"`
+	UserData        string            `json:"userdata"`
+	MetaData        map[string]string `json:"metadata"`
+	Tags            map[string]string `json:"tags"`
 }
 
 func (t *InstanceTemplate) ShortID() string {

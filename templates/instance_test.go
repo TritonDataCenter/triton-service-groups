@@ -93,7 +93,7 @@ func TestAcc_Get(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Contains(t, resp.Header.Get("Content-Type"), "application/json")
 
-	testBody := "{\"id\":319209784155176962,\"template_name\":\"test-template-1\",\"account_id\":\"joyent\",\"package\":\"test-package\",\"image_id\":\"49b22aec-0c8a-11e6-8807-a3eb4db576ba\",\"instance_name_prefix\":\"sample-\",\"firewall_enabled\":false,\"networks\":[\"f7ed95d3-faaf-43ef-9346-15644403b963\"],\"userdata\":\"bash script here\",\"metadata\":null,\"tags\":null}"
+	testBody := "{\"id\":319209784155176962,\"template_name\":\"test-template-1\",\"account_id\":\"joyent\",\"package\":\"test-package\",\"image_id\":\"49b22aec-0c8a-11e6-8807-a3eb4db576ba\",\"firewall_enabled\":false,\"networks\":[\"f7ed95d3-faaf-43ef-9346-15644403b963\"],\"userdata\":\"bash script here\",\"metadata\":null,\"tags\":null}"
 	assert.Equal(t, testBody, string(body))
 }
 
@@ -278,7 +278,6 @@ func TestAcc_CreateTemplate(t *testing.T) {
 		"account_id": "joyent",
 		"package": "test-package",
 		"image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
-		"instance_name_prefix": "sample-",
 		"firewall_enabled": false,
 		"networks": [
 	"f7ed95d3-faaf-43ef-9346-15644403b963"
