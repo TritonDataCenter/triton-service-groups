@@ -19,25 +19,27 @@ as follows:
 
 ### GET /v1/tsg/templates
 
-To list all of the templates associated with a specific Triton account, send a `GET` request to `/v1/tsg/templates`.
+To list all of the templates associated with a specific Triton account, send a `GET` request to `/v1/tsg/templates` with
+the request headers detailed below.
 
 #### Example Request
 
 ```
-curl -X GET -H "" "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
+curl -X GET "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
 ```
 
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 
 #### Sample Response
 
 ```
-
+{"id":"aa035751-c9ef-4938-af6b-a48545c8c087","group_name":"example-group-1","template_id":"825ecbdd-14b1-4807-82c5-9003dacd1b64","account_id":"a5608abd-0b0b-4db3-9ec7-4277b2ec84c1","capacity":3}
 ```
 
 ### GET /v1/tsg/templates/{identifier}
