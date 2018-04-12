@@ -16,6 +16,7 @@ A template is made up as follows:
 | user_data        | string           | Data to be copied to the instances on boot.                                   |
 | meta_data        | object           | A mapping of metadata to apply to the instances launched.                     |
 | tags             | object           | A mapping of tags to apply to the instances launched.                         |
+| created_at       | string           | When this template was created. ISO8601 date format.                          |
 
 ### GET `/v1/tsg/templates`
 
@@ -56,7 +57,8 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
         "tags": {
             "role": "web",
             "owner": "api-team"
-        }
+        },
+        "created_at": "2018-04-12T15:59:08.098244Z"
     }
 }
 ```
@@ -99,7 +101,8 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
     "tags": {
         "role": "web",
         "owner": "api-team"
-    }
+    },
+    "created_at": "2018-04-12T15:59:08.098244Z"
 }
 ```
 
@@ -144,7 +147,8 @@ curl -X POST "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
     "tags": {
     	"role": "api",
     	"owner": "design"
-    }
+    },
+    "created_at": "2018-04-12T15:59:08.098244Z"
 }
 ```
 
@@ -175,7 +179,8 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
     "tags": {
         "owner": "design",
         "role": "api"
-    }
+    },
+    "created_at": "2018-04-12T15:59:08.098244Z"
 }
 ```
 
