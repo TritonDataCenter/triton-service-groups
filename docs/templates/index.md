@@ -4,18 +4,18 @@ A template is a collection of configuration parameters that are used to launch a
 
 A template is made up as follows:
 
-| Field             | Type              |  Description                                                                  |
-|----------         |-------------      |------                                                                         |
-| ID                | string            | The UUID of the template.                                                     |
-| TemplateName      | string            | The name of the template.                                                     |
-| AccountID         | string            | The account ID the template is associated to.                                  | 
-| Package           | string            | The ID of the package to use when launching a template.                       | 
-| ImageID           | string            | The ID of the package to use when launching a template.                       | 
-| FirewallEnabled   | bool              | Enable or disable the firewall on the instances launched. Default is `false`. | 
-| Networks          | []string          | A list of network IDs to attach to the instances launched.                    | 
-| UserData          | string            | Data to be copied to the instances on boot.                                   | 
-| MetaData          | map[string]string | A mapping of metadata to apply to the instances launched.                     | 
-| Tags              | map[string]string | A mapping of tags to apply to the instances launched.                         |  
+| Field            | Type             | Description                                                                   |
+| ---------------- | ---------------- | ----------------------------------------------------------------------------- |
+| id               | string           | The UUID of the template.                                                     |
+| template_name    | string           | The name of the template.                                                     |
+| account_id       | string           | The account ID the template is associated to.                                 |
+| package          | string           | The ID of the package to use when launching a template.                       |
+| image_id         | string           | The ID of the package to use when launching a template.                       |
+| firewall_enabled | boolean          | Enable or disable the firewall on the instances launched. Default is `false`. |
+| networks         | array of strings | A list of network IDs to attach to the instances launched.                    |
+| user_data        | string           | Data to be copied to the instances on boot.                                   |
+| meta_data        | object           | A mapping of metadata to apply to the instances launched.                     |
+| tags             | object           | A mapping of tags to apply to the instances launched.                         |
 
 ### GET `/v1/tsg/templates`
 
