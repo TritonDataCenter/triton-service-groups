@@ -1,12 +1,12 @@
 # Groups
 
-| Name        | Type    | Description                                                                                               |
-| ----------- | ------- | --------------------------------------------------------------------------------------------------------- |
-| id          | string  | The universal identifier (UUID) of the Group.                                                             |
-| group_name  | string  | The name of the Group.                                                                                    |
-| template_id | string  | A unique identifier for the Template that the Group is associated with.                                   |
-| account_id  | string  | A unique identifier for the Account that the Group is associated with.                                    |
-| capacity    | integer | The number of compute instance to run and maintain a specified number (the "desired count") of instances. |
+| Name        | Type    | Description                                                                                                |
+| ----------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| id          | string  | The universal identifier (UUID) of the Group.                                                              |
+| group_name  | string  | The name of the Group.                                                                                     |
+| template_id | string  | A unique identifier for the Template that the Group is associated with.                                    |
+| account_id  | string  | A unique identifier for the Account that the Group is associated with.                                     |
+| capacity    | integer | The number of compute instances to run and maintain a specified number (the "desired count") of instances. |
 
 ### GET /v1/tsg/groups
 
