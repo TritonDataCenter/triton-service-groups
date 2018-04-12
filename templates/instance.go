@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/server/handlers"
@@ -27,6 +28,7 @@ type InstanceTemplate struct {
 	UserData        string            `json:"userdata"`
 	MetaData        map[string]string `json:"metadata"`
 	Tags            map[string]string `json:"tags"`
+	CreatedAt       time.Time         `json:"created_at"`
 }
 
 func (t *InstanceTemplate) ShortID() string {

@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-go"
@@ -22,11 +23,13 @@ import (
 )
 
 type ServiceGroup struct {
-	ID         string `json:"id"`
-	GroupName  string `json:"group_name"`
-	TemplateID string `json:"template_id"`
-	AccountID  string `json:"account_id"`
-	Capacity   int    `json:"capacity"`
+	ID         string    `json:"id"`
+	GroupName  string    `json:"group_name"`
+	TemplateID string    `json:"template_id"`
+	AccountID  string    `json:"account_id"`
+	Capacity   int       `json:"capacity"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 func Get(w http.ResponseWriter, r *http.Request) {

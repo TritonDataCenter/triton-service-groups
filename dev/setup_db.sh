@@ -13,6 +13,7 @@ else
 fi
 
 for env in triton triton_test; do
+    $SQL -e "DROP DATABASE IF EXISTS ${env} CASCADE;"
     $SQL -e "CREATE DATABASE IF NOT EXISTS ${env};"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_keys (
@@ -53,6 +54,7 @@ networks TEXT,
 userdata TEXT,
 metadata TEXT,
 tags TEXT,
+created_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_groups (
@@ -62,6 +64,8 @@ template_id UUID NOT NULL REFERENCES tsg_templates (id),
 account_id UUID NOT NULL REFERENCES tsg_accounts (id),
 capacity INT NOT NULL,
 health_check_interval INT DEFAULT 300,
+created_at TIMESTAMPTZ NOT NULL,
+updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false);"
 
     if [ -f /dev/backup.sql ]; then
