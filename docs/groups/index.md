@@ -1,5 +1,9 @@
 # Groups
 
+### GET `/v1/tsg/groups`
+
+##### Inputs
+
 | Name        | Type   | Description                                                                                                |
 | ----------- | ------ | ---------------------------------------------------------------------------------------------------------- |
 | id          | string | The universal identifier (UUID) of the group.                                                              |
@@ -7,10 +11,10 @@
 | template_id | string | A unique identifier for the template that the group is associated with.                                    |
 | account_id  | string | A unique identifier for the account that the group is associated with.                                     |
 | capacity    | number | The number of compute instances to run and maintain a specified number (the "desired count") of instances. |
-| created_at  | string | When this group was created. ISO8601 date	format.                                                         |
+| created_at  | string | When this group was created. ISO8601 date format.                                                          |
 | updated_at  | string | When this group's details were last updated. ISO8601 date format.                                          |
 
-### GET `/v1/tsg/groups`
+##### Returns
 
 #### Example Request
 
@@ -33,6 +37,10 @@ curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 
 ### GET `/v1/tsg/groups/{identifier}`
 
+##### Inputs
+
+##### Returns
+
 #### Example Request
 
 ```
@@ -54,6 +62,15 @@ curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 
 ### GET `/v1/tsg/groups/{identifier}/instances`
 
+##### Inputs
+
+##### Returns
+
+An array of objects, which contain:
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
 #### Example Request
 
 ```
@@ -74,6 +91,10 @@ curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 ```
 
 ### POST `/v1/tsg/groups`
+
+##### Inputs
+
+##### Returns
 
 #### Example Request
 
@@ -116,14 +137,16 @@ curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 
 ```
 
-| Name           | Type   | Description |
-| -------------- | ------ | ----------- |
-| instance_count | number |             |
-| max_instance   | number |             |
-| min_instance   | number |             |
-
-
 ### PUT `/v1/tsg/groups/{identifier}/increment`
+
+##### Inputs
+
+| Name           | Type   | Description                                                                        |
+| -------------- | ------ | ---------------------------------------------------------------------------------- |
+| instance_count | number | The number of compute instances by which to increase the current compute capacity. |
+| max_instance   | number | Maximum limit of compute instances to maintain.                                    |
+
+##### Returns
 
 #### Example Request
 
@@ -144,13 +167,16 @@ curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 
 ```
 
-| Name           | Type   | Description |
-| -------------- | ------ | ----------- |
-| instance_count | number |             |
-| max_instance   | number |             |
-| min_instance   | number |             |
-
 ### PUT `/v1/tsg/groups/{identifier}/decrement`
+
+##### Inputs
+
+| Name           | Type   | Description                                                                        |
+| -------------- | ------ | ---------------------------------------------------------------------------------- |
+| instance_count | number | The number of compute instances by which to decrease the current compute capacity. |
+| min_instance   | number | Minimum limit of compute instances to maintain.                                    |
+
+##### Returns
 
 #### Example Request
 
@@ -172,6 +198,10 @@ curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 ```
 
 ### DELETE `/v1/tsg/groups/{identifier}`
+
+##### Inputs
+
+##### Returns
 
 #### Example Request
 
