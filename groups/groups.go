@@ -179,9 +179,9 @@ func List(w http.ResponseWriter, r *http.Request) {
 }
 
 type ActionableInput struct {
-	InstanceCount int
-	MaxInstance   int
-	MinInstance   int
+	InstanceCount int `json:"instance_count"`
+	MaxInstance   int `json:"max_instance"`
+	MinInstance   int `json:"min_instance"`
 }
 
 func Increment(w http.ResponseWriter, r *http.Request) {
