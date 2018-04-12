@@ -147,8 +147,7 @@ curl -X POST "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
     "tags": {
     	"role": "api",
     	"owner": "design"
-    },
-    "created_at": "2018-04-12T15:59:08.098244Z"
+    }
 }
 ```
 
