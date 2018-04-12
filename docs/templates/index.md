@@ -39,7 +39,26 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 #### Sample Response
 
 ```
-{"id":"aa035751-c9ef-4938-af6b-a48545c8c087","group_name":"example-group-1","template_id":"825ecbdd-14b1-4807-82c5-9003dacd1b64","account_id":"a5608abd-0b0b-4db3-9ec7-4277b2ec84c1","capacity":3}
+[
+    {
+        "id": "437c560d-b1a9-4dae-b3b3-6dbabb7d23a7",
+        "template_name": "test-template-6",
+        "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
+        "package": "test-package",
+        "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+        "firewall_enabled": false,
+        "networks": [
+            "f7ed95d3-faaf-43ef-9346-15644403b963"
+        ],
+        "metadata": {
+    	    "root_pw": "s8v9kuht5e"
+    	}, 
+        "tags": {
+            "role": "web",
+            "owner": "api-team"
+        }
+    }
+}
 ```
 
 ### GET /v1/tsg/templates/{identifier}
@@ -57,20 +76,38 @@ curl -X GET "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/31920978415517
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 
 #### Sample Response
 
 ```
-
+{
+    "id": "437c560d-b1a9-4dae-b3b3-6dbabb7d23a7",
+    "template_name": "test-template-6",
+    "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
+    "package": "test-package",
+    "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+    "firewall_enabled": false,
+    "networks": [
+        "f7ed95d3-faaf-43ef-9346-15644403b963"
+    ],
+    "metadata": {
+	    "root_pw": "s8v9kuht5e"
+	}, 
+    "tags": {
+        "role": "web",
+        "owner": "api-team"
+    }
+}
 ```
 
 ### POST /v1/tsg/templates
 
 To create a new template, send a `POST` request to `/v1/tsg/templates`. The
-request needs to include the headers as identified below. The attributes required to successfully create a template are
-as follows:
+request needs to include the headers as identified below. A successful creation will return 
+a `201 created` HTTP Response Code. The attributes required to successfully create a template are as follows:
 
 
  | Name             | Type              | Required  |
@@ -87,31 +124,65 @@ as follows:
 #### Example Request
 
 ```
-curl -X DELETE "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/319209784155176962"
+curl -X POST "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
 ```
 
 #### Request Body
 
 ```
-
+{
+    "template_name": "silly-salmon",
+    "package": "7b17343c-94af-6266-e0e8-893a3b9993d0",
+    "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+    "firewall_enabled": false,
+    "networks": [
+        "f7ed95d3-faaf-43ef-9346-15644403b963"
+    ],
+    "metadata": {
+	    "root_pw": "s8v9kuht5e"
+	},
+    "tags": {
+    	"role": "api",
+    	"owner": "design"
+    }
+}
 ```
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 
 #### Sample Response
 
 ```
-
+{
+    "id": "5ffdfc6a-42ad-40c3-aa9f-e5e6d0c33003",
+    "template_name": "silly-salmon",
+    "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
+    "package": "7b17343c-94af-6266-e0e8-893a3b9993d0",
+    "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+    "firewall_enabled": false,
+    "networks": [
+        "f7ed95d3-faaf-43ef-9346-15644403b963"
+    ],
+    "userdata": "",
+    "metadata": {
+        "root_pw": "s8v9kuht5e"
+    },
+    "tags": {
+        "owner": "design",
+        "role": "api"
+    }
+}
 ```
 
 ### DELETE /v1/tsg/templates/{identifier}
 
 Templates can be deleted by ID by sending a `DELETE` request to `/v1/tsg/templates/{identifier}`. The
-request needs to include the headers as identified below.
+request needs to include the headers as identified below. A successful delete will return a HTTP status code of `204 No Content`.
  
 
 #### Example Request
@@ -123,11 +194,6 @@ curl -X DELETE "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/31920978415
 #### Request Headers 
 
 ```
-
-```
-
-#### Sample Response
-
-```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
