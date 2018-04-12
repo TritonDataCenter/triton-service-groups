@@ -1,23 +1,23 @@
 # Templates 
 
-A template is a collection of configuration parameters that is used to launch a Triton instance. Templates are immutable,
-therefore, once they are created, they cannot be changed, therefore a new template needs created. A template is made up
-as follows:
+A template is a collection of configuration parameters that are used to launch a Triton instance. Templates are immutable,  therefore, once they are created they cannot be changed. If you need to make changes, you must create a new template.
+
+A template is made up as follows:
 
 | Field             | Type              |  Description                                                                  |
 |----------         |-------------      |------                                                                         |
-| ID                | string            | The UUID of the Template.                                                     |
-| TemplateName      | string            | The name of the Template.                                                     |
-| AccountID         | string            | The AccountID the Template is associated to.                                  | 
-| Package           | string            | The ID of the Package to use when launching a Template.                       | 
-| ImageID           | string            | The ID of the Package to use when launching a Template.                       | 
-| FirewallEnabled   | bool              | Enable or disable the Firewall on the instances launched. Default is `false`. | 
+| ID                | string            | The UUID of the template.                                                     |
+| TemplateName      | string            | The name of the template.                                                     |
+| AccountID         | string            | The account ID the template is associated to.                                  | 
+| Package           | string            | The ID of the package to use when launching a template.                       | 
+| ImageID           | string            | The ID of the package to use when launching a template.                       | 
+| FirewallEnabled   | bool              | Enable or disable the firewall on the instances launched. Default is `false`. | 
 | Networks          | []string          | A list of network IDs to attach to the instances launched.                    | 
 | UserData          | string            | Data to be copied to the instances on boot.                                   | 
 | MetaData          | map[string]string | A mapping of metadata to apply to the instances launched.                     | 
 | Tags              | map[string]string | A mapping of tags to apply to the instances launched.                         |  
 
-### GET /v1/tsg/templates
+### GET `/v1/tsg/templates`
 
 To list all of the templates associated with a specific Triton account, send a `GET` request to `/v1/tsg/templates` with
 the request headers detailed below.
@@ -61,9 +61,9 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 }
 ```
 
-### GET /v1/tsg/templates/{identifier}
+### GET `/v1/tsg/templates/{UUID}`
 
-To show information about a specific template, send a `GET` request to `/v1/tsg/templates/{identifier}` 
+To show information about a specific template, send a `GET` request to `/v1/tsg/templates/{UUID}` 
 using the request headers as detailed below.
  
 
@@ -103,7 +103,7 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 }
 ```
 
-### POST /v1/tsg/templates
+### POST `/v1/tsg/templates`
 
 To create a new template, send a `POST` request to `/v1/tsg/templates`. The
 request needs to include the headers as identified below. A successful creation will return 
@@ -179,10 +179,9 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 }
 ```
 
-### DELETE /v1/tsg/templates/{identifier}
+### DELETE `/v1/tsg/templates/{UUID}`
 
-Templates can be deleted by ID by sending a `DELETE` request to `/v1/tsg/templates/{identifier}`. The
-request needs to include the headers as identified below. A successful delete will return a HTTP status code of `204 No Content`.
+Templates can be deleted by sending a `DELETE` request to `/v1/tsg/templates/{UUID}`, where the `{UUID}` is the template ID. The request must include the headers as identified below. A successful delete will return a HTTP status code of `204 No Content`.
  
 
 #### Example Request
@@ -196,4 +195,10 @@ curl -X DELETE "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/31920978415
 ```
 Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
 Date: Fri, 06 Apr 2018 18:33:38 UTC
+```
+
+#### Sample Response
+
+```
+204 No Content
 ```
