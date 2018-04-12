@@ -1,8 +1,6 @@
 # Groups
 
-### GET `/v1/tsg/groups`
-
-##### Inputs
+A group is made up as follows:
 
 | Name        | Type   | Description                                                                                                |
 | ----------- | ------ | ---------------------------------------------------------------------------------------------------------- |
@@ -14,7 +12,10 @@
 | created_at  | string | When this group was created. ISO8601 date format.                                                          |
 | updated_at  | string | When this group's details were last updated. ISO8601 date format.                                          |
 
-##### Returns
+### GET `/v1/tsg/groups`
+
+To list all of the groups associated with a specific Triton account, send a `GET`
+request to `/v1/tsg/groups` with the request headers detailed below.
 
 #### Example Request
 
@@ -22,7 +23,6 @@
 curl -X GET https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups
 ```
 
-
 #### Request Headers 
 
 ```
@@ -35,18 +35,16 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 ```
 
-### GET `/v1/tsg/groups/{identifier}`
+### GET `/v1/tsg/groups/{UUID}`
 
-##### Inputs
-
-##### Returns
+To show information about a specific group, send a `GET` request to `/v1/tsg/groups/{UUID}`
+using the request headers as detailed below.
 
 #### Example Request
 
 ```
-curl -X GET https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
+curl -X GET https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{UUID}
 ```
-
 
 #### Request Headers 
 
@@ -60,23 +58,13 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 ```
 
-### GET `/v1/tsg/groups/{identifier}/instances`
-
-##### Inputs
-
-##### Returns
-
-An array of objects, which contain:
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
+### GET `/v1/tsg/groups/{UUID}/instances`
 
 #### Example Request
 
 ```
 curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}/instances
 ```
-
 
 #### Request Headers 
 
@@ -92,9 +80,19 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 
 ### POST `/v1/tsg/groups`
 
-##### Inputs
 
-##### Returns
+To create a new group, send a `POST` request to /v1/tsg/groups. The request needs
+to include the headers as identified below. A successful creation will return a
+`201 Created` HTTP Response Code. The attributes required to successfully create
+a group are as follows:
+
+| Name        | Type   | Required |
+| ----------- | ------ | -------- |
+| group_name  | string | Yes      |
+| account_id  | string | Yes      |
+| template_id | string | Yes      |
+| capacity    | string | Yes      |
+
 
 #### Example Request
 
@@ -128,19 +126,17 @@ Content-Type: application/json
 ```
 ```
 
-### PUT `/v1/tsg/groups/{identifier}`
+### PUT `/v1/tsg/groups/{UUID}`
 
 #### Example Request
 
 ```
-curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
+curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{UUID}
 ```
 
 #### Request Body
 
-```json
-{
-}
+```
 ```
 
 #### Request Headers 
@@ -156,21 +152,17 @@ Content-Type: application/json
 ```
 ```
 
-### PUT `/v1/tsg/groups/{identifier}/increment`
+### PUT `/v1/tsg/groups/{UUID}/increment`
 
-##### Inputs
-
-| Name           | Type   | Description                                                                        |
-| -------------- | ------ | ---------------------------------------------------------------------------------- |
-| instance_count | number | The number of compute instances by which to increase the current compute capacity. |
-| max_instance   | number | Maximum limit of compute instances to maintain.                                    |
-
-##### Returns
+| Name           | Type   | Description                                                                        | Required |
+| -------------- | ------ | ---------------------------------------------------------------------------------- | -------- |
+| instance_count | number | The number of compute instances by which to increase the current compute capacity. | Yes      |
+| max_instance   | number | Maximum limit of compute instances to maintain.                                    | Yes      |
 
 #### Example Request
 
 ```
-curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}/increment
+curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{UUID}/increment
 ```
 
 #### Request Body
@@ -195,21 +187,17 @@ Content-Type: application/json
 ```
 ```
 
-### PUT `/v1/tsg/groups/{identifier}/decrement`
+### PUT `/v1/tsg/groups/{UUID}/decrement`
 
-##### Inputs
-
-| Name           | Type   | Description                                                                        |
-| -------------- | ------ | ---------------------------------------------------------------------------------- |
-| instance_count | number | The number of compute instances by which to decrease the current compute capacity. |
-| min_instance   | number | Minimum limit of compute instances to maintain.                                    |
-
-##### Returns
+| Name           | Type   | Description                                                                        | Required |
+| -------------- | ------ | ---------------------------------------------------------------------------------- | -------- |
+| instance_count | number | The number of compute instances by which to decrease the current compute capacity. | Yes      |
+| min_instance   | number | Minimum limit of compute instances to maintain.                                    | Yes      |
 
 #### Example Request
 
 ```
-curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}/decrement
+curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{UUID}/decrement
 ```
 
 #### Request Body
@@ -234,16 +222,16 @@ Content-Type: application/json
 ```
 ```
 
-### DELETE `/v1/tsg/groups/{identifier}`
+### DELETE `/v1/tsg/groups/{UUID}`
 
-##### Inputs
-
-##### Returns
+Groups can be deleted by sending a `DELETE` request to `/v1/tsg/groups/{UUID}`,
+where the `{UUID}` is the group ID. The request must include the headers as detailed
+below. A successful delete will return a HTTP status code of `204 No Content`.
 
 #### Example Request
 
 ```
-curl -X DELETE https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
+curl -X DELETE "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{UUID}"
 ```
 
 #### Request Headers 
@@ -256,4 +244,5 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 #### Sample Response
 
 ```
+204 No Content
 ```
