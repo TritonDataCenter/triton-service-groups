@@ -10,7 +10,7 @@ A template is made up as follows:
 | template_name    | string           | The name of the template.                                                     |
 | account_id       | string           | The account ID the template is associated to.                                 |
 | package          | string           | The ID of the package to use when launching a template.                       |
-| image_id         | string           | The ID of the package to use when launching a template.                       |
+| image_id         | string           | The ID of the image to use when launching a template.                         |
 | firewall_enabled | boolean          | Enable or disable the firewall on the instances launched. Default is `false`. |
 | networks         | array of strings | A list of network IDs to attach to the instances launched.                    |
 | user_data        | string           | Data to be copied to the instances on boot.                                   |
