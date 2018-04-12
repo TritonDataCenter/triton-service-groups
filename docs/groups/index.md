@@ -19,20 +19,20 @@
 #### Example Request
 
 ```
-curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups
+curl -X GET https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups
 ```
 
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 
 #### Sample Response
 
 ```
-
 ```
 
 ### GET `/v1/tsg/groups/{identifier}`
@@ -44,20 +44,20 @@ curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 #### Example Request
 
 ```
-curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
+curl -X GET https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
 ```
 
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 
 #### Sample Response
 
 ```
-
 ```
 
 ### GET `/v1/tsg/groups/{identifier}/instances`
@@ -81,13 +81,13 @@ curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 
 #### Sample Response
 
 ```
-
 ```
 
 ### POST `/v1/tsg/groups`
@@ -99,21 +99,33 @@ curl -X GET -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 #### Example Request
 
 ```
-curl -X POST -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups -d '{}'
+curl -X POST https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups
 
 ```
 
+### Request Body
+
+```json
+{
+    "group_name": "jolly-jelly",
+    "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
+    "template_id": "437c560d-b1a9-4dae-b3b3-6dbabb7d23a7",
+    "capacity": 20
+}
+```
 
 #### Request Headers 
 
 ```
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
+Content-Type: application/json
 
 ```
 
 #### Sample Response
 
 ```
-
 ```
 
 ### PUT `/v1/tsg/groups/{identifier}`
@@ -121,20 +133,27 @@ curl -X POST -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.j
 #### Example Request
 
 ```
-curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier} -d '{}'
+curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
 ```
 
+#### Request Body
+
+```json
+{
+}
+```
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
+Content-Type: application/json
 ```
 
 #### Sample Response
 
 ```
-
 ```
 
 ### PUT `/v1/tsg/groups/{identifier}/increment`
@@ -151,20 +170,29 @@ curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 #### Example Request
 
 ```
-curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}/increment -d '{}'
+curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}/increment
 ```
 
+#### Request Body
+
+```json
+{
+    "instance_count": 25,
+    "max_instance": 50
+}
+```
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
+Content-Type: application/json
 ```
 
 #### Sample Response
 
 ```
-
 ```
 
 ### PUT `/v1/tsg/groups/{identifier}/decrement`
@@ -181,20 +209,29 @@ curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 #### Example Request
 
 ```
-curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}/decrement -d '{}'
+curl -X PUT https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}/decrement
 ```
 
+#### Request Body
+
+```json
+{
+    "instance_count": 15,
+    "min_instance": 5
+}
+```
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
+Content-Type: application/json
 ```
 
 #### Sample Response
 
 ```
-
 ```
 
 ### DELETE `/v1/tsg/groups/{identifier}`
@@ -206,18 +243,17 @@ curl -X PUT -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.jo
 #### Example Request
 
 ```
-curl -X DELETE -H "Content-Type: application/json" -H "" https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
+curl -X DELETE https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/groups/{identifier}
 ```
-
 
 #### Request Headers 
 
 ```
-
+Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
+Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 
 #### Sample Response
 
 ```
-
 ```
