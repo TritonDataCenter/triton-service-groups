@@ -97,7 +97,7 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
     ],
     "metadata": {
 	    "root_pw": "s8v9kuht5e"
-	}, 
+	  }, 
     "tags": {
         "role": "web",
         "owner": "api-team"
@@ -113,16 +113,16 @@ request needs to include the headers as identified below. A successful creation 
 a `201 created` HTTP Response Code. The attributes required to successfully create a template are as follows:
 
 
- | Name             | Type              | Required  |
- |:----------:      |:-------------:    |:------:   |
- | Template Name    | string            | true      |
- | Package          | string            | true      |
- | ImageID          | string            | true      |
- | FirewallEnabled  | bool              |           |
- | Networks         | []string          |           |
- | UserData         | string            |           |
- | MetaData         | map[string]string |           |
- | Tags             | map[string]string |           |
+ | Name             | Type             | Required |
+ | ---------------- | ---------------- | -------- |
+ | template_name    | string           | true     |
+ | package          | string           | true     |
+ | image_id         | string           | true     |
+ | firewall_enabled | boolean          |          |
+ | networks         | array of strings |          |
+ | user_data        | string           |          |
+ | meta_data        | object           |          |
+ | tags             | object           |          |
 
 #### Example Request
 
