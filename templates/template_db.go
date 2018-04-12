@@ -24,10 +24,12 @@ func FindTemplateByName(ctx context.Context, key string, accountID string) (*Ins
 		return nil, false
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
+	sqlStatement := `
+SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
 FROM tsg_templates
 WHERE template_name = $1 and account_id = $2
-AND archived = false;`
+AND archived = false
+`
 
 	var (
 		template          InstanceTemplate
@@ -88,10 +90,12 @@ func FindTemplateByID(ctx context.Context, key string, accountID string) (*Insta
 		return nil, false
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
+	sqlStatement := `
+SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
 FROM tsg_templates
 WHERE id = $1 and account_id = $2
-AND archived = false;`
+AND archived = false
+`
 
 	var (
 		template          InstanceTemplate
