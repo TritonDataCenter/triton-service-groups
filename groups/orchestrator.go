@@ -24,6 +24,7 @@ type OrchestratorJob struct {
 	PackageID         string
 	ImageID           string
 	ServiceGroupName  string
+	TemplateID        string
 	UserData          string
 	FirewallEnabled   bool
 	Networks          []string
@@ -230,6 +231,7 @@ func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGro
 		ImageID:          template.ImageID,
 		ServiceGroupName: group.GroupName,
 		FirewallEnabled:  template.FirewallEnabled,
+		TemplateID:       template.ID,
 	}
 
 	if template.UserData != "" {
