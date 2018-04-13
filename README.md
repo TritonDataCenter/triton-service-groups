@@ -6,7 +6,49 @@ Triton Service Groups help you maximize application efficiency so that you only 
 
 At this time, there is no integration with Triton CLI.
 
-## Run
+## API Usage
+
+The API has 2 main endpoints:
+
+* [groups](docs/groups/index.md)
+* [templates](docs/templates/index.md)
+
+All API calls to the API require an Authorization header. An example Authorization header may look as follows:
+
+```
+Authorization: Signature keyId=/demo/keys/foo,algorithm="rsa-sha256" ${Base64(sign($Date))}
+```
+
+The default value to sign for API requests is simply the value of the HTTP Date header. For more information on the Date header value, see [RFC 2616](http://tools.ietf.org/html/rfc2616#section-14.18). All requests to the API using the Signature authentication scheme must send a Date header.
+
+### Using CURL with Triton Service Groups
+
+```bash
+function tsg() {
+    local now=$(date -u '+%a, %d %h %Y %H:%M:%S GMT')
+    local signature=$(echo -n "$now" | openssl dgst -sha256 -sign ~/.ssh/id_rsa | openssl enc -e -a | tr -d '\n')
+    local url="$TSG_URL$1"
+    shift
+
+    curl -s -k -i \
+        -H 'Accept: application/json' \
+        -H "accept-version: ~8" \
+        -H "Date: $now" \
+        -H "Authorization: Signature keyId=\"/$TRITON_ACCOUNT/keys/id_rsa\",algorithm=\"rsa-sha256\" $signature" \
+        "$@" "$url"
+    echo
+}
+```
+
+You may need to alter the path to your SSH key in the above function. With this function, you could just do:
+
+```bash
+TSG_URL=https://tsg.us-sw-1.svc.joyent.zone tsg /v1/tsg/templates
+```
+
+## Development
+
+### Running the API
 
 ```sh
 $ make build
