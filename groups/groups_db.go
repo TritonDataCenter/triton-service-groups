@@ -169,7 +169,7 @@ VALUES ($1, $2, $3, $4, NOW(), NOW())
 	}
 }
 
-func UpdateGroup(ctx context.Context, name string, accountID string, group *ServiceGroup) {
+func UpdateGroup(ctx context.Context, uuid string, accountID string, group *ServiceGroup) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
 		log.Fatal().Err(handlers.ErrNoConnPool)
@@ -179,10 +179,10 @@ func UpdateGroup(ctx context.Context, name string, accountID string, group *Serv
 	sqlStatement := `
 UPDATE tsg_groups
 SET template_id = $3, capacity = $4, updated_at = NOW()
-WHERE name = $1 and account_id = $2
+WHERE id = $1 and account_id = $2
 `
 	_, err := db.ExecEx(ctx, sqlStatement, nil,
-		name,
+		uuid,
 		accountID,
 		group.TemplateID,
 		group.Capacity,
