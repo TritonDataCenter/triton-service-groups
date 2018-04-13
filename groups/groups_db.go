@@ -25,7 +25,7 @@ func FindGroups(ctx context.Context, accountID string) ([]*ServiceGroup, error) 
 	var groups []*ServiceGroup
 
 	sqlStatement := `
-SELECT id, name, account_id, template_id, capacity, created_at, updated_at
+SELECT id, name, template_id, capacity, created_at, updated_at
 FROM tsg_groups
 WHERE account_id = $1
 AND archived = false;`
@@ -46,7 +46,6 @@ AND archived = false;`
 		err := rows.Scan(
 			&group.ID,
 			&group.GroupName,
-			&group.AccountID,
 			&group.TemplateID,
 			&group.Capacity,
 			&createdAt,
@@ -79,7 +78,7 @@ func FindGroupByID(ctx context.Context, key string, accountID string) (*ServiceG
 	)
 
 	sqlStatement := `
-SELECT id, name, account_id, template_id, capacity, created_at, updated_at
+SELECT id, name, template_id, capacity, created_at, updated_at
 FROM tsg_groups
 WHERE account_id = $2 and id = $1
 AND archived = false
@@ -88,7 +87,6 @@ AND archived = false
 	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).Scan(
 		&group.ID,
 		&group.GroupName,
-		&group.AccountID,
 		&group.TemplateID,
 		&group.Capacity,
 		&createdAt,
@@ -122,7 +120,7 @@ func FindGroupByName(ctx context.Context, name string, accountID string) (*Servi
 	)
 
 	sqlStatement := `
-SELECT id, name, account_id, template_id, capacity, created_at, updated_at
+SELECT id, name, template_id, capacity, created_at, updated_at
 FROM tsg_groups
 WHERE account_id = $2 and name = $1
 AND archived = false;
@@ -130,7 +128,6 @@ AND archived = false;
 	err := db.QueryRowEx(ctx, sqlStatement, nil, name, accountID).Scan(
 		&group.ID,
 		&group.GroupName,
-		&group.AccountID,
 		&group.TemplateID,
 		&group.Capacity,
 		&createdAt,

@@ -18,7 +18,6 @@ import (
 )
 
 type OrchestratorJob struct {
-	AccountID         string
 	Datacenter        string
 	JobName           string
 	DesiredCount      int
@@ -225,7 +224,6 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 
 func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGroup) OrchestratorJob {
 	job := OrchestratorJob{
-		AccountID:        group.AccountID,
 		JobName:          fmt.Sprintf("%s_%s", group.GroupName, template.ShortID()),
 		DesiredCount:     group.Capacity,
 		PackageID:        template.Package,
@@ -263,21 +261,21 @@ job "{{.JobName}}" {
   datacenters = ["{{ .Datacenter }}"]
   group "scale" {
 	constraint {
-      distinct_hosts = true
-    }
-    constraint {
-      operator = "="
-      attribute = "${meta.role}"
-      value = "automater"
-    }
+	  distinct_hosts = true
+	}
+	constraint {
+	  operator = "="
+	  attribute = "${meta.role}"
+	  value = "automater"
+	}
 	task "healthy" {
 	  driver = "exec"
 	  artifact {
-        source = "https://github.com/joyent/tsg-cli/releases/download/v0.1.0/tsg-cli_0.1.0_linux_amd64.tar.gz"
+		source = "https://github.com/joyent/tsg-cli/releases/download/v0.1.0/tsg-cli_0.1.0_linux_amd64.tar.gz"
 		options {
-          checksum = "sha256:0aa5bf0bfea4da8b4c58178e0764c0fa06ca09075df3a44ef6ed6fc11d2b74ce"
-        }
-      }
+		  checksum = "sha256:0aa5bf0bfea4da8b4c58178e0764c0fa06ca09075df3a44ef6ed6fc11d2b74ce"
+		}
+	  }
 	  config {
 		command = "tsg"
 		args = [

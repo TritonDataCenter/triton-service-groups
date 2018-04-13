@@ -25,20 +25,19 @@ func FindTemplateByName(ctx context.Context, key string, accountID string) (*Ins
 	}
 
 	sqlStatement := `
-SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
+SELECT id, template_name, package, image_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
 FROM tsg_templates
 WHERE template_name = $1 and account_id = $2
 AND archived = false
 `
 
 	var (
-		template          InstanceTemplate
-		metaDataJson      string
-		tagsJson          string
-		networksList      string
-		templateID        pgtype.UUID
-		templateAccountID pgtype.UUID
-		createdAt         pgtype.Timestamp
+		template     InstanceTemplate
+		metaDataJson string
+		tagsJson     string
+		networksList string
+		templateID   pgtype.UUID
+		createdAt    pgtype.Timestamp
 	)
 
 	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).Scan(
@@ -46,7 +45,6 @@ AND archived = false
 		&template.TemplateName,
 		&template.Package,
 		&template.ImageID,
-		&templateAccountID,
 		&template.FirewallEnabled,
 		&networksList,
 		&metaDataJson,
@@ -57,7 +55,6 @@ AND archived = false
 	switch err {
 	case nil:
 		template.ID = convert.BytesToUUID(templateID.Bytes)
-		template.AccountID = convert.BytesToUUID(templateAccountID.Bytes)
 
 		metaData, err := convertFromJson(metaDataJson)
 		if err != nil {
@@ -91,20 +88,19 @@ func FindTemplateByID(ctx context.Context, key string, accountID string) (*Insta
 	}
 
 	sqlStatement := `
-SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
+SELECT id, template_name, package, image_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags,''), created_at
 FROM tsg_templates
 WHERE id = $1 and account_id = $2
 AND archived = false
 `
 
 	var (
-		template          InstanceTemplate
-		metaDataJson      string
-		tagsJson          string
-		networksList      string
-		templateID        pgtype.UUID
-		templateAccountID pgtype.UUID
-		createdAt         pgtype.Timestamp
+		template     InstanceTemplate
+		metaDataJson string
+		tagsJson     string
+		networksList string
+		templateID   pgtype.UUID
+		createdAt    pgtype.Timestamp
 	)
 
 	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).Scan(
@@ -112,7 +108,6 @@ AND archived = false
 		&template.TemplateName,
 		&template.Package,
 		&template.ImageID,
-		&templateAccountID,
 		&template.FirewallEnabled,
 		&networksList,
 		&metaDataJson,
@@ -123,7 +118,6 @@ AND archived = false
 	switch err {
 	case nil:
 		template.ID = convert.BytesToUUID(templateID.Bytes)
-		template.AccountID = convert.BytesToUUID(templateAccountID.Bytes)
 
 		metaData, err := convertFromJson(metaDataJson)
 		if err != nil {
@@ -156,19 +150,18 @@ func FindTemplates(ctx context.Context, accountID string) ([]*InstanceTemplate, 
 		return nil, handlers.ErrNoConnPool
 	}
 
-	sqlStatement := `SELECT id, template_name, package, image_id, account_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, ''), created_at
+	sqlStatement := `SELECT id, template_name, package, image_id, firewall_enabled, networks, COALESCE(metadata,''), userdata, COALESCE(tags, ''), created_at
 FROM tsg_templates
 WHERE account_id = $1
 AND archived = false;`
 
 	var (
-		templates         []*InstanceTemplate
-		metaDataJson      string
-		tagsJson          string
-		networksList      string
-		templateID        pgtype.UUID
-		templateAccountID pgtype.UUID
-		createdAt         pgtype.Timestamp
+		templates    []*InstanceTemplate
+		metaDataJson string
+		tagsJson     string
+		networksList string
+		templateID   pgtype.UUID
+		createdAt    pgtype.Timestamp
 	)
 
 	rows, err := db.QueryEx(ctx, sqlStatement, nil, accountID)
@@ -183,7 +176,6 @@ AND archived = false;`
 			&template.TemplateName,
 			&template.Package,
 			&template.ImageID,
-			&templateAccountID,
 			&template.FirewallEnabled,
 			&networksList,
 			&metaDataJson,
@@ -196,7 +188,6 @@ AND archived = false;`
 		}
 
 		template.ID = convert.BytesToUUID(templateID.Bytes)
-		template.AccountID = convert.BytesToUUID(templateAccountID.Bytes)
 
 		metaData, err := convertFromJson(metaDataJson)
 		if err != nil {
