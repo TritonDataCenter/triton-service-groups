@@ -119,7 +119,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	com, ok := FindGroupByID(ctx, group.ID, session.AccountID)
+	com, ok := FindGroupByID(ctx, identifier, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return
