@@ -11,6 +11,7 @@ import (
 
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
+	"github.com/joyent/triton-service-groups/convert"
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/rs/zerolog/log"
 )
@@ -39,12 +40,13 @@ AND archived = false;`
 	for rows.Next() {
 		var (
 			group     ServiceGroup
+			groupID   pgtype.UUID
 			createdAt pgtype.Timestamp
 			updatedAt pgtype.Timestamp
 		)
 
 		err := rows.Scan(
-			&group.ID,
+			&groupID,
 			&group.GroupName,
 			&group.TemplateID,
 			&group.Capacity,
@@ -54,6 +56,8 @@ AND archived = false;`
 		if err != nil {
 			return nil, err
 		}
+
+		group.ID = convert.BytesToUUID(groupID.Bytes)
 
 		group.CreatedAt = createdAt.Time
 		group.UpdatedAt = updatedAt.Time
@@ -73,6 +77,7 @@ func FindGroupByID(ctx context.Context, key string, accountID string) (*ServiceG
 
 	var (
 		group     ServiceGroup
+		groupID   pgtype.UUID
 		createdAt pgtype.Timestamp
 		updatedAt pgtype.Timestamp
 	)
@@ -85,7 +90,7 @@ AND archived = false
 `
 
 	err := db.QueryRowEx(ctx, sqlStatement, nil, key, accountID).Scan(
-		&group.ID,
+		&groupID,
 		&group.GroupName,
 		&group.TemplateID,
 		&group.Capacity,
@@ -94,6 +99,8 @@ AND archived = false
 	)
 	switch err {
 	case nil:
+		group.ID = convert.BytesToUUID(groupID.Bytes)
+
 		group.CreatedAt = createdAt.Time
 		group.UpdatedAt = updatedAt.Time
 
@@ -115,6 +122,7 @@ func FindGroupByName(ctx context.Context, name string, accountID string) (*Servi
 
 	var (
 		group     ServiceGroup
+		groupID   pgtype.UUID
 		createdAt pgtype.Timestamp
 		updatedAt pgtype.Timestamp
 	)
@@ -126,7 +134,7 @@ WHERE account_id = $2 and name = $1
 AND archived = false;
 `
 	err := db.QueryRowEx(ctx, sqlStatement, nil, name, accountID).Scan(
-		&group.ID,
+		&groupID,
 		&group.GroupName,
 		&group.TemplateID,
 		&group.Capacity,
@@ -135,6 +143,8 @@ AND archived = false;
 	)
 	switch err {
 	case nil:
+		group.ID = convert.BytesToUUID(groupID.Bytes)
+
 		group.CreatedAt = createdAt.Time
 		group.UpdatedAt = updatedAt.Time
 
