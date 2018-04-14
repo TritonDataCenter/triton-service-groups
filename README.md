@@ -16,7 +16,8 @@ The API has 2 main endpoints:
 All API calls to the API require an Authorization header. An example Authorization header may look as follows:
 
 ```
-Authorization: Signature keyId=/demo/keys/foo,algorithm="rsa-sha256" ${Base64(sign($Date))}
+Date: Sat, 14 Apr 2018 21:45:59 GMT
+Authorization: Signature keyId=/demo/keys/foo,algorithm="rsa-sha256",headers="date" ${BASE64(signature($DATE))}
 ```
 
 The default value to sign for API requests is simply the value of the HTTP Date header. For more information on the Date header value, see [RFC 2616](http://tools.ietf.org/html/rfc2616#section-14.18). All requests to the API using the Signature authentication scheme must send a Date header.
@@ -27,14 +28,15 @@ The default value to sign for API requests is simply the value of the HTTP Date 
 function tsg() {
     local now=$(date -u '+%a, %d %h %Y %H:%M:%S GMT')
     local signature=$(echo -n "$now" | openssl dgst -sha256 -sign ~/.ssh/id_rsa | openssl enc -e -a | tr -d '\n')
-    local url="$TSG_URL$1"
+    local url="${TSG_URL}$1"
     shift
 
     curl -s -k -i \
         -H 'Accept: application/json' \
-        -H "accept-version: ~8" \
+        -H 'Accept-Version: ~8' \
         -H "Date: $now" \
-        -H "Authorization: Signature keyId=\"/$TRITON_ACCOUNT/keys/id_rsa\",algorithm=\"rsa-sha256\" $signature" \
+        -H 'Content-Type: application/json' \
+        -H "Authorization: Signature keyId=\"/${TRITON_ACCOUNT}/keys/${TRITON_KEY_ID}\",algorithm=\"rsa-sha256\",headers=\"date\" $signature" \
         "$@" "$url"
     echo
 }
