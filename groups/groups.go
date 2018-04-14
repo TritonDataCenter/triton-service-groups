@@ -90,6 +90,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	writeJsonResponse(w, bytes)
 }
 
