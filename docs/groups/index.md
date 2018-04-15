@@ -1,8 +1,10 @@
 # Groups
 
-A group contains a collection of compute instances that share similar characteristics and are treated as a
-logical grouping for the purposes of instance scaling and management. A group starts by launching enough
-compute instances to meet its desired capacity. A group object contains the following fields:
+A group contains a collection of compute instances that share similar characteristics and are treated
+as a logical grouping for the purposes of instance scaling and management. A group starts by launching
+enough compute instances to meet its desired capacity.
+
+A group object contains the following fields:
 
 | Name        | Type   | Description                                                                                                |
 | ----------- | ------ | ---------------------------------------------------------------------------------------------------------- |
@@ -15,17 +17,17 @@ compute instances to meet its desired capacity. A group object contains the foll
 
 ### POST `/v1/tsg/groups`
 
-To create a new group, send a `POST` request to `/v1/tsg/groups`. The request must include the authentication
-headers. The attributes required to successfully create a group are as follows:
+To create a new group, send a `POST` request to `/v1/tsg/groups`. The request must include the
+authentication headers. The attributes required to successfully create a group are as follows:
 
-| Name        | Type   | Description                                                                                                | Required |
-| ----------- | ------ | ---------------------------------------------------------------------------------------------------------- | -------- |
-| group_name  | string | The name of the group. The group name is limited to a maximum of 182 alphanumeric characters.              | Yes      |
-| template_id | string | A unique identifier for the template that the group is associated with.                                    | Yes      |
-| capacity    | string | The number of compute instances to run and maintain a specified number (the "desired count") of instances. | Yes      |
+| Name        | Type   | Description                                                                                                | Required   |
+| ----------- | ------ | ---------------------------------------------------------------------------------------------------------- | :--------: |
+| group_name  | string | The name of the group. The group name is limited to a maximum of 182 alphanumeric characters.              | Yes        |
+| template_id | string | A unique identifier for the template that the group is associated with.                                    | Yes        |
+| capacity    | string | The number of compute instances to run and maintain a specified number (the "desired count") of instances. | Yes        |
 
-A successful creation will return a `200 OK` HTTP response code, and object representing newly created
-group in the response body.
+A successful request will return a `200 OK` HTTP response code, and an object representing newly
+created group in the response body.
 
 #### Example request
 
@@ -71,7 +73,8 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 To delete a group, send a `DELETE` request to `/v1/tsg/groups/{UUID}`, where the `{UUID}` is the unique
 identifier (UUID) of the group. The request must include the authentication headers.
 
-A successful deletion will return a `204 No Content` HTTP status code, and no body will be included in the response.
+A successful request will return a `204 No Content` HTTP status code, and no body will be
+included in the response.
 
 #### Example request
 
@@ -95,10 +98,10 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 ### GET `/v1/tsg/groups`
 
-To list all of the groups, send a `GET` request to `/v1/tsg/groups`. The request must include the authentication
-headers.
+To list all of the groups, send a `GET` request to `/v1/tsg/groups`. The request must include the
+authentication headers.
 
-A successful request to list groups will return a `200 OK` HTTP status code, and a list of objects representing
+A successful request will return a `200 OK` HTTP status code, and a list of objects representing
 a group in the response body.
 
 #### Example request
@@ -140,11 +143,12 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 ### GET `/v1/tsg/groups/{UUID}`
 
-To show information about a specific group, send a `GET` request to `/v1/tsg/groups/{UUID}`, where the `{UUID}`
-is the unique identifier (UUID) of the group. The request must include the authentication headers.
+To request information about a specific group, send a `GET` request to `/v1/tsg/groups/{UUID}`,
+where the `{UUID}` is the unique identifier (UUID) of the group. The request must include the
+authentication headers.
 
-A successful creation will return a `200 OK` HTTP response code, and object representing a group in the response
-body.
+A successful request will return a `200 OK` HTTP response code, and an object representing
+a group in the response body.
 
 #### Example request
 
@@ -175,18 +179,19 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 ### PUT `/v1/tsg/groups/{UUID}`
 
-To update a group (e.g. capacity, etc.), send a `PUT` request to `/v1/tsg/groups/{UUID}`, where the `{UUID}`
-is the unique identifier (UUID) of the group. The request must include the authentication headers. The
-attributes required to successfully create a group are as follows:
+To update a group (e.g. capacity, etc.), send a `PUT` request to `/v1/tsg/groups/{UUID}`,
+where the `{UUID}` is the unique identifier (UUID) of the group. The request must include
+the authentication headers. The attributes required to successfully create a group are as
+follows:
 
-| Name        | Type   | Description                                                                                                | Required |
-| ----------- | ------ | ---------------------------------------------------------------------------------------------------------- | -------- |
-| group_name  | string | The name of the group. The group name is limited to a maximum of 182 alphanumeric characters.              | Yes      |
-| template_id | string | A unique identifier for the template that the group is associated with.                                    | Yes      |
-| capacity    | string | The number of compute instances to run and maintain a specified number (the "desired count") of instances. | Yes      |
+| Name        | Type   | Description                                                                                                | Required   |
+| ----------- | ------ | ---------------------------------------------------------------------------------------------------------- | :--------: |
+| group_name  | string | The name of the group. The group name is limited to a maximum of 182 alphanumeric characters.              | Yes        |
+| template_id | string | A unique identifier for the template that the group is associated with.                                    | Yes        |
+| capacity    | string | The number of compute instances to run and maintain a specified number (the "desired count") of instances. | Yes        |
 
-A successful update will return a `200 OK` HTTP response code, and object representing a group in the response
-body.
+A successful request will return a `200 OK` HTTP response code, and an object representing
+a group in the response body.
 
 #### Example request
 
@@ -209,7 +214,7 @@ curl -X PUT 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone
 ```
 Date: Sat, 14 Apr 2018 16:14:07 GMT
 Content-Type: application/json
-Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:44:b8:0b:63",algorithm="rsa-sha256",headers="date"
+Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:44:b8:0b:63",algorithm="rsa-sha256",headers="date" ...
 ```
 
 #### Example response
@@ -227,13 +232,13 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 ### GET `/v1/tsg/groups/{UUID}/instances`
 
-To list all of the compute instances associated with a specific group, send a `GET` request to `/v1/tsg/groups/{UUID}/instances`,
-where the `{UUID}` is the unique identifier (UUID) of the group. The request must include the authentication headers.
+To list all of the compute instances associated with a specific group, send a `GET` request
+to `/v1/tsg/groups/{UUID}/instances`, where the `{UUID}` is the unique identifier (UUID) of
+the group. The request must include the authentication headers.
 
-A successful request to list compute instances associated with a given group will return a `200 OK` HTTP status code,
-and a list of objects representing a compute instance. The details about an object representing a compute instance
-can be found in the [Joyent CloudAPI](https://apidocs.joyent.com/cloudapi/) documentation in the
-[instances](https://apidocs.joyent.com/cloudapi/#instances) section.
+A successful request will return a `200 OK` HTTP status code, and a list of objects representing
+a compute instance. The details about an object representing a compute instance can be found in
+the [Joyent CloudAPI][1] documentation in the [instances][2] section.
 
 #### Example request
 
@@ -295,17 +300,18 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 ### PUT `/v1/tsg/groups/{UUID}/increment`
 
-To a number of new compute instances to a group while maintaining the maximum limit, send a `PUT` request to `/v1/tsg/groups/{UUID}/increment`,
-where the `{UUID}` is the unique identifier (UUID) of the group. The request must include the authentication headers.
-The attributes required to successfully create a group are as follows:
+To add a number of new compute instances to a group while maintaining the maximum limit,
+send a `PUT` request to `/v1/tsg/groups/{UUID}/increment`, where the `{UUID}` is the unique
+identifier (UUID) of the group. The request must include the authentication headers. The
+attributes required to successfully create a group are as follows:
 
-| Name           | Type   | Description                                                           | Required |
-| -------------- | ------ | --------------------------------------------------------------------- | -------- |
-| instance_count | number | The number of compute instances to add to the current group capacity. | Yes      |
-| max_instance   | number | Maximum number of compute instances allowed in the group.             | Yes      |
+| Name           | Type   | Description                                                           | Required   |
+| -------------- | ------ | --------------------------------------------------------------------- | :--------: |
+| instance_count | number | The number of compute instances to add to the current group capacity. | Yes        |
+| max_instance   | number | Maximum number of compute instances allowed in the group.             | Yes        |
 
-A successful request to add a number of compute instances to a group will return a `202 Accepted` HTTP status code,
-and no body will be included in the response.
+A successful request will return a `202 Accepted` HTTP status code, and no body will be
+included in the response.
 
 #### Example request
 
@@ -338,17 +344,18 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 ### PUT `/v1/tsg/groups/{UUID}/decrement`
 
-To remove a numnber of compute instances from a group while maintaining the minimum limit, send a `PUT` request to `/v1/tsg/groups/{UUID}/decrement`,
-where the `{UUID}` is the unique identifier (UUID) of the group. The request must include the authentication headers.
-The attributes required to successfully create a group are as follows:
+To remove a number of compute instances from a group while maintaining the minimum limit,
+send a `PUT` request to `/v1/tsg/groups/{UUID}/decrement`, where the `{UUID}` is the unique
+identifier (UUID) of the group. The request must include the authentication headers. The
+attributes required to successfully create a group are as follows:
 
-| Name           | Type   | Description                                                         | Required |
-| -------------- | ------ | ------------------------------------------------------------------- | -------- |
-| instance_count | number | The number of compute instances to remove from the group capacity.  | Yes      |
-| min_instance   | number | Minimum number of compute instances allowed in the group.           | Yes      |
+| Name           | Type   | Description                                                         | Required   |
+| -------------- | ------ | ------------------------------------------------------------------- | :--------: |
+| instance_count | number | The number of compute instances to remove from the group capacity.  | Yes        |
+| min_instance   | number | Minimum number of compute instances allowed in the group.           | Yes        |
 
-A successful request to remove a number of compute instances from a group will return a `202 Accepted` HTTP status code,
-and no body will be included in the response.
+A successful request will return a `202 Accepted` HTTP status code, and no body will be
+included in the response.
 
 #### Example request
 
@@ -378,3 +385,6 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 ```
 202 Accepted
 ```
+
+[1]: https://apidocs.joyent.com/cloudapi
+[2]: https://apidocs.joyent.com/cloudapi/#instances

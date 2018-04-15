@@ -1,152 +1,70 @@
 # Templates 
 
-A template is a collection of configuration parameters that are used to launch a Triton instance. Templates are immutable,  therefore, once they are created they cannot be changed. If you need to make changes, you must create a new template.
+A template is a collection of configuration parameters that are used to launch a compute instance.
 
-A template is made up as follows:
+Templates are immutable, therefore, once they are created they cannot be changed. If you need to
+make changes, you must create a new template.
 
-| Field            | Type             | Description                                                                   |
-| ---------------- | ---------------- | ----------------------------------------------------------------------------- |
-| id               | string           | The UUID of the template.                                                     |
-| template_name    | string           | The name of the template.                                                     |
-| account_id       | string           | The account ID the template is associated to.                                 |
-| package          | string           | The ID of the package to use when launching a template.                       |
-| image_id         | string           | The ID of the image to use when launching a template.                         |
-| firewall_enabled | boolean          | Enable or disable the firewall on the instances launched. Default is `false`. |
-| networks         | array of strings | A list of network IDs to attach to the instances launched.                    |
-| user_data        | string           | Data to be copied to the instances on boot.                                   |
-| meta_data        | object           | A mapping of metadata to apply to the instances launched.                     |
-| tags             | object           | A mapping of tags to apply to the instances launched.                         |
-| created_at       | string           | When this template was created. ISO8601 date format.                          |
+A template object contains the following fields:
 
-### GET `/v1/tsg/templates`
+| Field            | Type             | Description                                                                              |
+| ---------------- | ---------------- | ---------------------------------------------------------------------------------------- |
+| id               | string           | The universal identifier (UUID) of the template.                                         |
+| template_name    | string           | The name of the template.                                                                |
+| package          | string           | The unique identifier (UUID) of the package to use when launching compute instances.     |
+| image_id         | string           | The unique identifier (UUID) of the image to use when launching compute instances.       |
+| firewall_enabled | boolean          | Whether to enable or disable the firewall on the instances launched. Default is `false`. |
+| networks         | array of strings | A list of unique network identifiers to attach to the compute instances launched.        |
+| user_data        | string           | An arbitrary data to be copied to the instances on boot. This will not be executed.      |
+| meta_data        | object           | A mapping of metadata (a key-value pairs) to apply to the instances launched.            |
+| tags             | object           | A mapping of tags (a key-value pairs) to apply to the instances launched.                |
+| created_at       | string           | When this template was created. ISO8601 date format.                                     |
 
-To list all of the templates associated with a specific Triton account, send a `GET` request to `/v1/tsg/templates` with
-the request headers detailed below.
-
-#### Example Request
-
-```
-curl -X GET "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
-```
-
-
-#### Request Headers 
-
-```
-Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
-Date: Fri, 06 Apr 2018 18:33:38 UTC
-```
-
-#### Sample Response
-
-```
-[
-    {
-        "id": "437c560d-b1a9-4dae-b3b3-6dbabb7d23a7",
-        "template_name": "test-template-6",
-        "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
-        "package": "test-package",
-        "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
-        "firewall_enabled": false,
-        "networks": [
-            "f7ed95d3-faaf-43ef-9346-15644403b963"
-        ],
-        "metadata": {
-    	    "root_pw": "s8v9kuht5e"
-    	}, 
-        "tags": {
-            "role": "web",
-            "owner": "api-team"
-        },
-        "created_at": "2018-04-12T15:59:08.098244Z"
-    }
-}
-```
-
-### GET `/v1/tsg/templates/{UUID}`
-
-To show information about a specific template, send a `GET` request to `/v1/tsg/templates/{UUID}` 
-using the request headers as detailed below.
- 
-
-#### Example Request
-
-```
-curl -X GET "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/319209784155176962"
-```
-
-#### Request Headers 
-
-```
-Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
-Date: Fri, 06 Apr 2018 18:33:38 UTC
-```
-
-#### Sample Response
-
-```
-{
-    "id": "437c560d-b1a9-4dae-b3b3-6dbabb7d23a7",
-    "template_name": "test-template-6",
-    "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
-    "package": "test-package",
-    "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
-    "firewall_enabled": false,
-    "networks": [
-        "f7ed95d3-faaf-43ef-9346-15644403b963"
-    ],
-    "metadata": {
-	    "root_pw": "s8v9kuht5e"
-	  }, 
-    "tags": {
-        "role": "web",
-        "owner": "api-team"
-    },
-    "created_at": "2018-04-12T15:59:08.098244Z"
-}
-```
+The template object shares attributes with the compute instance object as found in the
+[Joyent CloudAPI][1] documentation in the [instances][2] section.
 
 ### POST `/v1/tsg/templates`
 
-To create a new template, send a `POST` request to `/v1/tsg/templates`. The
-request needs to include the headers as identified below. A successful creation will return 
-a `201 created` HTTP Response Code. The attributes required to successfully create a template are as follows:
+To create a new template, send a `POST` request to `/v1/tsg/templates`. The request must include
+the authentication headers. The attributes required to successfully create a template are as
+follows:
 
+| Name             | Type             | Description                                                                          | Required   |
+| ---------------- | ---------------- | ------------------------------------------------------------------------------------ | :--------: |
+| template_name    | string           | The name of the template.                                                            | Yes        |
+| package          | string           | The unique identifier (UUID) of the package to use when launching compute instances. | Yes        |
+| image_id         | string           | The unique identifier (UUID) of the image to use when launching compute instances.   | Yes        |
+| firewall_enabled | boolean          | Whether to enable or disable the firewall on the instances launched.                 | No         |
+| networks         | array of strings | A list of unique network identifiers to attach to the compute instances launched.    | No         |
+| user_data        | string           | An arbitrary data to be copied to the instances on boot. This will not be executed.  | No         |
+| meta_data        | object           | A mapping of metadata (a key-value pairs) to apply to the instances launched.        | No         |
+| tags             | object           | A mapping of tags (a key-value pairs) to apply to the instances launched.            | No         |
 
- | Name             | Type             | Required |
- | ---------------- | ---------------- | -------- |
- | template_name    | string           | true     |
- | package          | string           | true     |
- | image_id         | string           | true     |
- | firewall_enabled | boolean          |          |
- | networks         | array of strings |          |
- | user_data        | string           |          |
- | meta_data        | object           |          |
- | tags             | object           |          |
+A successful request will return a `201 Created` HTTP response code, and object representing newly
+created template in the response body.
 
 #### Example Request
 
 ```
-curl -X POST "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
+curl -X POST -H 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates
 ```
 
 #### Request Body
 
 ```
-{
-    "template_name": "silly-salmon",
-    "package": "7b17343c-94af-6266-e0e8-893a3b9993d0",
-    "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+{  
+    "template_name": "jolly-jelly",
+    "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
+    "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
     "firewall_enabled": false,
-    "networks": [
-        "f7ed95d3-faaf-43ef-9346-15644403b963"
+    "networks": [  
+        "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
     ],
-    "metadata": {
-	    "root_pw": "s8v9kuht5e"
-	},
-    "tags": {
-    	"role": "api",
-    	"owner": "design"
+    "tags":{  
+        "owner": "user"
+    },
+    "metadata":{  
+        "user-script": "#!/bin/bash\ndate\n"
     }
 }
 ```
@@ -154,51 +72,54 @@ curl -X POST "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates"
 #### Request Headers 
 
 ```
-Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
-Date: Fri, 06 Apr 2018 18:33:38 UTC
+Date: Sun, 15 Apr 2018 20:24:06 GMT
+ontent-Type: application/json
+Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:44:b8:0b:63",algorithm="rsa-sha256",headers="date" ...
 ```
 
 #### Sample Response
 
 ```
-{
-    "id": "5ffdfc6a-42ad-40c3-aa9f-e5e6d0c33003",
-    "template_name": "silly-salmon",
-    "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
-    "package": "7b17343c-94af-6266-e0e8-893a3b9993d0",
-    "image_id": "49b22aec-0c8a-11e6-8807-a3eb4db576ba",
+{  
+    "id": "29a08459-1a41-4ec9-bbb7-5c737f17a463",
+    "template_name": "jolly-jelly",
+    "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
+    "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
     "firewall_enabled": false,
-    "networks": [
-        "f7ed95d3-faaf-43ef-9346-15644403b963"
+    "networks": [  
+        "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
     ],
     "userdata": "",
-    "metadata": {
-        "root_pw": "s8v9kuht5e"
+    "metadata":{  
+        "user-script": "#!/bin/bash\ndate\n"
     },
-    "tags": {
-        "owner": "design",
-        "role": "api"
+    "tags":{  
+        "owner": "user"
     },
-    "created_at": "2018-04-12T15:59:08.098244Z"
+    "created_at": "2018-04-15T20:24:07.481363Z"
 }
 ```
 
 ### DELETE `/v1/tsg/templates/{UUID}`
 
-Templates can be deleted by sending a `DELETE` request to `/v1/tsg/templates/{UUID}`, where the `{UUID}` is the template ID. The request must include the headers as identified below. A successful delete will return a HTTP status code of `204 No Content`.
- 
+To delete a template, send a `DELETE` request to `/v1/tsg/templates/{UUID}`, where the `{UUID}` is the unique
+identifier (UUID) of the template. The request must include the authentication headers.
 
+A successful request will return a `204 No Content` HTTP status code, and no body will be
+included in the response.
+ 
 #### Example Request
 
 ```
-curl -X DELETE "https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/319209784155176962"
+curl -X DELETE -H 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/29a08459-1a41-4ec9-bbb7-5c737f17a463
 ```
 
 #### Request Headers 
 
 ```
-Authorization: Signature keyId="/test-user-name/keys/aa:bb:cc:dd:9c:54:e9:78:3f:80:0d:ba:6b:c6:ff:44",algorithm="rsa-sha1",headers="date",signature="..."
-Date: Fri, 06 Apr 2018 18:33:38 UTC
+Date: Sun, 15 Apr 2018 20:34:56 GMT
+Content-Type: application/json
+Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:44:b8:0b:63",algorithm="rsa-sha256",headers="date" ...
 ```
 
 #### Sample Response
@@ -206,3 +127,99 @@ Date: Fri, 06 Apr 2018 18:33:38 UTC
 ```
 204 No Content
 ```
+
+### GET `/v1/tsg/templates`
+
+To list all of the templates, send a `GET` request to `/v1/tsg/templates`. The request must include
+the authentication headers.
+
+A successful request will return a `200 OK` HTTP status code, and a list of objects representing
+a template in the response body.
+
+#### Example Request
+
+```
+curl -X GET -H 'Content-Type: application/json'  https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates
+```
+
+#### Request Headers 
+
+```
+Date: Sun, 15 Apr 2018 20:30:16 GMT
+Content-Type: application/json
+Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:44:b8:0b:63",algorithm="rsa-sha256",headers="date" ...
+```
+
+#### Sample Response
+
+```
+[  
+    {  
+        "id": "29a08459-1a41-4ec9-bbb7-5c737f17a463",
+        "template_name": "jolly-jelly",
+        "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
+        "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
+        "firewall_enabled": false,
+        "networks": [  
+            "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
+        ],
+        "userdata": "",
+        "metadata":{  
+            "user-script": "#!/bin/bash\ndate\n"
+        },
+        "tags":{  
+            "owner": "user"
+        },
+        "created_at": "2018-04-15T20:24:07.481363Z"
+    }
+]
+```
+
+### GET `/v1/tsg/templates/{UUID}`
+
+To show information about a specific template, send a `GET` request to `/v1/tsg/templates/{UUID}`,
+where the `{UUID}` is the unique identifier (UUID) of the template. The request must include the
+authentication headers.
+
+A successful request will return a `200 OK` HTTP response code, and an object representing
+a template in the response body.
+
+#### Example request
+
+```
+curl -X GET -H 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/29a08459-1a41-4ec9-bbb7-5c737f17a463
+```
+
+#### Example request headers 
+
+```
+Date: Sun, 15 Apr 2018 20:32:47 GMT
+Content-Type: application/json
+Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:44:b8:0b:63",algorithm="rsa-sha256",headers="date" ...
+```
+
+#### Example response
+
+```
+{  
+    "id": "29a08459-1a41-4ec9-bbb7-5c737f17a463",
+    "template_name": "jolly-jelly",
+    "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
+    "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
+    "firewall_enabled": false,
+    "networks": [  
+        "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
+    ],
+    "userdata": "",
+    "metadata":{  
+        "user-script": "#!/bin/bash\ndate\n"
+    },
+    "tags":{  
+        "owner": "user"
+    },
+    "created_at": "2018-04-15T20:24:07.481363Z"
+}
+```
+
+[1]: https://apidocs.joyent.com/cloudapi
+[2]: https://apidocs.joyent.com/cloudapi/#instances
