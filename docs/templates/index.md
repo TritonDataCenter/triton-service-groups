@@ -1,4 +1,4 @@
-# Templates 
+# Templates
 
 A template is a collection of configuration parameters that are used to launch a compute instance.
 
@@ -52,24 +52,24 @@ curl -X POST -H 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.
 #### Request Body
 
 ```
-{  
+{
     "template_name": "jolly-jelly",
     "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
     "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
     "firewall_enabled": false,
-    "networks": [  
+    "networks": [
         "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
     ],
-    "tags":{  
+    "tags": {
         "owner": "user"
     },
-    "metadata":{  
+    "metadata": {
         "user-script": "#!/bin/bash\ndate\n"
     }
 }
 ```
 
-#### Request Headers 
+#### Request Headers
 
 ```
 Date: Sun, 15 Apr 2018 20:24:06 GMT
@@ -80,20 +80,20 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 #### Sample Response
 
 ```
-{  
+{
     "id": "29a08459-1a41-4ec9-bbb7-5c737f17a463",
     "template_name": "jolly-jelly",
     "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
     "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
     "firewall_enabled": false,
-    "networks": [  
+    "networks": [
         "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
     ],
     "userdata": "",
-    "metadata":{  
+    "metadata": {
         "user-script": "#!/bin/bash\ndate\n"
     },
-    "tags":{  
+    "tags": {
         "owner": "user"
     },
     "created_at": "2018-04-15T20:24:07.481363Z"
@@ -107,14 +107,14 @@ identifier (UUID) of the template. The request must include the authentication h
 
 A successful request will return a `204 No Content` HTTP status code, and no body will be
 included in the response.
- 
+
 #### Example Request
 
 ```
 curl -X DELETE -H 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/29a08459-1a41-4ec9-bbb7-5c737f17a463
 ```
 
-#### Request Headers 
+#### Request Headers
 
 ```
 Date: Sun, 15 Apr 2018 20:34:56 GMT
@@ -142,7 +142,7 @@ a template in the response body.
 curl -X GET -H 'Content-Type: application/json'  https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates
 ```
 
-#### Request Headers 
+#### Request Headers
 
 ```
 Date: Sun, 15 Apr 2018 20:30:16 GMT
@@ -153,21 +153,21 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 #### Sample Response
 
 ```
-[  
-    {  
+[
+    {
         "id": "29a08459-1a41-4ec9-bbb7-5c737f17a463",
         "template_name": "jolly-jelly",
         "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
         "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
         "firewall_enabled": false,
-        "networks": [  
+        "networks": [
             "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
         ],
         "userdata": "",
-        "metadata":{  
+        "metadata": {
             "user-script": "#!/bin/bash\ndate\n"
         },
-        "tags":{  
+        "tags": {
             "owner": "user"
         },
         "created_at": "2018-04-15T20:24:07.481363Z"
@@ -190,7 +190,7 @@ a template in the response body.
 curl -X GET -H 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone/v1/tsg/templates/29a08459-1a41-4ec9-bbb7-5c737f17a463
 ```
 
-#### Example request headers 
+#### Example request headers
 
 ```
 Date: Sun, 15 Apr 2018 20:32:47 GMT
@@ -201,20 +201,20 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 #### Example response
 
 ```
-{  
+{
     "id": "29a08459-1a41-4ec9-bbb7-5c737f17a463",
     "template_name": "jolly-jelly",
     "package": "14aba044-d0f8-11e5-8c88-eb339a5da5d0",
     "image_id": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
     "firewall_enabled": false,
-    "networks": [  
+    "networks": [
         "27ea1d5f-df02-410e-843a-c60dba9ec5ca"
     ],
     "userdata": "",
-    "metadata":{  
+    "metadata": {
         "user-script": "#!/bin/bash\ndate\n"
     },
-    "tags":{  
+    "tags": {
         "owner": "user"
     },
     "created_at": "2018-04-15T20:24:07.481363Z"

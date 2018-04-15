@@ -203,8 +203,8 @@ curl -X PUT 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone
 
 ```
 {
-	"group_name": "jolly-jelly",
-	"template_id": "ebec1e0c-9caa-47d9-97e2-3e31d277a35f",
+    "group_name": "jolly-jelly",
+    "template_id": "ebec1e0c-9caa-47d9-97e2-3e31d277a35f",
     "capacity": 10
 }
 ```
@@ -267,20 +267,21 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
         "image": "342045ce-6af1-4adf-9ef1-e5bfaf9de28c",
         "memory": 3840,
         "disk": 51200,
-        "metadata":{
-            "root_authorized_keys": "..."
+        "metadata": {
+            "root_authorized_keys": "...",
+            "user-script": "#!/bin/bash\ndate\n"
         },
-        "tags":{
+        "tags": {
             "owner": "user",
             "tsg.name": "jolly-jelly"
         },
-        "created":"2018-04-14T16:26:26.985Z",
-        "updated":"2018-04-14T16:26:39Z",
+        "created": "2018-04-14T16:26:26.985Z",
+        "updated": "2018-04-14T16:26:39Z",
         "docker": false,
-        "ips":[
+        "ips": [
             "10.0.0.1"
         ],
-        "networks":[
+        "networks": [
             "0106d35d-90fa-48dc-b0dd-2ebcbaa64ca0"
         ],
         "primaryIp": "10.0.0.1",
@@ -289,7 +290,7 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
         "package": "k4-general-kvm-3.75G",
         "dns_names": null,
         "deletion_protection": false,
-        "CNS":{
+        "CNS": {
             "Disable": false,
             "ReversePTR": "",
             "Services": null
