@@ -125,7 +125,6 @@ func DeleteOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
 func deregisterJob(ctx context.Context, jobID string) (bool, error) {
 	client, ok := handlers.GetNomadClient(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoNomadClient)
 		return false, handlers.ErrNoNomadClient
 	}
 

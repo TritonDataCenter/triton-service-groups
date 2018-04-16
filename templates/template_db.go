@@ -20,7 +20,6 @@ import (
 func FindTemplateByName(ctx context.Context, key string, accountID string) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, false
 	}
 
@@ -76,14 +75,14 @@ AND archived = false
 	case pgx.ErrNoRows:
 		return nil, false
 	default:
-		panic(err)
+		return nil, false
 	}
 }
 
 func FindTemplateByID(ctx context.Context, key string, accountID string) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
+
 		return nil, false
 	}
 
@@ -139,14 +138,13 @@ AND archived = false
 	case pgx.ErrNoRows:
 		return nil, false
 	default:
-		panic(err)
+		return nil, false
 	}
 }
 
 func FindTemplates(ctx context.Context, accountID string) ([]*InstanceTemplate, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, handlers.ErrNoConnPool
 	}
 
@@ -211,11 +209,10 @@ AND archived = false;`
 	return templates, nil
 }
 
-func SaveTemplate(ctx context.Context, accountID string, template *InstanceTemplate) {
+func SaveTemplate(ctx context.Context, accountID string, template *InstanceTemplate) error {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
-		return
+		return handlers.ErrNoConnPool
 	}
 
 	sqlStatement := `
@@ -225,12 +222,12 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
 
 	metaDataJson, err := convertToJson(template.MetaData)
 	if err != nil {
-		log.Fatal().Err(err)
+		return err
 	}
 
 	tagsJson, err := convertToJson(template.Tags)
 	if err != nil {
-		log.Fatal().Err(err)
+		return err
 	}
 
 	networksList := strings.Join(template.Networks, ",")
@@ -247,15 +244,16 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
 		tagsJson,
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func RemoveTemplate(ctx context.Context, identifier string, accountID string) {
+func RemoveTemplate(ctx context.Context, identifier string, accountID string) error {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
-		return
+		return handlers.ErrNoConnPool
 	}
 
 	sqlStatement := `UPDATE triton.tsg_templates
@@ -264,8 +262,10 @@ WHERE id = $1 and account_id = $2`
 
 	_, err := db.ExecEx(ctx, sqlStatement, nil, identifier, accountID)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
 func convertToJson(data map[string]string) (string, error) {

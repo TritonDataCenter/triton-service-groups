@@ -54,8 +54,8 @@ func Get(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(template)
 	if err != nil {
-		log.Fatal().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJsonResponse(w, bytes)
@@ -67,18 +67,22 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Fatal().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	var template *InstanceTemplate
 	err = json.Unmarshal(body, &template)
 	if err != nil {
-		log.Fatal().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	SaveTemplate(ctx, session.AccountID, template)
+	err = SaveTemplate(ctx, session.AccountID, template)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set("Location", path.Join(r.URL.Path, template.TemplateName))
 
@@ -90,8 +94,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(com)
 	if err != nil {
-		log.Fatal().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
@@ -113,7 +117,12 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RemoveTemplate(ctx, template.ID, session.AccountID)
+	err := RemoveTemplate(ctx, template.ID, session.AccountID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -123,15 +132,14 @@ func List(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := FindTemplates(ctx, session.AccountID)
 	if err != nil {
-		log.Fatal().Err(err)
 		http.NotFound(w, r)
 		return
 	}
 
 	bytes, err := json.Marshal(rows)
 	if err != nil {
-		log.Fatal().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJsonResponse(w, bytes)
