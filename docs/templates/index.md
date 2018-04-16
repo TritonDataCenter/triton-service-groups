@@ -15,8 +15,8 @@ A template object contains the following fields:
 | image_id         | string           | The unique identifier (UUID) of the image to use when launching compute instances.       |
 | firewall_enabled | boolean          | Whether to enable or disable the firewall on the instances launched. Default is `false`. |
 | networks         | array of strings | A list of unique network identifiers to attach to the compute instances launched.        |
-| user_data        | string           | An arbitrary data to be copied to the instances on boot. This will not be executed.      |
-| meta_data        | object           | A mapping of metadata (a key-value pairs) to apply to the instances launched.            |
+| userdata         | string           | An arbitrary data to be copied to the instances on boot. This will not be executed.      |
+| metadata         | object           | A mapping of metadata (a key-value pairs) to apply to the instances launched.            |
 | tags             | object           | A mapping of tags (a key-value pairs) to apply to the instances launched.                |
 | created_at       | string           | When this template was created. ISO8601 date format.                                     |
 
@@ -36,8 +36,8 @@ follows:
 | image_id         | string           | The unique identifier (UUID) of the image to use when launching compute instances.   | Yes        |
 | firewall_enabled | boolean          | Whether to enable or disable the firewall on the instances launched.                 | No         |
 | networks         | array of strings | A list of unique network identifiers to attach to the compute instances launched.    | No         |
-| user_data        | string           | An arbitrary data to be copied to the instances on boot. This will not be executed.  | No         |
-| meta_data        | object           | A mapping of metadata (a key-value pairs) to apply to the instances launched.        | No         |
+| userdata         | string           | An arbitrary data to be copied to the instances on boot. This will not be executed.  | No         |
+| metadata         | object           | A mapping of metadata (a key-value pairs) to apply to the instances launched.        | No         |
 | tags             | object           | A mapping of tags (a key-value pairs) to apply to the instances launched.            | No         |
 
 A successful request will return a `201 Created` HTTP response code, and object representing newly
