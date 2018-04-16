@@ -66,7 +66,8 @@ capacity INT NOT NULL,
 health_check_interval INT DEFAULT 300,
 created_at TIMESTAMPTZ NOT NULL,
 updated_at TIMESTAMPTZ NOT NULL,
-archived BOOL DEFAULT false);"
+archived BOOL DEFAULT false)
+UNIQUE (name, account_id);"
 
     if [ -f /dev/backup.sql ]; then
         /cockroach/cockroach.sh sql $HOSTPARAMS --database=$env < /dev/backup.sql

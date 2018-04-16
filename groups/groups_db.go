@@ -13,13 +13,11 @@ import (
 	"github.com/jackc/pgx/pgtype"
 	"github.com/joyent/triton-service-groups/convert"
 	"github.com/joyent/triton-service-groups/server/handlers"
-	"github.com/rs/zerolog/log"
 )
 
 func FindGroups(ctx context.Context, accountID string) ([]*ServiceGroup, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, handlers.ErrNoConnPool
 	}
 
@@ -71,7 +69,6 @@ AND archived = false;`
 func FindGroupByID(ctx context.Context, key string, accountID string) (*ServiceGroup, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, false
 	}
 
@@ -109,14 +106,13 @@ AND archived = false
 		fmt.Println("No rows were returned!")
 		return nil, false
 	default:
-		panic(err)
+		return nil, false
 	}
 }
 
 func FindGroupByName(ctx context.Context, name string, accountID string) (*ServiceGroup, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
 		return nil, false
 	}
 
@@ -153,15 +149,14 @@ AND archived = false;
 		fmt.Println("No rows were returned!")
 		return nil, false
 	default:
-		panic(err)
+		return nil, false
 	}
 }
 
-func SaveGroup(ctx context.Context, accountID string, group *ServiceGroup) {
+func SaveGroup(ctx context.Context, accountID string, group *ServiceGroup) error {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
-		return
+		return handlers.ErrNoConnPool
 	}
 
 	sqlStatement := `
@@ -175,15 +170,16 @@ VALUES ($1, $2, $3, $4, NOW(), NOW())
 		accountID,
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func UpdateGroup(ctx context.Context, uuid string, accountID string, group *ServiceGroup) {
+func UpdateGroup(ctx context.Context, uuid string, accountID string, group *ServiceGroup) error {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
-		return
+		return handlers.ErrNoConnPool
 	}
 
 	sqlStatement := `
@@ -198,15 +194,16 @@ WHERE id = $1 and account_id = $2
 		group.Capacity,
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func RemoveGroup(ctx context.Context, identifier string, accountID string) {
+func RemoveGroup(ctx context.Context, identifier string, accountID string) error {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
-		return
+		return handlers.ErrNoConnPool
 	}
 
 	sqlStatement := `
@@ -216,6 +213,8 @@ WHERE id = $1 and account_id = $2
 `
 	_, err := db.ExecEx(ctx, sqlStatement, nil, identifier, accountID)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }

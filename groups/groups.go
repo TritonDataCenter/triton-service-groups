@@ -69,7 +69,11 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	SaveGroup(ctx, session.AccountID, group)
+	err = SaveGroup(ctx, session.AccountID, group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = SubmitOrchestratorJob(ctx, group)
 	if err != nil {
@@ -88,6 +92,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(com)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJsonResponse(w, bytes)
@@ -103,6 +108,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	group, err := decodeResponseBodyAndValidate(body)
@@ -111,7 +117,11 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	UpdateGroup(ctx, identifier, session.AccountID, group)
+	err = UpdateGroup(ctx, identifier, session.AccountID, group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = UpdateOrchestratorJob(ctx, group)
 	if err != nil {
@@ -128,6 +138,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(com)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJsonResponse(w, bytes)
@@ -148,7 +159,11 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RemoveGroup(ctx, group.ID, session.AccountID)
+	err := RemoveGroup(ctx, group.ID, session.AccountID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if err := DeleteOrchestratorJob(ctx, group); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -164,7 +179,6 @@ func List(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := FindGroups(ctx, session.AccountID)
 	if err != nil {
-		log.Fatal().Err(err)
 		http.NotFound(w, r)
 		return
 	}
@@ -172,6 +186,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(rows)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJsonResponse(w, bytes)
@@ -216,7 +231,11 @@ func Increment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Update the Database and the orchestration job
-	UpdateGroup(ctx, uuid, session.AccountID, group)
+	err = UpdateGroup(ctx, uuid, session.AccountID, group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = UpdateOrchestratorJob(ctx, group)
 	if err != nil {
@@ -261,7 +280,11 @@ func Decrement(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Update the Database and the orchestration job
-	UpdateGroup(ctx, uuid, session.AccountID, group)
+	err = UpdateGroup(ctx, uuid, session.AccountID, group)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	if err := UpdateOrchestratorJob(ctx, group); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -287,19 +310,19 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
-		log.Fatal().Err(handlers.ErrNoConnPool)
 		http.Error(w, handlers.ErrNoConnPool.Error(), http.StatusInternalServerError)
+		return
 	}
 	store := accounts.NewStore(db)
 	account, err := store.FindByID(ctx, session.AccountID)
 	if err != nil {
-		log.Error().Err(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	credential, err := account.GetTritonCredential(ctx)
 	if err != nil {
-		log.Fatal().Err(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -311,8 +334,8 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 	signer, err := authentication.NewPrivateKeySigner(input)
 	if err != nil {
 		returnError := errors.Wrapf(err, "error Creating SSH Private Key Signer")
-		log.Fatal().Err(returnError)
 		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	config := &triton.ClientConfig{
@@ -324,8 +347,8 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 	c, err := compute.NewClient(config)
 	if err != nil {
 		returnError := errors.Wrapf(err, "error constructing ComputeClient")
-		log.Fatal().Err(returnError)
 		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	params := &compute.ListInstancesInput{}
@@ -336,15 +359,15 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 	instances, err := c.Instances().List(ctx, params)
 	if err != nil {
 		returnError := errors.Wrapf(err, "error listing instances in TSG")
-		log.Fatal().Err(returnError)
 		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	bytes, err := json.Marshal(instances)
 	if err != nil {
 		returnError := errors.Wrapf(err, "error marshalling TSG instance list")
-		log.Fatal().Err(returnError)
 		http.Error(w, returnError.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJsonResponse(w, bytes)
