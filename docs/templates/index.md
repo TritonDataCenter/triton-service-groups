@@ -102,6 +102,8 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 ### DELETE `/v1/tsg/templates/{UUID}`
 
+**Note:** Make sure never remove a template before removing all the [groups][3] that might still be using it.
+
 To delete a template, send a `DELETE` request to `/v1/tsg/templates/{UUID}`, where the `{UUID}` is the unique
 identifier (UUID) of the template. The request must include the authentication headers.
 
@@ -223,3 +225,4 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 [1]: https://apidocs.joyent.com/cloudapi
 [2]: https://apidocs.joyent.com/cloudapi/#instances
+[3]: ../groups/index.md

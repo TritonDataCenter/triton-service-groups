@@ -17,6 +17,8 @@ A group object contains the following fields:
 
 ### POST `/v1/tsg/groups`
 
+**Note:** To create a group an existing and valid [template][3] is required.
+
 To create a new group, send a `POST` request to `/v1/tsg/groups`. The request must include the
 authentication headers. The attributes required to successfully create a group are as follows:
 
@@ -25,6 +27,10 @@ authentication headers. The attributes required to successfully create a group a
 | group_name  | string | The name of the group. The group name is limited to a maximum of 182 alphanumeric characters.              | Yes        |
 | template_id | string | A unique identifier for the template that the group is associated with.                                    | Yes        |
 | capacity    | string | The number of compute instances to run and maintain a specified number (the "desired count") of instances. | Yes        |
+
+**Note:** The name of the group has to be unique, thus it is not possible to have to groups which
+share the same name. A group can share the same template with other groups, but the name has to be
+unique within the current account.
 
 A successful request will return a `201 Created` HTTP response code, and an object representing
 newly created group in the response body.
@@ -389,3 +395,4 @@ Authorization: Signature keyId="/user/keys/32:98:8a:b8:b3:a3:cb:f4:3c:42:24:d8:4
 
 [1]: https://apidocs.joyent.com/cloudapi
 [2]: https://apidocs.joyent.com/cloudapi/#instances
+[3]: ../templates/index.md
