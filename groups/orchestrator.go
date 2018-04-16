@@ -220,12 +220,13 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 	j.TritonKeyID = credential.KeyID
 	j.TritonURL = session.TritonURL
 
+	j.JobName = fmt.Sprintf("%s_%s", j.ServiceGroupName, account.TritonUUID)
+
 	return nil
 }
 
 func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGroup) OrchestratorJob {
 	job := OrchestratorJob{
-		JobName:          fmt.Sprintf("%s_%s", group.GroupName, template.ShortID()),
 		DesiredCount:     group.Capacity,
 		PackageID:        template.Package,
 		ImageID:          template.ImageID,
