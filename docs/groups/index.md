@@ -26,8 +26,8 @@ authentication headers. The attributes required to successfully create a group a
 | template_id | string | A unique identifier for the template that the group is associated with.                                    | Yes        |
 | capacity    | string | The number of compute instances to run and maintain a specified number (the "desired count") of instances. | Yes        |
 
-A successful request will return a `200 OK` HTTP response code, and an object representing newly
-created group in the response body.
+A successful request will return a `201 Created` HTTP response code, and an object representing
+newly created group in the response body.
 
 #### Example request
 
