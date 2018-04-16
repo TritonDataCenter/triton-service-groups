@@ -58,7 +58,11 @@ func Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJsonResponse(w, bytes)
+	if string(bytes) == "null" {
+		writeJsonResponse(w, []byte("{}"))
+	} else {
+		writeJsonResponse(w, bytes)
+	}
 }
 
 func Create(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +146,11 @@ func List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJsonResponse(w, bytes)
+	if string(bytes) == "null" {
+		writeJsonResponse(w, []byte("[]"))
+	} else {
+		writeJsonResponse(w, bytes)
+	}
 }
 
 func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
