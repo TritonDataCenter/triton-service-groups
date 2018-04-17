@@ -51,11 +51,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	if string(bytes) == "null" {
-		writeJsonResponse(w, []byte("{}"))
-	} else {
-		writeJsonResponse(w, bytes)
-	}
+	writeJSONResponse(w, bytes, http.StatusOK)
 }
 
 func Create(w http.ResponseWriter, r *http.Request) {
@@ -99,8 +95,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	writeJsonResponse(w, bytes)
+	writeJSONResponse(w, bytes, http.StatusCreated)
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
@@ -146,7 +141,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJsonResponse(w, bytes)
+	writeJSONResponse(w, bytes, http.StatusOK)
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
@@ -188,17 +183,18 @@ func List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if rows == nil || len(rows) == 0 {
+		writeJSONResponse(w, []byte("[]"), http.StatusOK)
+		return
+	}
+
 	bytes, err := json.Marshal(rows)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if string(bytes) == "null" {
-		writeJsonResponse(w, []byte("[]"))
-	} else {
-		writeJsonResponse(w, bytes)
-	}
+	writeJSONResponse(w, bytes, http.StatusOK)
 }
 
 type ActionableInput struct {
@@ -372,6 +368,11 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if instances != nil && len(instances) == 0 {
+		writeJSONResponse(w, []byte("[]"), http.StatusOK)
+		return
+	}
+
 	bytes, err := json.Marshal(instances)
 	if err != nil {
 		returnError := errors.Wrapf(err, "error marshalling TSG instance list")
@@ -379,15 +380,12 @@ func ListInstances(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if string(bytes) == "null" {
-		writeJsonResponse(w, []byte("[]"))
-	} else {
-		writeJsonResponse(w, bytes)
-	}
+	writeJSONResponse(w, bytes, http.StatusOK)
 }
 
-func writeJsonResponse(w http.ResponseWriter, bytes []byte) {
+func writeJSONResponse(w http.ResponseWriter, bytes []byte, statusCode int) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(statusCode)
 	if n, err := w.Write(bytes); err != nil {
 		log.Printf("%v", err)
 	} else if n != len(bytes) {
