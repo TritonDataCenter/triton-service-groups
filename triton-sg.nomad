@@ -1,22 +1,28 @@
 job "tsg-v1" {
-
   type = "service"
 
-  datacenters = ["dc1"]
+  datacenters = [
+    "dc1"
+  ]
+
+  constraint {
+    attribute = "${attr.kernel.name}"
+    value     = "linux"
+  }
+
+  update {
+    health_check = "task_states"
+    max_parallel = 1
+    stagger      = "10s"
+  }
 
   group "deployment" {
+    count = 1
 
     constraint {
-      distinct_hosts = true
+      operator = "distinct_hosts"
+      value    = "true"
     }
-
-    # constraint {
-    #   operator = "distinct_property"
-    #   attribute = "${meta.role}"
-    #   value = "api-client"
-    # }
-
-    count = 1
 
     task "api" {
       driver = "exec"
@@ -38,8 +44,10 @@ job "tsg-v1" {
       }
 
       service {
-        tags = ["api"]
         port = "http"
+        tags = [
+          "api"
+        ]
       }
 
       resources {
