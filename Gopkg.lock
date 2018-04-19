@@ -30,6 +30,12 @@
   version = "v0.3.3"
 
 [[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
+
+[[projects]]
   name = "github.com/gorhill/cronexpr"
   packages = ["."]
   revision = "a557574d6c024ed6e36acc8b610f5f211c91568a"
@@ -181,6 +187,7 @@
     "account",
     "authentication",
     "client",
+    "compute",
     "errors"
   ]
   revision = "f4aff0b11754cbda33488a5b744c842ba961a218"
@@ -190,18 +197,6 @@
   name = "github.com/kardianos/osext"
   packages = ["."]
   revision = "ae77be60afb1dcacde03767a8c37337fad28ac14"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/kr/pretty"
-  packages = ["."]
-  revision = "cfb55aafdaf3ec08f0db22699ab822c50091b1c4"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/kr/text"
-  packages = ["."]
-  revision = "7cafcd837844e784b526369c9bce262804aebc60"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -346,12 +341,6 @@
   version = "v1.1"
 
 [[projects]]
-  name = "github.com/y0ssar1an/q"
-  packages = ["."]
-  revision = "a594777528d69da7978e1e90b205d6cdd7dda29f"
-  version = "1.0.3"
-
-[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = [
@@ -394,6 +383,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1d5c2a84d2bde77acde9d5138c50a3f646822955f372e66558722aa59604014d"
+  inputs-digest = "3e66cdac4c7f15bef906a022a67218ddb7d666450ac6b8a35b6e9f6cc00c89cb"
   solver-name = "gps-cdcl"
   solver-version = 1
