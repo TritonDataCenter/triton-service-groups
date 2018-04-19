@@ -12,6 +12,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-go"
 	"github.com/joyent/triton-go/authentication"
@@ -419,5 +420,14 @@ func decodeResponseBodyAndValidate(body []byte) (*ServiceGroup, error) {
 		return nil, errors.New("group name cannot be more than 182 characters")
 	}
 
+	if !isValidUUID(group.TemplateID) {
+		return nil, errors.New("templateID must be a valid UUID")
+	}
+
 	return group, nil
+}
+
+func isValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }

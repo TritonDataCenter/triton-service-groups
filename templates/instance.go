@@ -12,6 +12,9 @@ import (
 	"path"
 	"time"
 
+	"errors"
+
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/rs/zerolog/log"
@@ -71,8 +74,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var template *InstanceTemplate
-	err = json.Unmarshal(body, &template)
+	template, err := decodeResponseBodyAndValidate(body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -157,4 +159,27 @@ func writeJSONResponse(w http.ResponseWriter, bytes []byte, statusCode int) {
 	} else if n != len(bytes) {
 		log.Printf("short write: %d/%d", n, len(bytes))
 	}
+}
+
+func decodeResponseBodyAndValidate(body []byte) (*InstanceTemplate, error) {
+	var template *InstanceTemplate
+	err := json.Unmarshal(body, &template)
+	if err != nil {
+		return nil, errors.New("error in unmarshal request body")
+	}
+
+	if !isValidUUID(template.Package) {
+		return nil, errors.New("package must be a valid UUID")
+	}
+
+	if !isValidUUID(template.ImageID) {
+		return nil, errors.New("imageID must be a valid UUID")
+	}
+
+	return template, nil
+}
+
+func isValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }
