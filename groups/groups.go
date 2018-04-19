@@ -64,7 +64,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	group, err := decodeResponseBodyAndValidate(body)
+	group, err := decodeGroupResponseBodyAndValidate(body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -112,7 +112,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	group, err := decodeResponseBodyAndValidate(body)
+	group, err := decodeGroupResponseBodyAndValidate(body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -220,7 +220,7 @@ func Increment(w http.ResponseWriter, r *http.Request) {
 
 	input, err := buildActionableInput(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -269,7 +269,7 @@ func Decrement(w http.ResponseWriter, r *http.Request) {
 
 	input, err := buildActionableInput(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -406,10 +406,24 @@ func buildActionableInput(r *http.Request) (*ActionableInput, error) {
 		return nil, err
 	}
 
+	err = input.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	return input, nil
 }
 
-func decodeResponseBodyAndValidate(body []byte) (*ServiceGroup, error) {
+func (i *ActionableInput) Validate() error {
+
+	if i.MinInstance < 0 || i.MaxInstance < 0 || i.InstanceCount < 0 {
+		return errors.New("only positive integers are allowed for instance count & max and min range")
+	}
+
+	return nil
+}
+
+func decodeGroupResponseBodyAndValidate(body []byte) (*ServiceGroup, error) {
 	var group *ServiceGroup
 	err := json.Unmarshal(body, &group)
 	if err != nil {
