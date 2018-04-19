@@ -17,6 +17,30 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func CheckTemplateExistsByName(ctx context.Context, templateName, accountID string) (bool, error) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		return false, handlers.ErrNoConnPool
+	}
+
+	var exists bool
+
+	sql := `
+SELECT EXISTS
+  (SELECT 1
+   FROM tsg_templates
+   WHERE (template_name = $1
+          AND account_id = $2)
+     AND archived IS FALSE);`
+
+	err := db.QueryRowEx(ctx, sql, nil, templateName, accountID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
 func CheckTemplateAllocationByID(ctx context.Context, templateID, accountID string) (bool, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {

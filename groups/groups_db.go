@@ -15,6 +15,30 @@ import (
 	"github.com/joyent/triton-service-groups/server/handlers"
 )
 
+func CheckGroupExistsByName(ctx context.Context, groupName, accountID string) (bool, error) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		return false, handlers.ErrNoConnPool
+	}
+
+	var exists bool
+
+	sql := `
+SELECT EXISTS
+  (SELECT 1
+   FROM tsg_groups
+   WHERE (name = $1
+          AND account_id = $2)
+     AND archived IS FALSE);`
+
+	err := db.QueryRowEx(ctx, sql, nil, groupName, accountID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
 func FindGroups(ctx context.Context, accountID string) ([]*ServiceGroup, error) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {

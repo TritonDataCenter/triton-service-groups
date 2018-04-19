@@ -81,6 +81,18 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	templateExists, err := CheckTemplateExistsByName(ctx, template.TemplateName, session.AccountID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if templateExists {
+		http.Error(w, fmt.Sprintf("Cannot create template %q, "+
+			"conflicts with another template.", template.TemplateName),
+			http.StatusConflict)
+		return
+	}
+
 	err = SaveTemplate(ctx, session.AccountID, template)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -99,7 +111,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Location", path.Join(r.URL.Path, template.TemplateName))
+	w.Header().Set("Location", path.Join(r.URL.Path, com.ID))
 	writeJSONResponse(w, bytes, http.StatusCreated)
 }
 
