@@ -66,7 +66,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	group, err := decodeResponseBodyAndValidate(body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
@@ -114,7 +114,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 	group, err := decodeResponseBodyAndValidate(body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 
