@@ -55,7 +55,8 @@ userdata TEXT,
 metadata TEXT,
 tags TEXT,
 created_at TIMESTAMPTZ NOT NULL,
-archived BOOL DEFAULT false);"
+archived BOOL DEFAULT false),
+UNIQUE (template_name, account_id, archived));"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_groups (
 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -67,7 +68,7 @@ health_check_interval INT DEFAULT 300,
 created_at TIMESTAMPTZ NOT NULL,
 updated_at TIMESTAMPTZ NOT NULL,
 archived BOOL DEFAULT false,
-UNIQUE (name, account_id));"
+UNIQUE (name, account_id, archived));"
 
     if [ -f /dev/backup.sql ]; then
         /cockroach/cockroach.sh sql $HOSTPARAMS --database=$env < /dev/backup.sql
