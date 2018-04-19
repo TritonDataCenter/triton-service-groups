@@ -55,7 +55,7 @@ userdata TEXT,
 metadata TEXT,
 tags TEXT,
 created_at TIMESTAMPTZ NOT NULL,
-archived BOOL DEFAULT false),
+archived BOOL DEFAULT false,
 UNIQUE (template_name, account_id, archived));"
 
     $SQL -d $env -e "CREATE TABLE IF NOT EXISTS tsg_groups (

@@ -17,6 +17,33 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func CheckTemplateAllocationByID(ctx context.Context, templateID, accountID string) (bool, error) {
+	db, ok := handlers.GetDBPool(ctx)
+	if !ok {
+		return false, handlers.ErrNoConnPool
+	}
+
+	var allocated bool
+
+	sql := `
+SELECT EXISTS
+  (SELECT 1
+   FROM tsg_templates AS t,
+        tsg_groups AS g
+   WHERE (t.id = g.template_id
+          AND t.account_id = g.account_id)
+     AND (t.id = $1
+          AND t.account_id = $2)
+     AND g.archived IS FALSE);`
+
+	err := db.QueryRowEx(ctx, sql, nil, templateID, accountID).Scan(&allocated)
+	if err != nil {
+		return false, err
+	}
+
+	return allocated, nil
+}
+
 func FindTemplateByName(ctx context.Context, key string, accountID string) (*InstanceTemplate, bool) {
 	db, ok := handlers.GetDBPool(ctx)
 	if !ok {
