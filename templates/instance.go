@@ -7,6 +7,7 @@ package templates_v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -86,8 +87,6 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Location", path.Join(r.URL.Path, template.TemplateName))
-
 	com, ok := FindTemplateByName(ctx, template.TemplateName, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
@@ -100,6 +99,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Location", path.Join(r.URL.Path, template.TemplateName))
 	writeJSONResponse(w, bytes, http.StatusCreated)
 }
 
@@ -112,13 +112,25 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 
 	var template *InstanceTemplate
 
+	templateAllocated, err := CheckTemplateAllocationByID(ctx, uuid, session.AccountID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if templateAllocated {
+		http.Error(w, fmt.Sprintf("Cannot delete template %q while in use, "+
+			"must be removed from all groups first.", uuid),
+			http.StatusConflict)
+		return
+	}
+
 	template, ok := FindTemplateByID(ctx, uuid, session.AccountID)
 	if !ok {
 		http.NotFound(w, r)
 		return
 	}
 
-	err := RemoveTemplate(ctx, template.ID, session.AccountID)
+	err = RemoveTemplate(ctx, template.ID, session.AccountID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
