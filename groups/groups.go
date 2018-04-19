@@ -424,6 +424,14 @@ func decodeResponseBodyAndValidate(body []byte) (*ServiceGroup, error) {
 		return nil, errors.New("templateID must be a valid UUID")
 	}
 
+	if group.Capacity < 0 {
+		return nil, errors.New("group capacity cannot be a negative number")
+	}
+
+	if group.Capacity > 100 {
+		return nil, errors.New("group capacity cannot be more than 100 compute instances")
+	}
+
 	return group, nil
 }
 
