@@ -47,7 +47,6 @@ curl -X POST -H 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.
 ```
 {
     "group_name": "jolly-jelly",
-    "account_id": "6f873d02-172c-418f-8416-4da2b50d5c53",
     "template_id": "437c560d-b1a9-4dae-b3b3-6dbabb7d23a7",
     "capacity": 5
 }
@@ -192,7 +191,6 @@ follows:
 
 | Name        | Type   | Description                                                                                                | Required   |
 | ----------- | ------ | ---------------------------------------------------------------------------------------------------------- | :--------: |
-| group_name  | string | The name of the group. The group name is limited to a maximum of 182 alphanumeric characters.              | Yes        |
 | template_id | string | A unique identifier for the template that the group is associated with.                                    | Yes        |
 | capacity    | string | The number of compute instances to run and maintain a specified number (the "desired count") of instances. | Yes        |
 
@@ -209,7 +207,6 @@ curl -X PUT 'Content-Type: application/json' https://tsg.us-sw-1.svc.joyent.zone
 
 ```
 {
-    "group_name": "jolly-jelly",
     "template_id": "ebec1e0c-9caa-47d9-97e2-3e31d277a35f",
     "capacity": 10
 }
