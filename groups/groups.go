@@ -7,6 +7,7 @@ package groups_v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -70,6 +71,18 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	groupExists, err := CheckGroupExistsByName(ctx, group.GroupName, session.AccountID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if groupExists {
+		http.Error(w, fmt.Sprintf("Cannot create group %q, "+
+			"conflicts with another group.", group.GroupName),
+			http.StatusConflict)
+		return
+	}
+
 	err = SaveGroup(ctx, session.AccountID, group)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -81,8 +94,6 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Location", path.Join(r.URL.Path, group.GroupName))
 
 	com, ok := FindGroupByName(ctx, group.GroupName, session.AccountID)
 	if !ok {
@@ -96,6 +107,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Location", path.Join(r.URL.Path, com.ID))
 	writeJSONResponse(w, bytes, http.StatusCreated)
 }
 
