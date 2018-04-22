@@ -442,12 +442,16 @@ func decodeGroupResponseBodyAndValidate(body []byte) (*ServiceGroup, error) {
 		return nil, errors.New("error in unmarshal request body")
 	}
 
+	if group.GroupName == "" {
+		return nil, errors.New("group name cannot be empty")
+	}
+
 	if len(group.GroupName) > 182 {
 		return nil, errors.New("group name cannot be more than 182 characters")
 	}
 
 	if !isValidUUID(group.TemplateID) {
-		return nil, errors.New("templateID must be a valid UUID")
+		return nil, errors.New("template ID must be a valid UUID")
 	}
 
 	if group.Capacity < 0 {
