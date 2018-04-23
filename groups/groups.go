@@ -120,12 +120,6 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	identifier := vars["identifier"]
 
-	com, ok := FindGroupByID(ctx, identifier, session.AccountID)
-	if !ok {
-		http.NotFound(w, r)
-		return
-	}
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -135,6 +129,12 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	group, err := decodeGroupResponseBodyAndValidate(body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	com, ok := FindGroupByID(ctx, identifier, session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
 		return
 	}
 
@@ -156,6 +156,10 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	com.Capacity = group.Capacity
+	com.TemplateID = group.TemplateID
+	com.UpdatedAt = group.UpdatedAt
 
 	bytes, err := json.Marshal(com)
 	if err != nil {
