@@ -3,6 +3,7 @@ package groups_v1
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	stdlog "log"
@@ -171,7 +172,12 @@ func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *Se
 		return nil, err
 	}
 
-	jobT := template.Must(template.New("job").Parse(jobTemplate))
+	funcMap := template.FuncMap{
+		"base64_encode":   base64Encode,
+		"escape_newlines": escapeNewlines,
+	}
+
+	jobT := template.Must(template.New("job").Funcs(funcMap).Parse(jobTemplate))
 	err := jobT.Execute(tpl, details)
 	if err != nil {
 		return nil, err
@@ -214,7 +220,7 @@ func (j *OrchestratorJob) getTritonAccountDetails(ctx context.Context) error {
 		Str("fingerprint", credential.KeyID).
 		Msg("orchestrator: found triton credentials for account")
 
-	j.TritonKeyMaterial = strings.Replace(credential.KeyMaterial, "\n", `\n`, -1)
+	j.TritonKeyMaterial = credential.KeyMaterial
 	j.TritonAccount = credential.AccountName
 	j.TritonKeyID = credential.KeyID
 	j.TritonURL = session.TritonURL
@@ -253,8 +259,16 @@ func createJobDetails(template *templates_v1.InstanceTemplate, group *ServiceGro
 	return job
 }
 
+func base64Encode(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+func escapeNewlines(s string) string {
+	return strings.Replace(s, "\n", "\\n", -1)
+}
+
 const jobTemplate = `
-job "{{.JobName}}" {
+job "{{ .JobName }}" {
   type = "batch"
   periodic {
 	cron = "*/2 * * * * *"
@@ -262,49 +276,49 @@ job "{{.JobName}}" {
   }
   datacenters = ["{{ .Datacenter }}"]
   group "scale" {
-	constraint {
-	  distinct_hosts = true
-	}
-	constraint {
-	  operator = "="
-	  attribute = "${meta.role}"
-	  value = "automater"
-	}
-	task "healthy" {
-	  driver = "exec"
-	  artifact {
-		source = "https://github.com/joyent/tsg-cli/releases/download/v0.1.3/tsg-cli_0.1.3_linux_amd64.tar.gz"
-	  }
-	  config {
-		command = "tsg-cli"
-		args = [
-		  "scale",
-		  "--count", "{{ .DesiredCount }}",
-		  "--pkg-id", "{{ .PackageID }}",
-		  "--img-id", "{{ .ImageID }}",
-		  "--tsg-name", "{{ .ServiceGroupName }}",
-		  "--template-id", "{{ .TemplateID }}",
-		  {{if .UserData -}}
-		  "--userdata", "{{ .UserData }}",
-		  {{- end }}
-		  {{range .Networks}}
-		  "--networks", "{{ . }}",
-		  {{- end }}
-		  {{range $key, $value := .Tags}}
-		  "--tag", "{{$key}}={{$value}}",
-		  {{- end }}
-		  {{range $key, $value := .MetaData}}
-		  "--metadata", "{{$key}}={{$value}}",
-		  {{- end }}
-		  "-A", "{{ .TritonAccount }}",
-		  "-K", "{{ .TritonKeyID }}",
-		  "-U", "{{ .TritonURL }}",
-		  {{if .TritonKeyMaterial -}}
-		  "--key-material", "{{ .TritonKeyMaterial }}",
-		  {{- end}}
-		]
-	  }
-	}
+    constraint {
+      distinct_hosts = true
+    }
+    constraint {
+      operator = "="
+      attribute = "${meta.role}"
+      value = "automater"
+    }
+    task "healthy" {
+      driver = "exec"
+      artifact {
+        source = "https://github.com/joyent/tsg-cli/releases/download/v0.1.3/tsg-cli_0.1.3_linux_amd64.tar.gz"
+      }
+      config {
+        command = "tsg-cli"
+	args = [
+	  "scale",
+	  "--count", "{{ .DesiredCount }}",
+	  "--pkg-id", "{{ .PackageID }}",
+	  "--img-id", "{{ .ImageID }}",
+	  "--tsg-name", "{{ .ServiceGroupName }}",
+	  "--template-id", "{{ .TemplateID }}",
+	  {{if .UserData -}}
+	  "--userdata", "{{ .UserData | base64_encode }}",
+	  {{- end }}
+	  {{ range .Networks }}
+	  "--networks", "{{ . }}",
+	  {{- end }}
+	  {{ range $key, $value := .Tags }}
+	  "--tag", "{{ $key }}={{ $value }}",
+	  {{- end }}
+	  {{ range $key, $value := .MetaData }}
+	  "--metadata", "{{ printf "%s=%s" $key $value | base64_encode }}",
+	  {{- end }}
+	  "-A", "{{ .TritonAccount }}",
+	  "-K", "{{ .TritonKeyID }}",
+	  "-U", "{{ .TritonURL }}",
+	  {{ if .TritonKeyMaterial -}}
+	  "--key-material", "{{ .TritonKeyMaterial | base64_encode }}",
+	  {{- end }}
+	]
+      }
+    }
   }
 }
 `
