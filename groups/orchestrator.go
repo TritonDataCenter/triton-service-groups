@@ -273,7 +273,7 @@ job "{{.JobName}}" {
 	task "healthy" {
 	  driver = "exec"
 	  artifact {
-		source = "https://github.com/joyent/tsg-cli/releases/download/v0.1.1/tsg-cli_0.1.1_linux_amd64.tar.gz"
+		source = "https://github.com/joyent/tsg-cli/releases/download/v0.1.2/tsg-cli_0.1.2_linux_amd64.tar.gz"
 	  }
 	  config {
 		command = "tsg-cli"
