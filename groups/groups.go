@@ -51,6 +51,7 @@ func Get(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.Marshal(group)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	writeJSONResponse(w, bytes, http.StatusOK)
@@ -63,6 +64,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	group, err := decodeGroupResponseBodyAndValidate(body)
@@ -78,8 +80,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 	if groupExists {
 		http.Error(w, fmt.Sprintf("Cannot create group %q, "+
-			"conflicts with another group.", group.GroupName),
-			http.StatusConflict)
+			"group name conflicts with existing group.",
+			group.GroupName), http.StatusConflict)
 		return
 	}
 
@@ -118,6 +120,12 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	identifier := vars["identifier"]
 
+	com, ok := FindGroupByID(ctx, identifier, session.AccountID)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -130,6 +138,13 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if group.GroupName != com.GroupName {
+		http.Error(w, fmt.Sprintf("The group name %q does not match "+
+			"the name on the record.", group.GroupName),
+			http.StatusBadRequest)
+		return
+	}
+
 	err = UpdateGroup(ctx, identifier, session.AccountID, group)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -139,12 +154,6 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	err = UpdateOrchestratorJob(ctx, group)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	com, ok := FindGroupByID(ctx, identifier, session.AccountID)
-	if !ok {
-		http.NotFound(w, r)
 		return
 	}
 
@@ -427,7 +436,6 @@ func buildActionableInput(r *http.Request) (*ActionableInput, error) {
 }
 
 func (i *ActionableInput) Validate() error {
-
 	if i.MinInstance < 0 || i.MaxInstance < 0 || i.InstanceCount < 0 {
 		return errors.New("only positive integers are allowed for instance count & max and min range")
 	}
