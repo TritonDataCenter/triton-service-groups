@@ -72,6 +72,10 @@ func (l *PGXLogger) Log(level pgx.LogLevel, msg string, data map[string]interfac
 	pgxlog.WithLevel(zlevel).Msg(msg)
 }
 
+func GetTSGCliVersion() string {
+	return viper.GetString(KeyTSGCliVersion)
+}
+
 func NewDefault() (cfg *Config, err error) {
 	var pgxLogLevel int = pgx.LogLevelInfo
 	switch logLevel := strings.ToUpper(viper.GetString(KeyLogLevel)); logLevel {
