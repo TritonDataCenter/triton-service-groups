@@ -13,6 +13,7 @@ import (
 	nomad "github.com/hashicorp/nomad/api"
 	"github.com/hashicorp/nomad/jobspec"
 	"github.com/joyent/triton-service-groups/accounts"
+	"github.com/joyent/triton-service-groups/config"
 	"github.com/joyent/triton-service-groups/server/handlers"
 	"github.com/joyent/triton-service-groups/templates"
 	"github.com/rs/zerolog/log"
@@ -35,6 +36,7 @@ type OrchestratorJob struct {
 	TritonURL         string
 	TritonKeyID       string
 	TritonKeyMaterial string
+	TSGCliVersion     string
 }
 
 func SubmitOrchestratorJob(ctx context.Context, group *ServiceGroup) error {
@@ -168,6 +170,7 @@ func prepareJob(ctx context.Context, t *templates_v1.InstanceTemplate, group *Se
 	tpl := &bytes.Buffer{}
 	details := createJobDetails(t, group)
 	details.Datacenter = session.Datacenter
+	details.TSGCliVersion = config.GetTSGCliVersion()
 	if err := details.getTritonAccountDetails(ctx); err != nil {
 		return nil, err
 	}
@@ -287,7 +290,7 @@ job "{{ .JobName }}" {
     task "healthy" {
       driver = "exec"
       artifact {
-        source = "https://github.com/joyent/tsg-cli/releases/download/v0.1.3/tsg-cli_0.1.3_linux_amd64.tar.gz"
+        source = "https://github.com/joyent/tsg-cli/releases/download/v{{ .TSGCliVersion }}/tsg-cli_{{ .TSGCliVersion }}_linux_amd64.tar.gz"
       }
       config {
         command = "tsg-cli"

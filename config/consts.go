@@ -38,6 +38,8 @@ const (
 
 	KeyNomadURL  = "nomad.url"
 	KeyNomadPort = "nomad.port"
+
+	KeyTSGCliVersion = "tsgcli.version"
 )
 
 const (
